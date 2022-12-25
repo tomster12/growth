@@ -5,21 +5,17 @@ using UnityEngine;
 
 public class GridMeshGenerator : MonoBehaviour
 {
-    // Declare references, config, variables
     [Header("References")]
     [SerializeField] private MeshRenderer meshRenderer;
     [SerializeField] private MeshFilter meshFilter;
     [SerializeField] private Material meshMaterial;
-    [SerializeField] private PolygonCollider2DGenerator colliderGenerator;
 
     [Header("Config")]
-    [SerializeField] private int gridWidth = 8;
-    [SerializeField] private int gridHeight = 8;
+    [SerializeField] private Vector2Int gridSize = new Vector2Int(8, 8);
     [Range(0.0f, 1.0f)]
     [SerializeField] private float offsetRange = 0.6f;
 
     private Mesh mesh;
-    private Vector2 gridSize;
     private bool[,] grid;
     private Vector2[,] offsets;
 
@@ -31,36 +27,32 @@ public class GridMeshGenerator : MonoBehaviour
         GenerateMap();
         RandomizeOffsets();
         GenerateMesh();
-        colliderGenerator.CreatePolygon2DColliderPoints();
     }
 
     private void GenerateMap()
     {
         // Initialize all grid points
-        grid = new bool[gridWidth, gridHeight];
-        gridSize = new Vector2(gridWidth, gridHeight);
-        for (int x = 0; x < gridWidth; x++)
+        grid = new bool[gridSize.x, gridSize.y];
+        for (int x = 0; x < gridSize.x; x++)
         {
-            for (int y = 0; y < gridHeight; y++)
+            for (int y = 0; y < gridSize.y; y++)
             {
                 grid[x, y] = true;
             }
         }
-
-        // Flood fill false to remove holes
     }
 
     private void RandomizeOffsets()
     {
         // Initialize all offsets
-        offsets = new Vector2[gridWidth, gridHeight];
-        for (int x = 0; x < gridWidth; x++)
+        offsets = new Vector2[gridSize.x, gridSize.y];
+        for (int x = 0; x < gridSize.x; x++)
         {
-            for (int y = 0; y < gridHeight; y++)
+            for (int y = 0; y < gridSize.y; y++)
             {
                 offsets[x, y] = new Vector2(
-                    (0.5f + offsetRange * (Random.value - 0.5f)) / gridWidth,
-                    (0.5f + offsetRange * (Random.value - 0.5f)) / gridHeight
+                    (0.5f + offsetRange * (Random.value - 0.5f)) / gridSize.x,
+                    (0.5f + offsetRange * (Random.value - 0.5f)) / gridSize.y
                 );
             }
         }
@@ -78,9 +70,9 @@ public class GridMeshGenerator : MonoBehaviour
 
         // Convert grid into mesh
         Vector2 half = Vector2.one * 0.5f;
-        for (int x = 0; x < gridWidth - 1; x++)
+        for (int x = 0; x < gridSize.x - 1; x++)
         {
-            for (int y = 0; y < gridHeight - 1; y++)
+            for (int y = 0; y < gridSize.y - 1; y++)
             {
                 if (grid[x,y] && grid[x+1,y] && grid[x,y+1] && grid[x+1,y+1])
                 {

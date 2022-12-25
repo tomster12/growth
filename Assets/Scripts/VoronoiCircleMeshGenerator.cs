@@ -5,16 +5,21 @@ using System.Linq;
 using UnityEngine;
 
 
+[ExecuteInEditMode]
 public class VoronoiCircleMeshGenerator : MonoBehaviour
 {
-    public class VoronoiMeshSite
+    public class MeshSite
     {
         public int centreVertex;
         public int[] edgeVertices;
+
+        public MeshSite(int edgeCount)
+        {
+            edgeVertices = new int[edgeCount];
+        }
     }
 
 
-    // Declare references, config, variables
     [Header("References")]
     [SerializeField] private MeshRenderer meshRenderer;
     [SerializeField] private MeshFilter meshFilter;
@@ -25,14 +30,28 @@ public class VoronoiCircleMeshGenerator : MonoBehaviour
     [SerializeField] private int seedCount = 300;
     [SerializeField] private float seedRingCount = 50;
     [SerializeField] private float seedRingGap = 0.05f;
-    [SerializeField] private Vector2 voronoiGridSize = new Vector2(100, 100);
+    [SerializeField] private int seedPlacementTries = 100;
+    [SerializeField] private int voronoiGridHeight = 100;
     [SerializeField] private int voronoiRelaxationCycles = 1;
     [SerializeField] private bool showGizmos = false;
 
-    private List<Vector2> seedPositions;
+    [SerializeField] private bool toUpdate = false;
+
+    private Vector2Int gridSize;
+    private List<VoronoiDiagramSite<Color>> seeds;
     private VoronoiDiagram<Color> voronoi;
     private Mesh mesh;
-    private VoronoiMeshSite[] meshSites;
+    private MeshSite[] meshSites;
+
+
+    private void Update()
+    {
+        if (toUpdate)
+        {
+            RunProcedures();
+            toUpdate = false;
+        }
+    }
 
 
     [ContextMenu("Run Procedures")]
@@ -47,53 +66,52 @@ public class VoronoiCircleMeshGenerator : MonoBehaviour
 
     private void GenerateVoronoi()
     {
-        // Generat a voronoi diagram, whose points are in the range (0, seedGridResolution - 1) inclusive
-        // - The points are generated as floats, but should be converted to integers inside the algorithm
+        // Setup variables for voronoi generation
+        gridSize = new Vector2Int(voronoiGridHeight, voronoiGridHeight);
+        Vector2 halfSize = (gridSize - Vector2.one) * 0.5f;
+        bool[,] seedFlags = new bool[voronoiGridHeight, voronoiGridHeight];
+        seeds = new List<VoronoiDiagramSite<Color>>();
 
-        // Setup voronoi and requird variables
-        seedPositions = new List<Vector2>();
-        var vSites = new List<VoronoiDiagramSite<Color>>();
-        voronoi = new VoronoiDiagram<Color>(new Rect(Vector2.zero, voronoiGridSize + Vector2.one));
-
-        // Generate a list of sites with position within a circle, including a gap around the outside
-        Vector2 halfSize = 0.5f * voronoiGridSize;
-        for (int i = 0; i < seedCount; i++)
-        {
-            // Keep looping until found a new unique point
-            while (true)
-            {
-                Vector2 unitPos = Random.insideUnitCircle;
-                Vector2 gridPos = unitPos * halfSize * (1.0f - seedRingGap) + halfSize;
-                if (!vSites.Any(site => site.Coordinate == gridPos))
-                {
-                    Color col = new Color(Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f));
-                    seedPositions.Add(gridPos);
-                    vSites.Add(new VoronoiDiagramSite<Color>(gridPos, col));
-                    break;
-                }
-            }
-        }
-
-        // Genrat a list of sites along a path around a circle
+        // Generate seed positions in a ring
         for (int i = 0; i < seedRingCount; i++)
         {
-            while (true)
+            float angle = 2.0f * Mathf.PI * i / seedRingCount;
+            Vector2 unitPos = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+            Vector2Int gridPos = Vector2Int.FloorToInt(halfSize + unitPos * halfSize);
+
+            if (seedFlags[gridPos.x, gridPos.y] == false)
             {
-                float angle = 2.0f * Mathf.PI * i / seedRingCount;
-                Vector2 unitPos = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
-                Vector2 gridPos = halfSize + unitPos * halfSize;
-                if (!vSites.Any(site => site.Coordinate == gridPos))
-                {
-                    Color col = new Color(Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f));
-                    seedPositions.Add(gridPos);
-                    vSites.Add(new VoronoiDiagramSite<Color>(gridPos, col));
-                    break;
-                }
-            }
+                Color col = new Color(UnityEngine.Random.Range(0.0f, 1.0f), UnityEngine.Random.Range(0.0f, 1.0f), UnityEngine.Random.Range(0.0f, 1.0f));
+                seeds.Add(new VoronoiDiagramSite<Color>(gridPos, col));
+                seedFlags[gridPos.x, gridPos.y] = true;
+
+            } else Debug.Log("ERROR: Could not place ring seed " + i);
         }
 
-        // Add sites and run algorithms
-        voronoi.AddSites(vSites);
+        // Generate seed positions inside the unit circle with a gap
+        for (int i = 0; i < seedCount; i++)
+        {
+            int attempts = 0;
+            while (attempts < seedPlacementTries)
+            {
+                Vector2 unitPos = UnityEngine.Random.insideUnitCircle;
+                Vector2Int gridPos = Vector2Int.FloorToInt(unitPos * halfSize * (1.0f - seedRingGap) + halfSize);
+
+                if (seedFlags[gridPos.x, gridPos.y] == false)
+                {
+                    Color col = new Color(UnityEngine.Random.Range(0.0f, 1.0f), UnityEngine.Random.Range(0.0f, 1.0f), UnityEngine.Random.Range(0.0f, 1.0f));
+                    seeds.Add(new VoronoiDiagramSite<Color>(gridPos, col));
+                    seedFlags[gridPos.x, gridPos.y] = true;
+                    break;
+
+                } else attempts++;
+            }
+            if (attempts == seedPlacementTries) Debug.Log("ERROR: Could not place seed " + i);
+        }
+
+        // Run seeds through voronoi (with exclusive upper bounds)
+        voronoi = new VoronoiDiagram<Color>(new Rect(Vector2.zero, gridSize + Vector2.one));
+        voronoi.AddSites(seeds);
         voronoi.GenerateSites(voronoiRelaxationCycles);
     }
 
@@ -101,65 +119,57 @@ public class VoronoiCircleMeshGenerator : MonoBehaviour
     {
         // Setup all mesh data variables
         mesh = new Mesh();
-        List<Vector3> vertices = new List<Vector3>();
-        List<int> triangles = new List<int>();
-        List<Vector3> normals = new List<Vector3>();
+        List<MeshSite> meshSiteList = new List<MeshSite>();
         List<Vector2> uvs = new List<Vector2>();
+        List<Vector3> vertices = new List<Vector3>();
+        List<Vector3> normals = new List<Vector3>();
         List<Color32> colors = new List<Color32>();
-        List<VoronoiMeshSite> meshSiteList = new List<VoronoiMeshSite>();
+        List<int> triangles = new List<int>();
 
         // Loop over all sites and setup mesh data
         for (int i = 0; i < voronoi.GeneratedSites.Count; i++)
         {
-            // Skip over any site with a vertex on the outside
-            bool isEdge = false;
-            var vSite = voronoi.GeneratedSites[i];
-            for (int o = 0; o < vSite.Vertices.Count; o++)
-            {
-                if (
-                    vSite.Vertices[o].x == 0 || vSite.Vertices[o].x >= voronoiGridSize.x
-                    || vSite.Vertices[o].y == 0 || vSite.Vertices[o].y >= voronoiGridSize.y
-                ) isEdge = true;
-            }
-            if (isEdge) continue;
-
-            // Setup mesh and site variables
-            int startIndex = vertices.Count;
-            meshSiteList.Add(new VoronoiMeshSite());
-            meshSiteList[meshSiteList.Count - 1].edgeVertices = new int[vSite.Vertices.Count];
+            // Setup site and ensure is not on an edge
+            var voronoiSite = voronoi.GeneratedSites[i];
+            meshSiteList.Add(new MeshSite(voronoiSite.Vertices.Count));
+            bool isEdgeSite = voronoiSite.Vertices.Any(v =>
+                v.x == 0 || v.x >= voronoiGridHeight
+                || v.y == 0 || v.y >= voronoiGridHeight);
+            if (isEdgeSite) continue;
 
             // Add centroid to data
-            Vector2 centroidUV = vSite.Centroid / voronoiGridSize;
-            vertices.Add(centroidUV - Vector2.one * 0.5f);
+            int centreIndex = vertices.Count;
+            uvs.Add(voronoiSite.Centroid / (gridSize - Vector2.one));
+            vertices.Add(uvs[centreIndex] - Vector2.one * 0.5f);
             normals.Add(Vector3.back);
-            uvs.Add(centroidUV);
-            colors.Add(vSite.SiteData);
-            meshSiteList[meshSiteList.Count - 1].centreVertex = startIndex;
+            colors.Add(voronoiSite.SiteData);
+            meshSiteList[meshSiteList.Count - 1].centreVertex = centreIndex;
 
             // Add edge vertices to data
-            for (int o = 0; o < vSite.Vertices.Count; o++)
+            for (int o = 0; o < voronoiSite.Vertices.Count; o++)
             {
-                Vector2 vertexUV = vSite.Vertices[o] / voronoiGridSize;
-                vertices.Add(vertexUV - Vector2.one * 0.5f);
+                int vertexIndex = (centreIndex + 1) + (o);
+                uvs.Add(voronoiSite.Vertices[o] / (gridSize - Vector2.one));
+                vertices.Add(uvs[vertexIndex] - Vector2.one * 0.5f);
                 normals.Add(Vector3.back);
-                uvs.Add(vertexUV);
-                colors.Add(vSite.SiteData);
-                meshSiteList[meshSiteList.Count - 1].edgeVertices[o] = startIndex + 1 + o;
+                colors.Add(voronoiSite.SiteData);
+                meshSiteList[meshSiteList.Count - 1].edgeVertices[o] = vertexIndex;
 
                 // Add triangles to data
-                triangles.Add(startIndex + 0);
-                triangles.Add(startIndex + 1 + (o + 1) % vSite.Vertices.Count);
-                triangles.Add(startIndex + 1 + (o) % vSite.Vertices.Count);
+                triangles.Add(centreIndex);
+                triangles.Add((centreIndex + 1) + (o + 1) % voronoiSite.Vertices.Count);
+                triangles.Add((centreIndex + 1) + (o) % voronoiSite.Vertices.Count);
             }
         }
 
         // Convert to arrays and assign to mesh
-        mesh.vertices = vertices.ToArray();
-        mesh.triangles = triangles.ToArray();
-        mesh.normals = normals.ToArray();
-        mesh.uv = uvs.ToArray();
-        mesh.colors32 = colors.ToArray();
         meshSites = meshSiteList.ToArray();
+        mesh.vertices = vertices.ToArray();
+        mesh.uv = uvs.ToArray();
+        mesh.normals = normals.ToArray();
+        mesh.colors32 = colors.ToArray();
+        mesh.triangles = triangles.ToArray();
+
         meshFilter.mesh = mesh;
         meshRenderer.material = meshMaterial;
     }
@@ -173,7 +183,7 @@ public class VoronoiCircleMeshGenerator : MonoBehaviour
             Vector2 centroidUV = mesh.uv[meshSite.centreVertex];
             float dx = centroidUV.x - 0.5f;
             float dy = centroidUV.y - 0.5f;
-            float pct = 2.0f * Mathf.Sqrt(dx * dx + dy * dy) / (1.0f - seedRingGap);
+            float pct = Mathf.Sqrt(dx * dx + dy * dy) / (0.5f - seedRingGap);
             
             Color col = new Color(pct, pct, pct, 1.0f);
             meshColors[meshSite.centreVertex] = col;
@@ -188,13 +198,18 @@ public class VoronoiCircleMeshGenerator : MonoBehaviour
         if (!showGizmos) return;
 
         // Draw all the input centroid points
-        if (seedPositions != null)
+        if (meshSites != null)
         {
             Gizmos.color = Color.red;
-            foreach (Vector2 pos in seedPositions)
+            foreach (var site in meshSites)
             {
-                Vector3 drawUV = pos / voronoiGridSize - Vector2.one * 0.5f;
-                Gizmos.DrawSphere(transform.TransformPoint(drawUV), 0.05f);
+                Vector3 drawPos = mesh.vertices[site.centreVertex];
+                Gizmos.DrawSphere(transform.TransformPoint(drawPos), 0.05f);
+                foreach (int vertex in site.edgeVertices)
+                {
+                    Gizmos.DrawLine(transform.TransformPoint(drawPos), transform.TransformPoint(mesh.vertices[vertex]));
+
+                }
             }
         }
     }
