@@ -1,9 +1,12 @@
 
+using System;
 using System.Collections.Generic;
+using System.Reflection;
+using UnityEditor;
 using UnityEngine;
 
 
-public static class GeometryUtility
+public static class Utility
 {
 
     public static float AreaOfTriangle(Vector2 A, Vector2 B, Vector2 C)
@@ -16,8 +19,8 @@ public static class GeometryUtility
     public static Vector2 RandomInTriangle(Vector2 A, Vector2 B, Vector2 C)
     {
         // Return a random point in a triangle
-        float r1 = Mathf.Sqrt(Random.Range(0f, 1f));
-        float r2 = Random.Range(0f, 1f);
+        float r1 = Mathf.Sqrt(UnityEngine.Random.Range(0f, 1f));
+        float r2 = UnityEngine.Random.Range(0f, 1f);
         float m1 = 1 - r1;
         float m2 = r1 * (1 - r2);
         float m3 = r2 * r1;
@@ -25,42 +28,54 @@ public static class GeometryUtility
     }
 
 
+    private static int[] RandomInPolygon_tris;
+    private static Vector3[] RandomInPolygon_verts;
+    private static int RandomInPolygon_triCount;
     private static float[] RandomInPolygon_triangleAreas;
     private static float RandomInPolygon_totalArea;
     public static Vector2 RandomInPolygon(PolygonCollider2D polygon, bool useCached = false)
     {
-        // Create mesh from polygon
-        Mesh mesh = polygon.CreateMesh(true, false);
-        int[] tris = mesh.triangles;
-        Vector3[] verts = mesh.vertices;
-
-        // Calculate triangle / total area
-        int triangleCount = tris.Length / 3;
-        if (!useCached || RandomInPolygon_triangleAreas == null)
+        // Generate all variables and store
+        if (!useCached)
         {
-            RandomInPolygon_triangleAreas = new float[triangleCount];
+            Mesh mesh = polygon.CreateMesh(true, false);
+            RandomInPolygon_tris = mesh.triangles;
+            RandomInPolygon_verts = mesh.vertices;
+            RandomInPolygon_triCount = RandomInPolygon_tris.Length / 3;
+            RandomInPolygon_triangleAreas = new float[RandomInPolygon_triCount];
             RandomInPolygon_totalArea = 0.0f;
-            for (int i = 0; i < triangleCount; i++)
+            for (int i = 0; i < RandomInPolygon_triCount; i++)
             {
-                RandomInPolygon_triangleAreas[i] = AreaOfTriangle(verts[tris[i * 3]], verts[tris[i * 3 + 1]], verts[tris[i * 3 + 2]]);
+                RandomInPolygon_triangleAreas[i] = AreaOfTriangle(
+                    RandomInPolygon_verts[RandomInPolygon_tris[i * 3]],
+                    RandomInPolygon_verts[RandomInPolygon_tris[i * 3 + 1]],
+                    RandomInPolygon_verts[RandomInPolygon_tris[i * 3 + 2]]);
                 RandomInPolygon_totalArea += RandomInPolygon_triangleAreas[i];
             }
         }
 
-        // Pick a random triangle weighted by area
-        if (triangleCount == 0) { Debug.LogError("triangleCount == 0"); return Vector2.zero; }
+        // Error check mesh has valid triangles
+        if (RandomInPolygon_triCount == 0) { Debug.LogError("triangleCount == 0"); return Vector2.zero; }
         if (RandomInPolygon_totalArea == 0.0f) { Debug.LogError("Area == 0.0f"); return Vector2.zero; }
+
+        // Pick a random triangle weighted by area
         int triangle = -1;
-        float r = Random.Range(0.0f, RandomInPolygon_totalArea);
-        for (int i = 0; i < triangleCount && triangle == -1; i++)
+        float r = UnityEngine.Random.Range(0.0f, RandomInPolygon_totalArea);
+        for (int i = 0; i < RandomInPolygon_triCount && triangle == -1; i++)
         {
             if (r < RandomInPolygon_triangleAreas[i]) triangle = i;
             else r -= RandomInPolygon_triangleAreas[i];
         }
 
-        // Pick random point within the triangle
+        // Error check picked a triangle
         if (triangle == -1) { Debug.LogError("did not pick a triangle"); return Vector2.zero; }
-        return RandomInTriangle(verts[tris[triangle * 3]], verts[tris[triangle * 3 + 1]], verts[tris[triangle * 3 + 2]]);
+
+        // Pick a random point within the triangle
+        return RandomInTriangle(
+            RandomInPolygon_verts[RandomInPolygon_tris[triangle * 3]],
+            RandomInPolygon_verts[RandomInPolygon_tris[triangle * 3 + 1]],
+            RandomInPolygon_verts[RandomInPolygon_tris[triangle * 3 + 2]]
+        );
     }
 
 
@@ -85,5 +100,26 @@ public static class GeometryUtility
                 inside = !inside;
         }
         return inside;
+    }
+
+
+    static MethodInfo _clearConsoleMethod;
+    static MethodInfo clearConsoleMethod
+    {
+        get
+        {
+            if (_clearConsoleMethod == null)
+            {
+                Assembly assembly = Assembly.GetAssembly(typeof(SceneView));
+                Type logEntries = assembly.GetType("UnityEditor.LogEntries");
+                _clearConsoleMethod = logEntries.GetMethod("Clear");
+            }
+            return _clearConsoleMethod;
+        }
+    }
+
+    public static void ClearLogConsole()
+    {
+        clearConsoleMethod.Invoke(new object(), null);
     }
 }

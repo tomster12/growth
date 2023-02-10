@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class GridMeshGenerator : MonoBehaviour
+public class Archive_GridMeshGenerator : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private MeshRenderer meshRenderer;

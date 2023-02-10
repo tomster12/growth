@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(PolygonCollider2D))]
-public class PolygonCollider2DGenerator : MonoBehaviour
+public class Archive_PolygonCollider2DGenerator: MonoBehaviour
 {
     [SerializeField] private MeshFilter filter;
     [SerializeField] private PolygonCollider2D polyCollider;
