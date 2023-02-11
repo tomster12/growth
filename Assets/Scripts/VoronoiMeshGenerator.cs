@@ -13,12 +13,31 @@ public class VoronoiMeshGenerator : MonoBehaviour
     [Serializable]
     public class MeshSite
     {
+        [Serializable]
+        public class EdgeInfo
+        {
+            public int fromIndex = -1, toIndex = -1;
+            public bool isOutside = false;
+            public int neighbouringSite = -1;
+            public int neighbouringEdge = -1;
+
+            public EdgeInfo(int fromIndex, int toIndex)
+            {
+                // Initialize variables
+                this.fromIndex = fromIndex;
+                this.toIndex = toIndex;
+            }
+        }
+
         public int siteIndex = -1;
-        public bool isEdge = false;
-        public HashSet<int> neighbours = new HashSet<int>();
+        public bool isOutside = false;
+        public EdgeInfo[] edgeInfos;
+        public HashSet<int> neighbouringSites = new HashSet<int>();
+
         public List<int> meshVerticesI = new List<int>();
         public int meshCentroidI = -1;
     }
+
 
     [Header("References")]
     [SerializeField] private MeshFilter meshFilter;
@@ -33,6 +52,7 @@ public class VoronoiMeshGenerator : MonoBehaviour
     [SerializeField] private bool showGizmoDelauneyCentres = false;
     [SerializeField] private bool showGizmoVoronoi = false;
     [SerializeField] private bool showGizmoClipped = false;
+    [SerializeField] private bool showGizmoMesh = false;
     [SerializeField] private bool cleanPipeline = true;
 
     [Header("Values")]
@@ -148,12 +168,18 @@ public class VoronoiMeshGenerator : MonoBehaviour
         List<int> triangles = new List<int>();
 
         // Extract mesh variables
-        foreach (var clippedSite in _voronoiClipper.clippedSites)
+        for (int i = 0; i < _voronoiClipper.clippedSites.Count; i++)
         {
             // Generate MeshSite
+            ClippedSite clippedSite = _voronoiClipper.clippedSites[i];
             MeshSite meshSite = new MeshSite();
-            meshSite.siteIndex = clippedSite.siteIndex;
-            meshSite.isEdge = clippedSite.isEdge;
+            meshSite.siteIndex = i;
+            meshSite.edgeInfos = new MeshSite.EdgeInfo[clippedSite.clippedVertices.Count];
+            for (int o = 0; o < clippedSite.clippedVertices.Count; o++)
+            {
+                int nextO = (o + 1) % clippedSite.clippedVertices.Count;
+                meshSite.edgeInfos[o] = new MeshSite.EdgeInfo(o, nextO);
+            }
             meshSites.Add(meshSite);
 
             // Add centroid vertex / uv / normal / color
@@ -164,14 +190,14 @@ public class VoronoiMeshGenerator : MonoBehaviour
             meshSite.meshCentroidI = centroidIndex;
             
             // Add vertices vertex / uv / normal / color / triangle
-            for (int i = 0; i < clippedSite.clippedVertices.Count; i++)
+            for (int o = 0; o < clippedSite.clippedVertices.Count; o++)
             {
-                vertices.Add(clippedSite.clippedVertices[i].vertex);
+                vertices.Add(clippedSite.clippedVertices[o].vertex);
                 uvs.Add(Vector2.one * 0.5f);
                 normals.Add(Vector3.back);
 
-                int vertexIndex = (centroidIndex + 1) + (i);
-                int nextVertexIndex = (centroidIndex + 1) + (i + 1) % clippedSite.clippedVertices.Count;
+                int vertexIndex = (centroidIndex + 1) + (o);
+                int nextVertexIndex = (centroidIndex + 1) + (o + 1) % clippedSite.clippedVertices.Count;
                 triangles.Add(centroidIndex);
                 triangles.Add(nextVertexIndex);
                 triangles.Add(vertexIndex);
@@ -192,8 +218,8 @@ public class VoronoiMeshGenerator : MonoBehaviour
         // Add neighbours using delauney
         Func<int, int, bool> addNeighbours = (s0, s1) =>
         {
-            meshSites[s0].neighbours.Add(s1);
-            meshSites[s1].neighbours.Add(s0);
+            meshSites[s0].neighbouringSites.Add(s1);
+            meshSites[s1].neighbouringSites.Add(s0);
             return true;
         };
         var tris = _voronoiDiagram.Triangulation.Triangles;
@@ -205,6 +231,62 @@ public class VoronoiMeshGenerator : MonoBehaviour
             addNeighbours(v0, v1);
             addNeighbours(v1, v2);
             addNeighbours(v2, v0);
+        }
+
+
+        // Populate each sites edge infos
+        foreach (MeshSite meshSite in meshSites)
+        {
+            ClippedSite clippedSite = _voronoiClipper.clippedSites[meshSite.siteIndex];
+            for (int i = 0; i < clippedSite.clippedVertices.Count; i++)
+            {
+                // - May have already populated so skip
+                MeshSite.EdgeInfo edgeInfo = meshSite.edgeInfos[i];
+                if (edgeInfo.isOutside || edgeInfo.neighbouringSite != -1) continue;
+
+                // Check if outside
+                int nextI = (i + 1) % clippedSite.clippedVertices.Count;
+                ClippedVertex v0 = clippedSite.clippedVertices[i];
+                ClippedVertex v1 = clippedSite.clippedVertices[nextI];
+                edgeInfo.isOutside = (
+                    (v0.type == ClippedVertexType.POLYGON_INTERSECTION || v0.type == ClippedVertexType.POLYGON)
+                    && (v1.type == ClippedVertexType.POLYGON_INTERSECTION || v1.type == ClippedVertexType.POLYGON) );
+                meshSite.isOutside |= edgeInfo.isOutside;
+
+                // Inside so find touching edge
+                if (!edgeInfo.isOutside)
+                {
+                    // - Loop over each other sites edges
+                    foreach (MeshSite oMeshSite in meshSites)
+                    {
+                        if (meshSite == oMeshSite) continue;
+                        bool hasFound = false;
+                        ClippedSite oClippedSite = _voronoiClipper.clippedSites[oMeshSite.siteIndex];
+                        for (int o = 0; o < oClippedSite.clippedVertices.Count; o++)
+                        {
+                            MeshSite.EdgeInfo oEdge = oMeshSite.edgeInfos[o];
+                            int nextO = (o + 1) % oClippedSite.clippedVertices.Count;
+                            ClippedVertex ov0 = oClippedSite.clippedVertices[o];
+                            ClippedVertex ov1 = oClippedSite.clippedVertices[nextO];
+                            
+                            // - Check if match in either direction
+                            if (v0.Equals(ov0) && v1.Equals(ov1) || v0.Equals(ov1) && v1.Equals(ov0))
+                            {
+                                edgeInfo.neighbouringSite = oMeshSite.siteIndex;
+                                edgeInfo.neighbouringEdge = o;
+                                oMeshSite.edgeInfos[o].neighbouringSite = meshSite.siteIndex;
+                                oMeshSite.edgeInfos[o].neighbouringEdge = i;
+                                hasFound = true;
+                                break;
+                            }
+                        }
+                        if (hasFound) break;
+                    }
+
+                    // - Should have found edge
+                    Debug.Assert(edgeInfo.neighbouringSite != -1);
+                }
+            }
         }
     }
 
@@ -336,6 +418,28 @@ public class VoronoiMeshGenerator : MonoBehaviour
                     else if (vertex.type == VoronoiClipper.ClippedVertexType.POLYGON_INTERSECTION) Gizmos.color = Color.magenta;
                     else if (vertex.type == VoronoiClipper.ClippedVertexType.SITE_VERTEX) Gizmos.color = Color.green;
                     Gizmos.DrawCube(vertexWorld, Vector3.one * 0.04f);
+                }
+            }
+        }
+    
+        // Draw mesh sites
+        if (showGizmoMesh && meshSites != null)
+        {
+            foreach (MeshSite meshSite in meshSites)
+            {
+                Vector2 centroidWorld = transform.TransformPoint(mesh.vertices[meshSite.meshCentroidI]);
+                Gizmos.color = Color.red;
+                Gizmos.DrawSphere(centroidWorld, 0.1f);
+
+                Gizmos.color = Color.blue;
+                foreach (MeshSite.EdgeInfo edgeInfo in meshSite.edgeInfos)
+                {
+                    if (edgeInfo.isOutside)
+                    {
+                        Vector2 edge0World = transform.TransformPoint(mesh.vertices[meshSite.meshVerticesI[edgeInfo.fromIndex]]);
+                        Vector2 edge1World = transform.TransformPoint(mesh.vertices[meshSite.meshVerticesI[edgeInfo.toIndex]]);
+                        Gizmos.DrawCube((edge0World + edge1World) / 2, Vector3.one * 0.1f);
+                    }
                 }
             }
         }

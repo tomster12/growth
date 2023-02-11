@@ -37,28 +37,28 @@ namespace GK
         {
             public Vector2 vertex;
             public ClippedVertexType type;
-            public int polygonIndex;
-
+            public int polygonIndex = -1, siteIndex = -1;
 
             public ClippedVertex(Vector2 vertex, ClippedVertexType type)
             {
                 this.vertex = vertex;
                 this.type = type;
-                this.polygonIndex = -1;
             }
 
-            public ClippedVertex(Vector2 vertex, ClippedVertexType type, int polygonIndex)
+            public bool Equals(ClippedVertex vertex)
             {
-                this.vertex = vertex;
-                this.type = type;
-                this.polygonIndex = polygonIndex;
+                if (type != vertex.type) return false;
+                else
+                {
+                    if (polygonIndex != -1 && polygonIndex == vertex.polygonIndex) return true;
+                    if (siteIndex != -1 && siteIndex == vertex.siteIndex) return true;
+                    return false;
+                }
             }
         }
-
+        
         public class ClippedSite
         {
-            public int siteIndex = -1;
-            public bool isEdge = false;
             public List<ClippedVertex> clippedVertices = new List<ClippedVertex>();
             public Vector2 clippedCentroid = Vector2.zero;
         }
@@ -109,11 +109,13 @@ namespace GK
             verticesCurrent.Clear();
             for (int i = 0; i < polygon.Count; i++)
             {
-                verticesCurrent.Add(new ClippedVertex(polygon[i], ClippedVertexType.POLYGON, i));
+                ClippedVertex v = new ClippedVertex(polygon[i], ClippedVertexType.POLYGON);
+                v.polygonIndex = i;
+                verticesCurrent.Add(v);
             }
 
             // Find first / last edge of site
-            int firstEdge = firstEdge = diag.FirstEdgeBySite[site];
+            int firstEdge = diag.FirstEdgeBySite[site];
             int lastEdge;
             if (site == diag.Sites.Count - 1) lastEdge = diag.Edges.Count - 1;
             else lastEdge = diag.FirstEdgeBySite[site + 1] - 1;
@@ -134,6 +136,7 @@ namespace GK
                     if (edge.Type == VoronoiDiagram.EdgeType.RayCW) ld *= -1;
 
                 }
+
                 // - Edge is segment so create direction
                 else if (edge.Type == VoronoiDiagram.EdgeType.Segment)
                 {
@@ -143,11 +146,13 @@ namespace GK
                     ld = lcv1 - lcv0;
 
                 }
+
                 // - Edge is line and not supported
                 else if (edge.Type == VoronoiDiagram.EdgeType.Line)
                 {
                     throw new NotSupportedException("Haven't implemented voronoi halfplanes yet");
                 }
+
                 // - Should not happen
                 else { Debug.Assert(false); return null; }
 
@@ -168,6 +173,7 @@ namespace GK
                     {
                         verticesNext.Add(cv1);
                     }
+
                     // - Clipped edge is firmly outside - fully ignore
                     else if (!p0Inside && !p1Inside) { }
 
@@ -175,7 +181,9 @@ namespace GK
                     // - On the boundary
                     else
                     {
-                        var intersection = Geom.LineLineIntersection(lv, ld.normalized, v0, (v1 - v0).normalized);
+                        float m0, m1;
+                        Geom.LineLineIntersection(lv, ld.normalized, v0, (v1 - v0).normalized, out m0, out m1);
+                        var intersection = lv + ld.normalized * m0;
 
                         // Add intersection
                         if (
@@ -183,11 +191,15 @@ namespace GK
                             || (cv0.polygonIndex == cv1.polygonIndex && cv0.polygonIndex != -1)
                         )
                         {
-                            verticesNext.Add(new ClippedVertex(intersection, ClippedVertexType.POLYGON_INTERSECTION, cv0.polygonIndex));
+                            ClippedVertex v = new ClippedVertex(intersection, ClippedVertexType.POLYGON_INTERSECTION);
+                            v.polygonIndex = cv0.polygonIndex;
+                            verticesNext.Add(v);
                         }
                         else
                         {
-                            verticesNext.Add(new ClippedVertex(intersection, ClippedVertexType.SITE_VERTEX));
+                            ClippedVertex v = new ClippedVertex(intersection, ClippedVertexType.SITE_VERTEX);
+                            v.siteIndex = m0 < 0.0001f ? edge.Vert0 : edge.Vert1;
+                            verticesNext.Add(v);
                         }
                         
                         // - Points straddling start of inside
@@ -204,20 +216,8 @@ namespace GK
 
             // Create clipped site
             ClippedSite clippedSite = new ClippedSite();
-            clippedSite.siteIndex = site;
             clippedSite.clippedCentroid = diag.Sites[site];
             clippedSite.clippedVertices.AddRange(verticesCurrent);
-
-            // Detect if is edge
-            foreach (var v in clippedSite.clippedVertices)
-            {
-                if (v.type != ClippedVertexType.SITE_VERTEX)
-                {
-                    clippedSite.isEdge = true;
-                    break;
-                }
-            }
-
             return clippedSite;
         }
     }

@@ -7,12 +7,12 @@ using static VoronoiMeshGenerator;
 
 public class World : MonoBehaviour
 {
-    public enum ColorMode { ENERGY, RANDOM, DEPTH };
+    public enum ColorMode { NONE, STANDARD, RANDOM, DEPTH };
 
     public class WorldSite
     {
         public MeshSite meshSite;
-        public int edgeDistance = -1;
+        public int outsideDistance = -1;
         public float maxEnergy = 0;
     }
 
@@ -29,6 +29,7 @@ public class World : MonoBehaviour
     [SerializeField] private Color[] groundColorRange = new Color[] { new Color(0,0,0), new Color(1,1,1) };
 
     private List<WorldSite> worldSites;
+    private ColorMode currentColorMode = ColorMode.NONE;
 
 
     [ContextMenu("Full Generate World")]
@@ -37,16 +38,18 @@ public class World : MonoBehaviour
         // Run all procedures
         _ResetPipeline();
         _GenerateMesh();
-        _GenerateSites();
+        _InitializeSites();
+        _ProcessSites();
 
         // Set color mode
-        SetColorMode(ColorMode.ENERGY);
+        SetColorMode(ColorMode.STANDARD);
     }
     
     private void _ResetPipeline()
     {
         // Reset variables
         worldSites = null;
+        currentColorMode = ColorMode.NONE;
 
         // Set seed to preset or random
         if (setSeed != -1) UnityEngine.Random.InitState(setSeed);
@@ -60,7 +63,7 @@ public class World : MonoBehaviour
         meshRenderer.material = meshMaterial;
     }
 
-    private void _GenerateSites()
+    private void _InitializeSites()
     {
         // Generate world sites
         worldSites = new List<WorldSite>();
@@ -70,8 +73,10 @@ public class World : MonoBehaviour
             worldSite.meshSite = meshSite;
             worldSites.Add(worldSite);
         }
+    }
 
-
+    private void _ProcessSites()
+    {
         // Calculate edge distance using neighbours
         HashSet<int> closedSet = new HashSet<int>();
         Stack<int> openSet = new Stack<int>();
@@ -79,9 +84,9 @@ public class World : MonoBehaviour
         // - Set edges to edge distance 0 and add to open
         foreach (WorldSite worldSite in worldSites)
         {
-            if (worldSite.meshSite.isEdge)
+            if (worldSite.meshSite.isOutside)
             {
-                worldSite.edgeDistance = 0;
+                worldSite.outsideDistance = 0;
                 openSet.Push(worldSite.meshSite.siteIndex);
             }
         }
@@ -94,17 +99,17 @@ public class World : MonoBehaviour
             if (closedSet.Contains(currentSiteIndex)) continue;
 
             // - Check each valid neighbour
-            foreach (var neighbourSiteIndex in currentSite.meshSite.neighbours)
+            foreach (var neighbourSiteIndex in currentSite.meshSite.neighbouringSites)
             {
                 var neighbourSite = worldSites[neighbourSiteIndex];
                 if (!closedSet.Contains(neighbourSiteIndex))
                 {
 
                     // - If this is better parent then update and add to open
-                    int newDist = currentSite.edgeDistance + 1;
-                    if (neighbourSite.edgeDistance == -1 || newDist < neighbourSite.edgeDistance)
+                    int newDist = currentSite.outsideDistance + 1;
+                    if (neighbourSite.outsideDistance == -1 || newDist < neighbourSite.outsideDistance)
                     {
-                        neighbourSite.edgeDistance = newDist;
+                        neighbourSite.outsideDistance = newDist;
                         if (!openSet.Contains(neighbourSiteIndex)) openSet.Push(neighbourSiteIndex);
                     }
                 }
@@ -116,18 +121,35 @@ public class World : MonoBehaviour
         Vector2 energyNoiseOffset = new Vector2(UnityEngine.Random.value * 2000, UnityEngine.Random.value * 2000);
         foreach (WorldSite worldSite in worldSites)
         {
-            Vector2 centre = meshGenerator.mesh.vertices[worldSite.meshSite.meshCentroidI];
-            float r = Mathf.PerlinNoise(
-                centre.x * energyNoiseScale + energyNoiseOffset.x,
-                centre.y * energyNoiseScale + energyNoiseOffset.y
-            );;
-            worldSite.maxEnergy = energyRandomRange[0] + (energyRandomRange[1] - energyRandomRange[0]) * r;
+            // - Random chance empty site
+            if (UnityEngine.Random.value < 0.05f) worldSite.maxEnergy = 0;
+
+            // - Generate using perlin noise
+            else
+            {
+                Vector2 centre = meshGenerator.mesh.vertices[worldSite.meshSite.meshCentroidI];
+                float r = Mathf.PerlinNoise(
+                    centre.x * energyNoiseScale + energyNoiseOffset.x,
+                    centre.y * energyNoiseScale + energyNoiseOffset.y );
+                worldSite.maxEnergy = energyRandomRange[0] + (energyRandomRange[1] - energyRandomRange[0]) * r;
+            }
+
         }
     }
+    
 
+    [ContextMenu("Color/STANDARD")]
+    private void SetColorModeEnergy() { SetColorMode(ColorMode.STANDARD); }
+    [ContextMenu("Color/RANDOM")]
+    private void SetColorModeRandom() { SetColorMode(ColorMode.RANDOM); }
+    [ContextMenu("Color/DEPTH")]
+    private void SetColorModeDepth() { SetColorMode(ColorMode.DEPTH); }
 
     private void SetColorMode(ColorMode mode)
     {
+        if (currentColorMode == mode) return;
+        currentColorMode = mode;
+
         // Change colours to a gradient
         Color[] meshColors = new Color[meshGenerator.mesh.vertexCount];
         foreach (var site in worldSites)
@@ -136,7 +158,7 @@ public class World : MonoBehaviour
 
             if (mode == ColorMode.RANDOM)
             {
-                float lower = site.meshSite.isEdge ? 0.75f : 0.35f;
+                float lower = site.meshSite.isOutside ? 0.75f : 0.35f;
                 col = new Color(
                     lower + UnityEngine.Random.value * 0.25f,
                     lower + UnityEngine.Random.value * 0.25f,
@@ -146,11 +168,11 @@ public class World : MonoBehaviour
 
             else if (mode == ColorMode.DEPTH)
             {
-                float pct = Mathf.Max(1.0f - site.edgeDistance * 0.2f, 0.0f);
+                float pct = Mathf.Max(1.0f - site.outsideDistance * 0.2f, 0.0f);
                 col = new Color(pct, pct, pct);
             }
 
-            else if (mode == ColorMode.ENERGY)
+            else if (mode == ColorMode.STANDARD)
             {
                 float pct = site.maxEnergy / energyRandomRange[1];
                 col = Color.Lerp(groundColorRange[0], groundColorRange[1], pct);
