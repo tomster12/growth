@@ -30,43 +30,61 @@ namespace GK
 {
     public class VoronoiClipper
     {
+        public enum VertexType { SITE_VERTEX, POLYGON, POLYGON_INTERSECTION }
 
-        public enum ClippedVertexType { SITE_VERTEX, POLYGON, POLYGON_INTERSECTION }
-
+        [Serializable]
         public class ClippedVertex
         {
             public Vector2 vertex;
-            public ClippedVertexType type;
-            public int polygonIndex = -1, siteIndex = -1;
-
-            public ClippedVertex(Vector2 vertex, ClippedVertexType type)
+            public VertexType type;
+            public int vertexUID = -1;
+            public int intersectionFromUID = -1, intersectionToUID = -1;
+            
+            private ClippedVertex(Vector2 vertex, VertexType type)
             {
                 this.vertex = vertex;
                 this.type = type;
             }
 
-            public bool Equals(ClippedVertex vertex)
+            public static ClippedVertex NewPolygonVertex(Vector2 vertex, int vertexUID)
             {
-                if (type != vertex.type) return false;
-                else
-                {
-                    if (polygonIndex != -1 && polygonIndex == vertex.polygonIndex) return true;
-                    if (siteIndex != -1 && siteIndex == vertex.siteIndex) return true;
-                    return false;
-                }
+                ClippedVertex v = new ClippedVertex(vertex, VertexType.POLYGON);
+                v.vertexUID = vertexUID;
+                v.intersectionFromUID = vertexUID;
+                v.intersectionToUID = vertexUID;
+                return v;
+            }
+
+            public static ClippedVertex NewPolygonIntersectionVertex(Vector2 vertex, int vertexUID, int intersectionFromUID, int intersectionToUID)
+            {
+                ClippedVertex v = new ClippedVertex(vertex, VertexType.POLYGON_INTERSECTION);
+                v.vertexUID = vertexUID;
+                v.intersectionFromUID = intersectionFromUID;
+                v.intersectionToUID = intersectionToUID;
+                return v;
+            }
+
+            public static ClippedVertex NewSiteVertex(Vector2 vertex, int vertexUID)
+            {
+                ClippedVertex v = new ClippedVertex(vertex, VertexType.SITE_VERTEX);
+                v.vertexUID = vertexUID;
+                return v;
             }
         }
-        
+
+        [Serializable]
         public class ClippedSite
         {
-            public List<ClippedVertex> clippedVertices = new List<ClippedVertex>();
-            public Vector2 clippedCentroid = Vector2.zero;
+            public List<ClippedVertex> clippedVertices;
+            public Vector2 clippedCentroid;
         }
 
 
         /// <summary>
         /// List of all the clipped sites
         /// </summary>
+        private Dictionary<string, int> intersectionIndexMap = new Dictionary<String, int>();
+        private int nextIntersectionIndex = -1;
         public List<ClippedSite> clippedSites;
 
 
@@ -81,10 +99,12 @@ namespace GK
         /// </summary>
         public void ClipDiagram(VoronoiDiagram diag, List<Vector2> clipperPolygon)
         {
+            // Reset variables
+            intersectionIndexMap.Clear();
+            nextIntersectionIndex = diag.Vertices.Count + clipperPolygon.Count;
             clippedSites = new List<ClippedSite>();
 
             // Iterate through and clip each site
-            List<Vector2> clipped = new List<Vector2>();
             for (int i = 0; i < diag.Sites.Count; i++)
             {
                 ClippedSite clippedSite = ClipSite(diag, clipperPolygon, i);
@@ -99,20 +119,30 @@ namespace GK
         /// polygon nor diagram, so can be run in parallel for several sites at
         /// once. 
         /// </summary>
-        public ClippedSite ClipSite(VoronoiDiagram diag, List<Vector2> polygon, int site)
+        private ClippedSite ClipSite(VoronoiDiagram diag, List<Vector2> polygon, int site)
         {
             // Initialize variables
             List<ClippedVertex> verticesCurrent = new List<ClippedVertex>();
             List<ClippedVertex> verticesNext = new List<ClippedVertex>();
 
+            // Setup intersection indexing
+            Func<int, int, int, int, int> getIntersectionUI = (int ev0, int ev1, int v0, int v1) =>
+            {
+                String key = "";
+                key += (ev0 < ev1) ? (ev0 + "," + ev1 + ",") : (ev1 + "," + ev0 + ",");
+                key += (v0 < v1) ? (v0 + "," + v1) : (v1 + "," + v0);
+                if (!intersectionIndexMap.ContainsKey(key)) intersectionIndexMap.Add(key, nextIntersectionIndex++);
+                int intersectionUID = intersectionIndexMap[key];
+                return intersectionUID;
+            };
+
             // Setup polygon points
             verticesCurrent.Clear();
             for (int i = 0; i < polygon.Count; i++)
             {
-                ClippedVertex v = new ClippedVertex(polygon[i], ClippedVertexType.POLYGON);
-                v.polygonIndex = i;
-                verticesCurrent.Add(v);
+                verticesCurrent.Add(ClippedVertex.NewPolygonVertex( polygon[i], diag.Vertices.Count + i));
             }
+
 
             // Find first / last edge of site
             int firstEdge = diag.FirstEdgeBySite[site];
@@ -120,13 +150,13 @@ namespace GK
             if (site == diag.Sites.Count - 1) lastEdge = diag.Edges.Count - 1;
             else lastEdge = diag.FirstEdgeBySite[site + 1] - 1;
 
-
             // Loop over each edge and extract start / direction
             for (int ei = firstEdge; ei <= lastEdge; ei++)
             {
                 verticesNext.Clear();
                 var edge = diag.Edges[ei];
                 Vector2 lv, ld;
+
 
                 // - Edge is ray so take direction
                 if (edge.Type == VoronoiDiagram.EdgeType.RayCCW || edge.Type == VoronoiDiagram.EdgeType.RayCW)
@@ -168,6 +198,7 @@ namespace GK
                     var p0Inside = Geom.ToTheLeft(v0, lv, lv + ld);
                     var p1Inside = Geom.ToTheLeft(v1, lv, lv + ld);
 
+
                     // - Clipped edge is firmly inside - add cp1 because cp0 is already added
                     if (p0Inside && p1Inside)
                     {
@@ -177,7 +208,6 @@ namespace GK
                     // - Clipped edge is firmly outside - fully ignore
                     else if (!p0Inside && !p1Inside) { }
 
-
                     // - On the boundary
                     else
                     {
@@ -185,27 +215,26 @@ namespace GK
                         Geom.LineLineIntersection(lv, ld.normalized, v0, (v1 - v0).normalized, out m0, out m1);
                         var intersection = lv + ld.normalized * m0;
 
-                        // Add intersection
+                        // - Intersecting an outer edge
                         if (
-                            cv0.type == ClippedVertexType.POLYGON || cv1.type == ClippedVertexType.POLYGON
-                            || (cv0.polygonIndex == cv1.polygonIndex && cv0.polygonIndex != -1)
-                        )
-                        {
-                            ClippedVertex v = new ClippedVertex(intersection, ClippedVertexType.POLYGON_INTERSECTION);
-                            v.polygonIndex = cv0.polygonIndex;
-                            verticesNext.Add(v);
+                            cv0.type == VertexType.POLYGON || cv1.type == VertexType.POLYGON
+                            || (cv0.intersectionFromUID == cv1.intersectionFromUID && cv0.intersectionFromUID != -1)
+                        ) {
+                            int intersectionUID = getIntersectionUI(edge.Vert0, edge.Vert1, cv0.intersectionFromUID, cv1.intersectionToUID);
+                            verticesNext.Add(ClippedVertex.NewPolygonIntersectionVertex( intersection, intersectionUID, cv0.intersectionFromUID, cv1.intersectionToUID ));
                         }
+
+                        // - Intersection at a site point
                         else
                         {
-                            ClippedVertex v = new ClippedVertex(intersection, ClippedVertexType.SITE_VERTEX);
-                            v.siteIndex = m0 < 0.0001f ? edge.Vert0 : edge.Vert1;
-                            verticesNext.Add(v);
+                            verticesNext.Add(ClippedVertex.NewSiteVertex( intersection, m0 < 0.0001f ? edge.Vert0 : edge.Vert1 ));
                         }
                         
                         // - Points straddling start of inside
                         if (p1Inside) verticesNext.Add(cv1);
                     }
                 }
+
 
                 // Update to use next set of points
                 var tmp = verticesCurrent;
@@ -217,6 +246,7 @@ namespace GK
             // Create clipped site
             ClippedSite clippedSite = new ClippedSite();
             clippedSite.clippedCentroid = diag.Sites[site];
+            clippedSite.clippedVertices = new List<ClippedVertex>();
             clippedSite.clippedVertices.AddRange(verticesCurrent);
             return clippedSite;
         }

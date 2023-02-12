@@ -19,10 +19,12 @@ public class World : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private VoronoiMeshGenerator meshGenerator;
+    [SerializeField] private GrassGenerator grassGenerator;
     [SerializeField] private MeshRenderer meshRenderer;
     [SerializeField] private Material meshMaterial;
 
     [Header("Config")]
+    [SerializeField] private int pipelineMaxTries = 5;
     [SerializeField] private int setSeed = -1;
     [SerializeField] private float energyNoiseScale = 0.2f;
     [SerializeField] private float[] energyRandomRange = new float[] { 50, 100 };
@@ -30,19 +32,40 @@ public class World : MonoBehaviour
 
     private List<WorldSite> worldSites;
     private ColorMode currentColorMode = ColorMode.NONE;
+    [SerializeField] private int chosenSeed;
 
 
     [ContextMenu("Full Generate World")]
     public void FullGenerateWorld()
     {
-        // Run all procedures
-        _ResetPipeline();
-        _GenerateMesh();
-        _InitializeSites();
-        _ProcessSites();
+        // Keep trying until successful generation
+        int tries = 0;
+        while (tries < pipelineMaxTries)
+        {
+            try
+            {
+                // Run all procedures
+                _ResetPipeline();
+                _GenerateMesh();
+                _InitializeSites();
+                _ProcessSites();
+                _GenerateGrass();
 
-        // Set color mode
-        SetColorMode(ColorMode.STANDARD);
+                // Set color mode
+                SetColorMode(ColorMode.STANDARD);
+                break;
+            }
+            catch (Exception e)
+            {
+                tries++;
+                Debug.LogException(e);
+                Debug.LogWarning("World Pipeline threw an error " + tries + "/" + pipelineMaxTries + ".");
+            }
+        }
+        if (tries == pipelineMaxTries)
+        {
+            Debug.LogException(new Exception("World Pipeline hit maximum number of tries (" + tries + "/" + pipelineMaxTries + ")."));
+        }
     }
     
     private void _ResetPipeline()
@@ -52,8 +75,9 @@ public class World : MonoBehaviour
         currentColorMode = ColorMode.NONE;
 
         // Set seed to preset or random
+        chosenSeed = (int)DateTime.Now.Ticks;
         if (setSeed != -1) UnityEngine.Random.InitState(setSeed);
-        else UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
+        else UnityEngine.Random.InitState(chosenSeed);
     }
 
     private void _GenerateMesh()
@@ -116,7 +140,6 @@ public class World : MonoBehaviour
             }
         }
 
-
         // Give sites energy
         Vector2 energyNoiseOffset = new Vector2(UnityEngine.Random.value * 2000, UnityEngine.Random.value * 2000);
         foreach (WorldSite worldSite in worldSites)
@@ -137,6 +160,12 @@ public class World : MonoBehaviour
         }
     }
     
+    private void _GenerateGrass()
+    {
+        // Generate grass
+        grassGenerator.GenerateGrass();
+    }
+
 
     [ContextMenu("Color/STANDARD")]
     private void SetColorModeEnergy() { SetColorMode(ColorMode.STANDARD); }
