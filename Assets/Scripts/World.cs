@@ -5,11 +5,11 @@ using UnityEngine;
 using System.Linq;
 using static VoronoiMeshGenerator;
 
-
 public class World : MonoBehaviour
 {
     public enum ColorMode { NONE, STANDARD, RANDOM, DEPTH };
 
+    
     public class WorldSite
     {
         public MeshSite meshSite;
@@ -24,6 +24,7 @@ public class World : MonoBehaviour
 
 
     [Header("References")]
+    [SerializeField] private PlanetPolygonGenerator planetPolygonGenerator;
     [SerializeField] private VoronoiMeshGenerator meshGenerator;
     [SerializeField] private MeshRenderer meshRenderer;
     [SerializeField] private Material meshMaterial;
@@ -37,6 +38,7 @@ public class World : MonoBehaviour
     [SerializeField] private float[] energyRandomRange = new float[] { 50, 100 };
     [SerializeField] private Color[] groundColorRange = new Color[] { new Color(0,0,0), new Color(1,1,1) };
     [SerializeField] private Color[] grassColorRange = new Color[] { new Color(0, 0, 0), new Color(1, 1, 1) };
+    [SerializeField] private PlanetPolygonGenerator.PlanetShapeInfo planetShapeInfo;
 
     [SerializeField] private int chosenSeed;
     private Mesh mesh;
@@ -93,6 +95,9 @@ public class World : MonoBehaviour
     
     private void _GenerateMesh()
     {
+        // Generate polygon
+        planetPolygonGenerator.GeneratePlanet(planetShapeInfo);
+
         // Generate mesh
         meshGenerator.GenerateMesh();
         meshRenderer.material = meshMaterial;
