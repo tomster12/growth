@@ -82,12 +82,11 @@ public class VoronoiMeshGenerator : MonoBehaviour
     private VoronoiClipper _voronoiClipper;
 
     [SerializeField] public MeshSite[] meshSites;
-    [SerializeField] public List<MeshSiteEdge> outsideEdgesOrdered;
     public Mesh mesh;
 
 
-    [ContextMenu("Full Generate Mesh")]
-    public void FullGenerateMesh()
+    [ContextMenu("Generate Mesh")]
+    public void GenerateMesh()
     {
         // Run all procedures
         int tries = 0;
@@ -124,7 +123,6 @@ public class VoronoiMeshGenerator : MonoBehaviour
         
         // Null output variables
         meshSites = null;
-        outsideEdgesOrdered = null;
         mesh = null;
         meshFilter.mesh = null;
     }
@@ -344,32 +342,6 @@ public class VoronoiMeshGenerator : MonoBehaviour
                     }
                 }
             }
-        }
-
-
-        // Calculate external edges
-        outsideEdgesOrdered = new List<MeshSiteEdge>();
-        MeshSiteEdge first = outsideEdges.First();
-        outsideEdgesOrdered.Add(first);
-        outsideEdges.Remove(first);
-        while (outsideEdges.Count > 0)
-        {
-            MeshSiteEdge current = outsideEdgesOrdered.Last();
-            MeshSite currentSite = meshSites[current.siteIndex];
-            MeshSiteEdge picked = null;
-
-            foreach (MeshSiteEdge MeshSiteEdge in outsideEdges)
-            {
-                MeshSiteVertex toVertex = currentSite.vertices[current.siteToVertexI];
-                MeshSiteVertex fromVertex = meshSites[MeshSiteEdge.siteIndex].vertices[MeshSiteEdge.siteFromVertexI];
-                if (toVertex.vertexUID == fromVertex.vertexUID) { picked = MeshSiteEdge; break; }
-            }
-            if (picked == null)
-            {
-                throw new Exception("Could not find next edge for site " + current.siteIndex + " vertex " + current.siteFromVertexI + " to " + current.siteToVertexI + ", " + outsideEdges.Count + " edges left");
-            }
-            outsideEdgesOrdered.Add(picked);
-            outsideEdges.Remove(picked);
         }
     }
 

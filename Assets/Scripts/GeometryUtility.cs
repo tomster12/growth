@@ -8,7 +8,6 @@ using UnityEngine;
 
 public static class Utility
 {
-
     public static float AreaOfTriangle(Vector2 A, Vector2 B, Vector2 C)
     {
         // Mathematical area of triangle from A, B, C
