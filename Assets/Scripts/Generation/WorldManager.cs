@@ -4,17 +4,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using static VoronoiMeshGenerator;
+using Unity.Collections;
 
-public class World : MonoBehaviour
+[ExecuteInEditMode]
+public class WorldManager : MonoBehaviour
 {
     public enum ColorMode { NONE, STANDARD, RANDOM, DEPTH };
 
-    
     public class WorldSite
     {
         public MeshSite meshSite;
         public int outsideDistance = -1;
-        public float maxEnergy = 0;
+        public float maxEnergy = 0, energy = 0;
 
         public WorldSite(MeshSite meshSite)
         {
@@ -23,48 +24,72 @@ public class World : MonoBehaviour
     }
 
 
-    [Header("References")]
+    // --- Static ---
+    public static int chosenSeed;
+
+    // --- Editor ---
+    [Header("====== References ======", order = 0)]
+    [Header("Generators", order = 1)]
     [SerializeField] private PlanetPolygonGenerator planetPolygonGenerator;
     [SerializeField] private VoronoiMeshGenerator meshGenerator;
+    [SerializeField] private WorldFoliageManager foliageManager;
+    [Space(6, order = 0)]
+    [Header("Components", order = 1)]
+    [SerializeField] private PolygonCollider2D outsidePolygon;
     [SerializeField] private MeshRenderer meshRenderer;
+    [SerializeField] private MeshFilter meshFilter;
     [SerializeField] private Material meshMaterial;
-    [SerializeField] Transform grassContainer;
-    [SerializeField] GameObject grassPfb;
+    [Space(20, order = 0)]
 
-    [Header("Config")]
+    [Header("====== Pipeline Config ======", order = 1)]
+    [Header("Overall", order = 2)]
     [SerializeField] private int pipelineMaxTries = 5;
     [SerializeField] private int setSeed = -1;
-    [SerializeField] private float energyNoiseScale = 0.2f;
-    [SerializeField] private float[] energyRandomRange = new float[] { 50, 100 };
-    [SerializeField] private Color[] groundColorRange = new Color[] { new Color(0,0,0), new Color(1,1,1) };
-    [SerializeField] private Color[] grassColorRange = new Color[] { new Color(0, 0, 0), new Color(1, 1, 1) };
+    [SerializeField] public bool doNotGenerateShape;
+    [SerializeField] public bool toUpdate = false;
+    [Header("Stage: Planet Polygon", order = 1)]
     [SerializeField] private PlanetPolygonGenerator.PlanetShapeInfo planetShapeInfo;
+    [Header("Stage: Voronoi Mesh", order = 1)]
+    [SerializeField] private int seedCount = 300;
+    [SerializeField] private float seedMinDistance = 0.02f;
+    [Header("Stage: Site Processing", order = 1)]
+    [SerializeField] private NoiseData energyMaxNoise = new NoiseData(new float[2] { 40, 200 });
+    [SerializeField] private NoiseData energyPctNoise = new NoiseData();
+    [Space(20, order = 0)]
 
-    [SerializeField] private int chosenSeed;
-    private Mesh mesh;
-    private List<WorldSite> worldSites;
-    private List<MeshSiteEdge> outsideEdges;
-    private List<SpriteRenderer> grassSprites;
-    private ColorMode currentColorMode = ColorMode.NONE;
+    [Header("====== General Config ======", order = 1)]
+    [Space(10, order = 2)]
+    [SerializeField] private Color[] groundColorRange = new Color[] { new Color(0,0,0), new Color(1,1,1) };
 
+    // --- Main ---
+    public Mesh mesh { get; private set; }
+    public List<WorldSite> worldSites { get; private set; }
+    public List<MeshSiteEdge> surfaceEdges { get; private set; }
+    public ColorMode currentColorMode { get; private set; } = ColorMode.NONE;
+    
+
+    private void Update()
+    {
+        if (toUpdate)
+        {
+            SafeGenerate();
+            toUpdate = false;
+        }
+    }
+
+
+    #region Generation Pipeline
 
     [ContextMenu("Generate World")]
-    public void GenerateWorld()
+    public void SafeGenerate()
     {
-        // Keep trying until successful generation
+        // Keep trying Generate and catch errors
         int tries = 0;
         while (tries < pipelineMaxTries)
         {
             try
             {
-                // Run all procedures
-                _ResetPipeline();
-                _GenerateMesh();
-                _ProcessSites();
-                _GenerateGrass();
-
-                // Set color mode
-                SetColorMode(ColorMode.STANDARD);
+                Generate();
                 break;
             }
             catch (Exception e)
@@ -74,32 +99,51 @@ public class World : MonoBehaviour
                 Debug.LogWarning("World Pipeline threw an error " + tries + "/" + pipelineMaxTries + ".");
             }
         }
+
+        // Hit max number of tries
         if (tries == pipelineMaxTries)
         {
             Debug.LogException(new Exception("World Pipeline hit maximum number of tries (" + tries + "/" + pipelineMaxTries + ")."));
         }
     }
-    
-    private void _ResetPipeline()
+   
+    public void Generate()
     {
         // Set seed to preset or random
         chosenSeed = (setSeed != -1) ? setSeed : (int)DateTime.Now.Ticks;
         UnityEngine.Random.InitState(chosenSeed);
 
-        // Reset variables
-        worldSites = null;
-        outsideEdges = null;
-        currentColorMode = ColorMode.NONE;
-        _ClearGrass();
+        // Clear then run stages
+        ClearMain();
+        _GenerateMesh();
+        _ProcessSites();
+
+        // Run other managers
+        foliageManager.Generate();
+
+        // Generated so set initial colour
+        SetColorMode(ColorMode.STANDARD);
     }
-    
+
+    public void ClearMain()
+    {
+        // Reset main variables
+        if (mesh != null) mesh.Clear();
+        foliageManager.ClearMain();
+        mesh = null;
+        worldSites = null;
+        surfaceEdges = null;
+        currentColorMode = ColorMode.NONE;
+    }
+
+
     private void _GenerateMesh()
     {
         // Generate polygon
-        planetPolygonGenerator.GeneratePlanet(planetShapeInfo);
+        if (!doNotGenerateShape) planetPolygonGenerator.Generate(outsidePolygon, planetShapeInfo);
 
         // Generate mesh
-        meshGenerator.GenerateMesh();
+        meshGenerator.Generate(meshFilter, outsidePolygon, seedCount, seedMinDistance);
         meshRenderer.material = meshMaterial;
         mesh = meshGenerator.mesh;
 
@@ -111,33 +155,33 @@ public class World : MonoBehaviour
     private void _ProcessSites()
     {
         // Calculate external edges
-        HashSet<MeshSiteEdge> outsideEdgesUnordered = new HashSet<MeshSiteEdge>();
+        HashSet<MeshSiteEdge> surfaceEdgesUnordered = new HashSet<MeshSiteEdge>();
         foreach (WorldSite worldSite in worldSites)
         {
             if (worldSite.meshSite.isOutside)
             {
                 foreach (MeshSiteEdge edge in worldSite.meshSite.edges)
                 {
-                    if (edge.isOutside) outsideEdgesUnordered.Add(edge);
+                    if (edge.isOutside) surfaceEdgesUnordered.Add(edge);
                 }
             }
         }
 
         // - Grab random first edge from unordered
-        outsideEdges = new List<MeshSiteEdge>();
-        MeshSiteEdge first = outsideEdgesUnordered.First();
-        outsideEdges.Add(first);
-        outsideEdgesUnordered.Remove(first);
+        surfaceEdges = new List<MeshSiteEdge>();
+        MeshSiteEdge first = surfaceEdgesUnordered.First();
+        surfaceEdges.Add(first);
+        surfaceEdgesUnordered.Remove(first);
 
         // - While sites left unordered
-        while (outsideEdgesUnordered.Count > 0)
+        while (surfaceEdgesUnordered.Count > 0)
         {
-            MeshSiteEdge current = outsideEdges.Last();
+            MeshSiteEdge current = surfaceEdges.Last();
             MeshSite currentSite = worldSites[current.siteIndex].meshSite;
             MeshSiteEdge picked = null;
             
             // - Find first edge that matches in either direction
-            foreach (MeshSiteEdge checkEdge in outsideEdgesUnordered)
+            foreach (MeshSiteEdge checkEdge in surfaceEdgesUnordered)
             {
                 MeshSite checkSite = worldSites[checkEdge.siteIndex].meshSite;
                 MeshSiteVertex toVertex = currentSite.vertices[current.siteToVertexI];
@@ -146,12 +190,12 @@ public class World : MonoBehaviour
             }
             if (picked == null)
             {
-                throw new Exception("Could not find next edge for site " + current.siteIndex + " vertex " + current.siteFromVertexI + " to " + current.siteToVertexI + ", " + outsideEdges.Count + " edges left");
+                throw new Exception("Could not find next edge for site " + current.siteIndex + " vertex " + current.siteFromVertexI + " to " + current.siteToVertexI + ", " + surfaceEdges.Count + " edges left");
             }
 
             // - Add to ordered
-            outsideEdges.Add(picked);
-            outsideEdgesUnordered.Remove(picked);
+            surfaceEdges.Add(picked);
+            surfaceEdgesUnordered.Remove(picked);
         }
 
 
@@ -196,68 +240,33 @@ public class World : MonoBehaviour
 
 
         // Give sites energy
-        Vector2 energyNoiseOffset = new Vector2(UnityEngine.Random.value * 2000, UnityEngine.Random.value * 2000);
         foreach (WorldSite worldSite in worldSites)
         {
-            // - Random chance empty site
-            if (UnityEngine.Random.value < 0.05f) worldSite.maxEnergy = 0;
-
             // - Generate using perlin noise
-            else
-            {
-                Vector2 centre = meshGenerator.mesh.vertices[worldSite.meshSite.meshCentroidI];
-                float r = Mathf.PerlinNoise(
-                    centre.x * energyNoiseScale + energyNoiseOffset.x,
-                    centre.y * energyNoiseScale + energyNoiseOffset.y );
-                worldSite.maxEnergy = energyRandomRange[0] + (energyRandomRange[1] - energyRandomRange[0]) * r;
-            }
+            Vector2 centre = mesh.vertices[worldSite.meshSite.meshCentroidI];
+            worldSite.maxEnergy = energyMaxNoise.GetNoise(centre);
+            float pct = energyPctNoise.GetNoise(centre);
+
+            // - Random chance empty site
+            if (UnityEngine.Random.value < 0.02f) pct = 0.0f;
+
+            // - set final energy
+            worldSite.energy = pct * worldSite.maxEnergy;
 
         }
     }
 
-    [ContextMenu("Clear Grass")]
-    private void _ClearGrass()
-    {
-        // Delete grass container children
-        for (int i = grassContainer.childCount - 1; i >= 0; i--) GameObject.DestroyImmediate(grassContainer.GetChild(i).gameObject);
-        if (grassSprites == null) grassSprites = new List<SpriteRenderer>();
-        grassSprites.Clear();
-    }
-
-    private void _GenerateGrass()
-    {
-        // For each edge (clockwise)
-        foreach (MeshSiteEdge edge in outsideEdges)
-        {
-            MeshSite site = worldSites[edge.siteIndex].meshSite;
-            Vector2 a = mesh.vertices[site.meshVerticesI[edge.siteToVertexI]];
-            Vector2 b = mesh.vertices[site.meshVerticesI[edge.siteFromVertexI]];
-            Vector2 dir = (b - a);
-            bool toFlipX = UnityEngine.Random.value < 0.5f;
-            
-            // Generate grass and set position
-            GameObject grass = Instantiate(grassPfb);
-            grass.transform.parent = grassContainer;
-            if (toFlipX) grass.transform.position = transform.TransformPoint(a + dir);
-            else grass.transform.position = transform.TransformPoint(a);
-            grass.transform.right = dir.normalized;
-
-            // Grow sprite to correct size
-            SpriteRenderer sprite = grass.GetComponent<SpriteRenderer>();
-            sprite.size = new Vector2(dir.magnitude, sprite.size.y);
-            sprite.flipX = toFlipX;
-            grassSprites.Add(sprite);
-        }
-    }
+    #endregion
 
 
     [ContextMenu("Color/Set STANDARD")]
     private void SetColorModeEnergy() { SetColorMode(ColorMode.STANDARD); }
+
     [ContextMenu("Color/Set RANDOM")]
     private void SetColorModeRandom() { SetColorMode(ColorMode.RANDOM); }
+
     [ContextMenu("Color/Set DEPTH")]
     private void SetColorModeDepth() { SetColorMode(ColorMode.DEPTH); }
-
 
     private void SetColorMode(ColorMode mode)
     {
@@ -266,11 +275,12 @@ public class World : MonoBehaviour
         UpdateColours();
     }
 
+
     [ContextMenu("Color/Update")]
     private void UpdateColours()
     {
         // Update colours of the mesh
-        Color[] meshColors = new Color[meshGenerator.mesh.vertexCount];
+        Color[] meshColors = new Color[mesh.vertexCount];
         foreach (var site in worldSites)
         {
             Color col = Color.magenta;
@@ -289,42 +299,15 @@ public class World : MonoBehaviour
             }
             else if (currentColorMode == ColorMode.STANDARD)
             {
-                float pct = site.maxEnergy / energyRandomRange[1];
+                float pct = site.energy / site.maxEnergy;
                 col = Color.Lerp(groundColorRange[0], groundColorRange[1], pct);
             }
             meshColors[site.meshSite.meshCentroidI] = col;
             foreach (int v in site.meshSite.meshVerticesI) meshColors[v] = col;
         }
-        meshGenerator.mesh.colors = meshColors;
-    
-        // Update colors of the grass
-        for (int i = 0; i < grassSprites.Count; i++)
-        {
-            SpriteRenderer sprite = grassSprites[i];
-            MeshSiteEdge edge = outsideEdges[i];
-            WorldSite site = worldSites[edge.siteIndex];
+        mesh.colors = meshColors;
 
-            Color col = Color.magenta;
-            if (currentColorMode == ColorMode.RANDOM)
-            {
-                col = new Color(
-                    0.75f + UnityEngine.Random.value * 0.25f,
-                    0.75f + UnityEngine.Random.value * 0.25f,
-                    0.75f + UnityEngine.Random.value * 0.25f
-                );
-            }
-            else if (currentColorMode == ColorMode.DEPTH)
-            {
-                float pct = Mathf.Max(1.0f - site.outsideDistance * 0.2f, 0.0f);
-                col = new Color(pct, pct, pct);
-            }
-            else if (currentColorMode == ColorMode.STANDARD)
-            {
-                float pct = site.maxEnergy / energyRandomRange[1];
-                col = Color.Lerp(grassColorRange[0], grassColorRange[1], pct);
-            }
-            
-            sprite.color = col;
-        }
+        // Update foliage manager
+        foliageManager.UpdateColours();
     }
 }

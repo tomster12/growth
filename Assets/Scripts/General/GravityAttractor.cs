@@ -1,4 +1,5 @@
 
+using GK;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,6 +23,7 @@ public class GravityAttractor : MonoBehaviour
         {
             Vector2 target = rb.ClosestPoint(obj.centre);
             Vector2 dir = target - obj.centre;
+            if (dir.magnitude == 0) continue;
             if (dir.magnitude < forceRadius)
             {
                 float force = gravityForce * (rb.mass * obj.rb.mass) / dir.magnitude;

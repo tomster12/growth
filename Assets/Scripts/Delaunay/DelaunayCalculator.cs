@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace GK {
+
 	public class DelaunayCalculator {
 
 		int highest = -1;

@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace GK {
+
 	public class VoronoiDiagram {
 		/// <summary>
 		/// The voronoi diagram is calculated from a Delaunay triangulation.

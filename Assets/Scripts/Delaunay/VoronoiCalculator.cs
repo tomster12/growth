@@ -28,6 +28,7 @@ using UnityEngine;
 using UnityEngine.Profiling;
 
 namespace GK {
+
 	public class VoronoiCalculator {
 
 		DelaunayCalculator delCalc;
