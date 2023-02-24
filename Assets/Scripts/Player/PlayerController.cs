@@ -5,10 +5,10 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour, IFollowable
 {
     [Header("References")]
-    [SerializeField] private CameraController cameraController;
+    [SerializeField] private PlayerCamera playerCamera;
     [SerializeField] private WorldManager world;
-    [SerializeField] private GravityObject gravityObj;
-    [SerializeField] private Rigidbody2D rb;
+    [SerializeField] private GravityObject characterGravity;
+    [SerializeField] private Rigidbody2D characterRB;
 
     [Header("Config")]
     [SerializeField] private float rotationSpeed = 4.0f;
@@ -36,7 +36,7 @@ public class PlayerController : MonoBehaviour, IFollowable
 
     private void Start()
     {
-        cameraController.SetModeFollow(this);
+        playerCamera.SetModeFollow(this);
     }
 
 
@@ -51,60 +51,63 @@ public class PlayerController : MonoBehaviour, IFollowable
 
         // Update input jump
         inputJump = Input.GetKey(KeyCode.Space);
-
-        // Update jump timer
-        jumpTimer = Mathf.Max(jumpTimer - Time.deltaTime, 0.0f);
     }
 
     private void FixedUpdate()
     {
         // Calculate ground positions
-        groundPosition = world.GetClosestSurfacePoint(rb.transform.position);
-        groundDir = groundPosition - rb.transform.position;
+        groundPosition = world.GetClosestSurfacePoint(characterRB.transform.position);
+        groundDir = groundPosition - characterRB.transform.position;
         isGrounded = groundDir.magnitude < groundedHeight;
         upDir = groundDir.normalized * -1;
 
         //  Rotate upwards
-        float angleDiff = (Vector2.SignedAngle(rb.transform.up, upDir) - 0) % 360 + 0;
-        rb.AddTorque(angleDiff * rotationSpeed * Mathf.Deg2Rad);
+        float angleDiff = (Vector2.SignedAngle(characterRB.transform.up, upDir) - 0) % 360 + 0;
+        characterRB.AddTorque(angleDiff * rotationSpeed * Mathf.Deg2Rad);
         
         // - While grounded
         if (isGrounded)
         {
             // Update variables
-            rb.drag = groundDrag;
-            rb.angularDrag = groundAngularDrag;
-            gravityObj.isEnabled = false;
+            characterRB.drag = groundDrag;
+            characterRB.angularDrag = groundAngularDrag;
+            characterGravity.isEnabled = false;
 
             // Force upwards with legs
             targetPosition = groundPosition + (upDir * feetHeight);
-            rb.AddForce((targetPosition - rb.transform.position) * feetStrength, ForceMode2D.Impulse);
+            characterRB.AddForce((targetPosition - characterRB.transform.position) * feetStrength, ForceMode2D.Impulse);
             
             // Force with input
-            rb.AddForce(inputDir.normalized * groundMovementSpeed, ForceMode2D.Impulse);
+            characterRB.AddForce(inputDir.normalized * groundMovementSpeed, ForceMode2D.Impulse);
 
             if (inputJump && jumpTimer == 0.0f)
             {
-                rb.AddForce(upDir * jumpForce, ForceMode2D.Impulse);
+                Vector2 jumpDir = (upDir + (Vector3)characterRB.velocity.normalized).normalized;
+                characterRB.AddForce(jumpDir * jumpForce, ForceMode2D.Impulse);
                 jumpTimer = jumpTimerMax;
             }
+
+            // Update jump timer
+            jumpTimer = Mathf.Max(jumpTimer - Time.deltaTime, 0.0f);
         }
 
         // - While in the air
         else
         {
-            rb.drag = airDrag;
-            rb.angularDrag = airAngularDrag;
-            gravityObj.isEnabled = true;
+            characterRB.drag = airDrag;
+            characterRB.angularDrag = airAngularDrag;
+            characterGravity.isEnabled = true;
+
+            // Reset jump timer to max
+            jumpTimer = jumpTimerMax;
 
             // Force with input
-            rb.AddForce(inputDir.normalized * airMovementSpeed, ForceMode2D.Impulse);
-            jumpTimer = 0.0f;
+            characterRB.AddForce(inputDir.normalized * airMovementSpeed, ForceMode2D.Impulse);
         }
     }
 
 
-    public Transform GetFollowTransform() => transform;
+    public Transform GetFollowTransform() => characterRB.transform;
 
     public Vector2 GetFollowUpwards() => upDir;
 
@@ -114,7 +117,8 @@ public class PlayerController : MonoBehaviour, IFollowable
         // Draw upwards
         if (upDir != Vector3.zero)
         {
-            Gizmos.color = Color.grey;
+            if (jumpTimer == 0.0f) Gizmos.color = Color.green;
+            else Gizmos.color = Color.white;
             Gizmos.DrawLine(transform.position, transform.position + upDir);
         }
 

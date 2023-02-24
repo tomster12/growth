@@ -10,13 +10,13 @@ public interface IFollowable
 }
 
 
-public class CameraController : MonoBehaviour
+public class PlayerCamera : MonoBehaviour
 {
     public enum CameraMode { FREE, FOLLOW };
 
     [Header("References")]
     [SerializeField] private PixelPerfectCamera pixelPerfectCamera;
-    [SerializeField] private Transform mainPosition;
+    [SerializeField] private Transform controlledTransform;
     
     [Header("Config")]
     [SerializeField] private int zoomLevel = 1;
@@ -70,17 +70,17 @@ public class CameraController : MonoBehaviour
         // Constrain, move camera, apply damping
         movementVelocity = Vector2.ClampMagnitude(movementVelocity, freeMovementMaxSpeed / zoomLevel);
         movementVelocity *= freeMovementDamping;
-        mainPosition.position += movementVelocity;
+        controlledTransform.position += movementVelocity;
     }
 
     private void UpdateMovementFollow()
     {
         // Follow object position
         Vector2 pos = follow.GetFollowTransform().position;
-        transform.position = new Vector3(pos.x, pos.y, transform.position.z);
+        controlledTransform.position = new Vector3(pos.x, pos.y, controlledTransform.position.z);
 
         // Follow object rotation
-        transform.up = Vector2.Lerp(transform.up, follow.GetFollowUpwards(), Time.deltaTime * followRotationSpeed);
+        controlledTransform.up = Vector2.Lerp(controlledTransform.up, follow.GetFollowUpwards(), Time.deltaTime * followRotationSpeed);
     }
 
 
