@@ -7,13 +7,13 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Atmosphere_Material
+  m_Name: World
   m_Shader: {fileID: -6465566751694194690, guid: bcd36eeec68368f4ca53a58bc3597834, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 2000
   stringTagMap: {}
   disabledShaderPasses:
   - SHADOWCASTER
@@ -57,7 +57,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: ebe73ca9363db456bacf42c025bb4847, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Mask0:
@@ -112,6 +112,14 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _SampleTexture2D_b89844c6ca3a45808a6f83fb8cc5df7b_Texture_1:
+        m_Texture: {fileID: 10307, guid: 0000000000000000f000000000000000, type: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SampleTexture2D_e050edd8ea6b428e84b22a35a8d79f82_Texture_1:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _SpecGlossMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -136,6 +144,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Texture2DAsset_4a67a4d99c70401ebeb3904796a5d23b_Out_0:
+        m_Texture: {fileID: 10300, guid: 0000000000000000f000000000000000, type: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -149,9 +161,15 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
-    - Vector1_25c769248ad448feaab5dc2d55f82c3e: -7
+    - Vector1_13b6302df803474f91d385919ea69eb2: 3
+    - Vector1_25c769248ad448feaab5dc2d55f82c3e: 2.45
+    - Vector1_32f9ac7b2d1c4a00aea03f9aa70efb74: 1
+    - Vector1_39fc3d8246754c89bcd0c281e11d20e3: 2.3
     - Vector1_64b315db0cbb48ed8c10adfc7ae835b2: 20
-    - Vector1_9efd994c789d4594af8ca3c62d38ca9f: 0.564
+    - Vector1_9efd994c789d4594af8ca3c62d38ca9f: 0.308
+    - Vector1_c84622c11c3f4cf58dd5b9077e00ffa9: 4.24
+    - Vector1_d9fb87a3fb364b1e84999ae776844659: 0.9
+    - Vector1_e56bbc39674e4718a26d26a1e17dde3c: 22.5
     - _AlphaClip: 0
     - _Blend: 0
     - _BlendOp: 0
@@ -208,7 +226,8 @@ Material:
     - _WorkflowMode: 1
     - _ZWrite: 0
     m_Colors:
-    - Color_4446f8db9b0b44cea2b315349a64bc66: {r: 1, g: 1, b: 1, a: 0}
+    - Color_4446f8db9b0b44cea2b315349a64bc66: {r: 1, g: 1, b: 1, a: 1}
+    - Color_f201afa9e9d441dca02a8c98e640a295: {r: 0.014526321, g: 0.012105261, b: 0.046, a: 0.69411767}
     - _BaseColor: {r: 0, g: 0.66223836, b: 1, a: 0.59607846}
     - _BaseColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
     - _CameraFadeParams: {r: 0, g: Infinity, b: 0, a: 0}

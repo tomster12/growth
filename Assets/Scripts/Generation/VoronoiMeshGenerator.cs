@@ -241,9 +241,10 @@ public class VoronoiMeshGenerator : MonoBehaviour
         _mesh = new Mesh();
         _meshSites = new MeshSite[_voronoiClipper.clippedSites.Count];
         List<Vector3> vertices = new List<Vector3>();
-        List<Vector2> uvs = new List<Vector2>();
         List<Vector3> normals = new List<Vector3>();
+        List<Vector2> uvs = new List<Vector2>();
         List<int> triangles = new List<int>();
+        Vector2[] polygonPoints = _outsidePolygon.points;
 
         // Extract mesh variables
         for (int i = 0; i < _voronoiClipper.clippedSites.Count; i++)
@@ -251,9 +252,11 @@ public class VoronoiMeshGenerator : MonoBehaviour
             // Add centroid vertex / uv / normal / color
             ClippedSite clippedSite = _voronoiClipper.clippedSites[i];
             int centroidVertexI = vertices.Count;
-            vertices.Add(clippedSite.clippedCentroid);
-            uvs.Add(Vector2.one * 0.5f);
+            Vector2 centroidLocal = clippedSite.clippedCentroid;
+            vertices.Add(centroidLocal);
             normals.Add(Vector3.back);
+            float centroidAngle = Vector2.Angle(centroidLocal, Vector2.up);
+            uvs.Add(new Vector3(Utility.DistanceToPoints(centroidLocal, polygonPoints), centroidAngle, 0));
 
             // Generate MeshSite
             MeshSite meshSite = new MeshSite();
@@ -268,9 +271,11 @@ public class VoronoiMeshGenerator : MonoBehaviour
             // Add vertices vertex / uv / normal / color
             for (int o = 0; o < clippedSite.clippedVertices.Count; o++)
             {
-                vertices.Add(clippedSite.clippedVertices[o].vertex);
-                uvs.Add(Vector2.one * 0.5f);
+                Vector2 vertexLocal = clippedSite.clippedVertices[o].vertex;
+                vertices.Add(vertexLocal);
                 normals.Add(Vector3.back);
+                float vertexAngle = Vector2.Angle(vertexLocal, Vector2.up);
+                uvs.Add(new Vector3(Utility.DistanceToPoints(vertexLocal, polygonPoints), vertexAngle, 0));
 
                 // Add triangle
                 int siteVertexI = (o);
@@ -290,8 +295,8 @@ public class VoronoiMeshGenerator : MonoBehaviour
 
         // Assign mesh variables
         _mesh.vertices = vertices.ToArray();
-        _mesh.uv = uvs.ToArray();
         _mesh.normals = normals.ToArray();
+        _mesh.uv = uvs.ToArray();
         _mesh.triangles = triangles.ToArray();
         _meshFilter.mesh = _mesh;
     }

@@ -11,6 +11,8 @@ public class GravityObject : MonoBehaviour
     [SerializeField] private Rigidbody2D _rb;
     public Rigidbody2D rb => _rb;
     public Vector2 centre => rb.transform.position;
+    
+    public bool isEnabled = true;
 
 
     private void Start()

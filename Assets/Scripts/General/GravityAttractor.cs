@@ -11,23 +11,25 @@ public class GravityAttractor : MonoBehaviour
     public Rigidbody2D rb => _rb;
 
     [Header("Config")]
-    [SerializeField] private float gravityForce;
-    [SerializeField] private float forceRadius;
+    [SerializeField] public float gravityForce; // Standard Range: 800-1200
+    [SerializeField] public float gravityRadius;
     public Vector2 centre => rb.transform.position;
 
 
-    private void Update()
+    private void FixedUpdate()
     {
         // Attract all objects
         foreach (GravityObject obj in GravityObject.gravityObjects)
         {
-            Vector2 target = rb.ClosestPoint(obj.centre);
-            Vector2 dir = target - obj.centre;
-            if (dir.magnitude == 0) continue;
-            if (dir.magnitude < forceRadius)
+            if (!obj.isEnabled) continue;
+            Vector2 centreDir = centre - obj.centre;
+            if (centreDir.magnitude < gravityRadius)
             {
-                float force = gravityForce * (rb.mass * obj.rb.mass) / dir.magnitude;
-                obj.rb.AddForce(dir.normalized * force);
+                Vector2 surface = rb.ClosestPoint(obj.centre);
+                Vector2 surfaceDir = surface - obj.centre;
+                if (surfaceDir.magnitude == 0) continue;
+                float force = gravityForce * (rb.mass * obj.rb.mass) / surfaceDir.magnitude;
+                obj.rb.AddForce(surfaceDir.normalized * force);
             }
         }
     }

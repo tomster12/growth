@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using static VoronoiMeshGenerator;
-using Unity.Collections;
+using UnityEditor.ShaderGraph.Drawing;
 
 [ExecuteInEditMode]
 public class WorldManager : MonoBehaviour
@@ -16,6 +16,7 @@ public class WorldManager : MonoBehaviour
         public MeshSite meshSite;
         public int outsideDistance = -1;
         public float maxEnergy = 0, energy = 0;
+        public GroundMaterial groundMaterial;
 
         public WorldSite(MeshSite meshSite)
         {
@@ -38,7 +39,10 @@ public class WorldManager : MonoBehaviour
     [SerializeField] private PolygonCollider2D outsidePolygon;
     [SerializeField] private MeshRenderer meshRenderer;
     [SerializeField] private MeshFilter meshFilter;
-    [SerializeField] private Material meshMaterial;
+    [SerializeField] private GravityAttractor gravityAttractor;
+    [Space(6, order = 0)]
+    [Header("Prefabs", order =01)]
+    [SerializeField] private GameObject atmospherePfb;
     [Space(20, order = 0)]
 
     [Header("====== Pipeline Config ======", order = 1)]
@@ -50,22 +54,28 @@ public class WorldManager : MonoBehaviour
     [Header("Stage: Planet Polygon", order = 1)]
     [SerializeField] private PlanetPolygonGenerator.PlanetShapeInfo planetShapeInfo;
     [Header("Stage: Voronoi Mesh", order = 1)]
+    [SerializeField] private Material meshMaterial;
     [SerializeField] private int seedCount = 300;
     [SerializeField] private float seedMinDistance = 0.02f;
     [Header("Stage: Site Processing", order = 1)]
+    [SerializeField] private GroundMaterial materialDirt;
+    [SerializeField] private GroundMaterial materialStone;
     [SerializeField] private NoiseData energyMaxNoise = new NoiseData(new float[2] { 40, 200 });
     [SerializeField] private NoiseData energyPctNoise = new NoiseData();
-    [Space(20, order = 0)]
-
-    [Header("====== General Config ======", order = 1)]
-    [Space(10, order = 2)]
-    [SerializeField] private Color[] groundColorRange = new Color[] { new Color(0,0,0), new Color(1,1,1) };
+    [Header("Stage: Component Initialization", order = 1)]
+    [SerializeField] private Material atmosphereMaterial;
+    [SerializeField] private float atmosphereSizeMin = 150.0f;
+    [SerializeField] private float atmosphereSizeMax = 200.0f;
+    [SerializeField] private float gravityForce = 10.0f;
+    
 
     // --- Main ---
     public Mesh mesh { get; private set; }
     public List<WorldSite> worldSites { get; private set; }
     public List<MeshSiteEdge> surfaceEdges { get; private set; }
     public ColorMode currentColorMode { get; private set; } = ColorMode.NONE;
+
+    private SpriteRenderer atmosphere;
     
 
     private void Update()
@@ -80,7 +90,7 @@ public class WorldManager : MonoBehaviour
 
     #region Generation Pipeline
 
-    [ContextMenu("Generate World")]
+    [ContextMenu("Stage/- Safe Generate")]
     public void SafeGenerate()
     {
         // Keep trying Generate and catch errors
@@ -106,7 +116,8 @@ public class WorldManager : MonoBehaviour
             Debug.LogException(new Exception("World Pipeline hit maximum number of tries (" + tries + "/" + pipelineMaxTries + ")."));
         }
     }
-   
+
+    [ContextMenu("Stage/- Generate")]
     public void Generate()
     {
         // Set seed to preset or random
@@ -117,14 +128,16 @@ public class WorldManager : MonoBehaviour
         ClearMain();
         _GenerateMesh();
         _ProcessSites();
+        _InitializeComponents();
 
         // Run other managers
         foliageManager.Generate();
 
         // Generated so set initial colour
-        SetColorMode(ColorMode.STANDARD);
+        SetColourMode(ColorMode.STANDARD);
     }
 
+    [ContextMenu("Stage/- Clear")]
     public void ClearMain()
     {
         // Reset main variables
@@ -134,9 +147,12 @@ public class WorldManager : MonoBehaviour
         worldSites = null;
         surfaceEdges = null;
         currentColorMode = ColorMode.NONE;
+        if (atmosphere == null) atmosphere = transform.Find("Atmosphere")?.GetComponent<SpriteRenderer>();
+        if (atmosphere != null) DestroyImmediate(atmosphere.gameObject);
     }
 
 
+    [ContextMenu("Stage/1. Generate Mesh")]
     private void _GenerateMesh()
     {
         // Generate polygon
@@ -152,6 +168,7 @@ public class WorldManager : MonoBehaviour
         foreach (MeshSite meshSite in meshGenerator.meshSites) worldSites.Add(new WorldSite(meshSite));
     }
 
+    [ContextMenu("Stage/2. Process Sites")]
     private void _ProcessSites()
     {
         // Calculate external edges
@@ -239,44 +256,67 @@ public class WorldManager : MonoBehaviour
         }
 
 
-        // Give sites energy
+        // Loop over sites
         foreach (WorldSite worldSite in worldSites)
         {
-            // - Generate using perlin noise
+            // Generate site energy
             Vector2 centre = mesh.vertices[worldSite.meshSite.meshCentroidI];
             worldSite.maxEnergy = energyMaxNoise.GetNoise(centre);
             float pct = energyPctNoise.GetNoise(centre);
-
-            // - Random chance empty site
             if (UnityEngine.Random.value < 0.02f) pct = 0.0f;
-
-            // - set final energy
             worldSite.energy = pct * worldSite.maxEnergy;
 
+            // Generate site terrain
+            if (worldSite.outsideDistance >= 3) worldSite.groundMaterial = materialStone;
+            else if (worldSite.outsideDistance >= 2 && UnityEngine.Random.value < 0.8f) worldSite.groundMaterial = materialStone;
+            else worldSite.groundMaterial = materialDirt;
         }
+    }
+
+    [ContextMenu("Stage/3. Generate Atmosphere")]
+    private void _InitializeComponents()
+    {
+        // Create atmosphere object
+        GameObject atmosphereGO = Instantiate(atmospherePfb);
+        atmosphere = atmosphereGO.GetComponent<SpriteRenderer>();
+        atmosphere.gameObject.name = "Atmosphere";
+        atmosphere.transform.parent = transform;
+        atmosphere.transform.localPosition = Vector3.zero;
+
+        // Instantiate material
+        atmosphere.material = Instantiate(atmosphere.material);
+
+        // Update object
+        UpdateComponents();
     }
 
     #endregion
 
 
-    [ContextMenu("Color/Set STANDARD")]
-    private void SetColorModeEnergy() { SetColorMode(ColorMode.STANDARD); }
-
-    [ContextMenu("Color/Set RANDOM")]
-    private void SetColorModeRandom() { SetColorMode(ColorMode.RANDOM); }
-
-    [ContextMenu("Color/Set DEPTH")]
-    private void SetColorModeDepth() { SetColorMode(ColorMode.DEPTH); }
-
-    private void SetColorMode(ColorMode mode)
+    [ContextMenu("Update/Components")]
+    private void UpdateComponents()
     {
-        if (currentColorMode == mode) return;
-        currentColorMode = mode;
-        UpdateColours();
+        if (atmosphere == null) atmosphere = transform.Find("Atmosphere")?.GetComponent<SpriteRenderer>();
+
+        // Set global scale
+        float targetScale = atmosphereSizeMax * 2.0f;
+        atmosphere.transform.localScale = Vector3.one;
+        atmosphere.transform.localScale = new Vector3(
+            targetScale / transform.lossyScale.x,
+            targetScale / transform.lossyScale.y,
+            targetScale / transform.lossyScale.z
+        );
+
+        // Set shader min and max
+        atmosphere.material.SetFloat("_Min", atmosphereSizeMin);
+        atmosphere.material.SetFloat("_Max", atmosphereSizeMax);
+
+        // Update gravity
+        gravityAttractor.gravityRadius = atmosphereSizeMax;
+        gravityAttractor.gravityForce = gravityForce;
     }
 
-
-    [ContextMenu("Color/Update")]
+    [ContextMenu("Update/Colours")]
     private void UpdateColours()
     {
         // Update colours of the mesh
@@ -284,6 +324,7 @@ public class WorldManager : MonoBehaviour
         foreach (var site in worldSites)
         {
             Color col = Color.magenta;
+
             if (currentColorMode == ColorMode.RANDOM)
             {
                 col = new Color(
@@ -292,16 +333,19 @@ public class WorldManager : MonoBehaviour
                     0.75f + UnityEngine.Random.value * 0.25f
                 );
             }
+
             else if (currentColorMode == ColorMode.DEPTH)
             {
                 float pct = Mathf.Max(1.0f - site.outsideDistance * 0.2f, 0.0f);
                 col = new Color(pct, pct, pct);
             }
+
             else if (currentColorMode == ColorMode.STANDARD)
             {
                 float pct = site.energy / site.maxEnergy;
-                col = Color.Lerp(groundColorRange[0], groundColorRange[1], pct);
+                col = Color.Lerp(site.groundMaterial.materialColorRange[0], site.groundMaterial.materialColorRange[1], pct);
             }
+
             meshColors[site.meshSite.meshCentroidI] = col;
             foreach (int v in site.meshSite.meshVerticesI) meshColors[v] = col;
         }
@@ -310,4 +354,24 @@ public class WorldManager : MonoBehaviour
         // Update foliage manager
         foliageManager.UpdateColours();
     }
+
+
+    [ContextMenu("Color/Set STANDARD")]
+    private void SetColourModeEnergy() { SetColourMode(ColorMode.STANDARD); }
+
+    [ContextMenu("Color/Set RANDOM")]
+    private void SetColourModeRandom() { SetColourMode(ColorMode.RANDOM); }
+
+    [ContextMenu("Color/Set DEPTH")]
+    private void SetColourModeDepth() { SetColourMode(ColorMode.DEPTH); }
+
+    private void SetColourMode(ColorMode mode)
+    {
+        if (currentColorMode == mode) return;
+        currentColorMode = mode;
+        UpdateColours();
+    }
+
+
+    public Vector3 GetClosestSurfacePoint(Vector2 pos) => outsidePolygon.ClosestPoint(pos);
 }

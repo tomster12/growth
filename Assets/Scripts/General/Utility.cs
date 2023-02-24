@@ -100,7 +100,29 @@ public static class Utility
         }
         return inside;
     }
+    
 
+    public static float DistanceToPoints(Vector2 p, Vector2[] points)
+    {
+        float minDist = float.MaxValue;
+        for (int i = 0; i < points.Length; i++)
+        {
+            Vector2 p0 = points[i];
+            Vector2 p1 = points[(i + 1) % points.Length];
+            Vector2 l01 = (p1 - p0);
+            float ld = l01.sqrMagnitude;
+            float d = float.MaxValue;
+            if (ld == 0.0) d = (p0 - p).magnitude;
+            else
+            {
+                float t = Mathf.Max(0, Mathf.Min(1, Vector2.Dot(p - p0, l01) / ld));
+                Vector2 projection = p0 + t * l01;
+                d = (projection - p).magnitude;
+            }
+            if (d < minDist) minDist = d;
+        }
+        return minDist;
+    }
 
     static MethodInfo _clearConsoleMethod;
     static MethodInfo clearConsoleMethod

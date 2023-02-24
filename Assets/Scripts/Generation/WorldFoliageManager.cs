@@ -1,69 +1,74 @@
 
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Experimental.AI;
 using static VoronoiMeshGenerator;
 using static WorldManager;
+
 
 public class WorldFoliageManager : MonoBehaviour
 {
     // -- Editor --
     [Header("References")]
     [SerializeField] WorldManager worldManager;
-    [SerializeField] Transform grassContainer;
-    [SerializeField] GameObject grassPfb;
+    [SerializeField] Transform foliageContainer;
 
-    [Header("Config")]
-    [SerializeField] private NoiseData grassHeightNoise = new NoiseData(new float[2] { 0.5f, 1.0f });
-    [SerializeField] private Color[] grassColorRange = new Color[] { new Color(0, 0, 0), new Color(1, 1, 1) };
 
     // -- Main --
-    public List<SpriteRenderer> surfaceGrass { get; private set; }
+    public List<SpriteRenderer> surfaceFoliage { get; private set; }
 
 
     public void Generate()
     {
-        GenerateGrass();
+        GenerateFoliage();
     }
 
-    [ContextMenu("Clear Grass")]
+    [ContextMenu("Clear Foliage")]
     public void ClearMain()
     {
-        // Delete grass container children
-        for (int i = grassContainer.childCount - 1; i >= 0; i--) GameObject.DestroyImmediate(grassContainer.GetChild(i).gameObject);
-        if (surfaceGrass == null) surfaceGrass = new List<SpriteRenderer>();
-        surfaceGrass.Clear();
+        // Delete foliage container children
+        for (int i = foliageContainer.childCount - 1; i >= 0; i--) GameObject.DestroyImmediate(foliageContainer.GetChild(i).gameObject);
+        if (surfaceFoliage == null) surfaceFoliage = new List<SpriteRenderer>();
+        surfaceFoliage.Clear();
     }
 
 
-    private void GenerateGrass()
+    private void GenerateFoliage()
     {
         // For each edge (clockwise)
-        surfaceGrass = new List<SpriteRenderer>();
+        surfaceFoliage = new List<SpriteRenderer>();
         for (int i = 0; i < worldManager.surfaceEdges.Count; i++)
         {
             MeshSiteEdge edge = worldManager.surfaceEdges[i];
-            MeshSite site = worldManager.worldSites[edge.siteIndex].meshSite;
-            Vector2 a = worldManager.mesh.vertices[site.meshVerticesI[edge.siteToVertexI]];
-            Vector2 b = worldManager.mesh.vertices[site.meshVerticesI[edge.siteFromVertexI]];
+            WorldSite site = worldManager.worldSites[edge.siteIndex];
+
+            // Back out early if no foliage
+            if (!site.groundMaterial.hasFoliage)
+            {
+                surfaceFoliage.Add(null);
+                continue;
+            }
+
+            // Continue and find where to put it
+            Vector2 a = worldManager.mesh.vertices[site.meshSite.meshVerticesI[edge.siteToVertexI]];
+            Vector2 b = worldManager.mesh.vertices[site.meshSite.meshVerticesI[edge.siteFromVertexI]];
             Vector2 dir = (b - a);
             bool toFlipX = UnityEngine.Random.value < 0.5f;
 
-            // Generate grass and set position
-            GameObject grass = Instantiate(grassPfb);
-            grass.transform.parent = grassContainer;
+            // Generate foliage and set position
+            GameObject grass = Instantiate(site.groundMaterial.foliagePfb);
+            grass.transform.parent = foliageContainer;
             if (toFlipX) grass.transform.position = transform.TransformPoint(a + dir);
             else grass.transform.position = transform.TransformPoint(a);
             grass.transform.right = dir.normalized;
 
             // Grow sprite to correct size
             float width = dir.magnitude + 0.04f;
-            float height = grassHeightNoise.GetCyclicNoise((float)i / worldManager.surfaceEdges.Count);
+            float height = site.groundMaterial.foliageHeightNoise.GetCyclicNoise((float)i / worldManager.surfaceEdges.Count);
             SpriteRenderer renderer = grass.GetComponent<SpriteRenderer>();
             renderer.size = new Vector2(width, renderer.size.y);
             renderer.flipX = toFlipX;
             renderer.transform.localScale = new Vector3(renderer.transform.localScale.x, height, renderer.transform.localScale.z);
-            surfaceGrass.Add(renderer);
+            surfaceFoliage.Add(renderer);
         }
     }
 
@@ -71,9 +76,10 @@ public class WorldFoliageManager : MonoBehaviour
     public void UpdateColours()
     {
         // Update colors of the grass
-        for (int i = 0; i < surfaceGrass.Count; i++)
+        for (int i = 0; i < surfaceFoliage.Count; i++)
         {
-            SpriteRenderer sprite = surfaceGrass[i];
+            SpriteRenderer sprite = surfaceFoliage[i];
+            if (sprite == null) continue;
             MeshSiteEdge edge = worldManager.surfaceEdges[i];
             WorldSite site = worldManager.worldSites[edge.siteIndex];
 
@@ -94,7 +100,7 @@ public class WorldFoliageManager : MonoBehaviour
             else if (worldManager.currentColorMode == ColorMode.STANDARD)
             {
                 float pct = site.energy / site.maxEnergy;
-                col = Color.Lerp(grassColorRange[0], grassColorRange[1], pct);
+                col = Color.Lerp(site.groundMaterial.foliageColorRange[0], site.groundMaterial.foliageColorRange[1], pct);
             }
 
             sprite.color = col;
