@@ -46,8 +46,7 @@ public class PlayerInteractor : MonoBehaviour
         hoverPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         
         // Raycast at mouse on all hoverables
-        LayerMask mask = LayerMask.NameToLayer("Hoverable");
-        RaycastHit2D[] hits = Physics2D.RaycastAll(hoverPos, Vector2.zero, Mathf.Infinity, 1 << mask);
+        RaycastHit2D[] hits = Physics2D.RaycastAll(hoverPos, Vector2.zero);
 
         // Get new hovered object
         IHoverable newIHoverable = null;

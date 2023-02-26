@@ -25,7 +25,7 @@ public class PlayerCursor : MonoBehaviour
     }
 
 
-    private void Update()
+    private void FixedUpdate()
     {
         //Surround hover object
         if (interactor.hoverInfo.isHovering)
@@ -35,7 +35,7 @@ public class PlayerCursor : MonoBehaviour
             // Move to centre
             Vector2 targetPos = b.center;
             container.position = Vector2.Lerp(container.position, targetPos, Time.deltaTime * hoverMovementSpeed);
-            
+
             // Surround with corners
             cornerTL.transform.position = Vector2.Lerp(cornerTL.transform.position, new Vector2(b.center.x - b.extents.x - hoverGap, b.center.y + b.extents.y + hoverGap), Time.deltaTime * hoverMovementSpeed);
             cornerTR.transform.position = Vector2.Lerp(cornerTR.transform.position, new Vector2(b.center.x + b.extents.x + hoverGap, b.center.y + b.extents.y + hoverGap), Time.deltaTime * hoverMovementSpeed);
@@ -54,7 +54,8 @@ public class PlayerCursor : MonoBehaviour
         {
             // Move to mouse
             Vector2 targetPos = interactor.hoverPos;
-            container.position = Vector2.Lerp(container.position, targetPos, Time.deltaTime * idleMovementSpeed);
+            //container.position = Vector2.Lerp(container.position, targetPos, Time.deltaTime * idleMovementSpeed);
+            container.position = targetPos;
 
             // Spread out corners
             cornerTL.transform.localPosition = Vector2.Lerp(cornerTL.transform.localPosition, new Vector2(-idleDistance,  idleDistance), Time.deltaTime * idleMovementSpeed);

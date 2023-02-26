@@ -14,54 +14,49 @@ public class PlanetPolygonGenerator : MonoBehaviour
     }
 
 
-    // --- Cache / Internal ---
-    private PolygonCollider2D _outsidePolygon;
-    private PlanetShapeInfo _shapeInfo;
+    // --- Parameters ---
+    [Header("Parameters")]
+    [SerializeField] public PolygonCollider2D outsidePolygon;
+    [SerializeField] public PlanetShapeInfo shapeInfo;
 
     // --- Output ---
-    private Vector2[] _points;
-    public Vector2[] points => _points;
+    public Vector2[] points { get; private set; }
 
-
-    #region Generation Pipeline
 
     public void Generate(PolygonCollider2D outsidePolygon, PlanetShapeInfo shapeInfo)
     {
-        // Clear and cache
-        ClearInternal();
+        this.outsidePolygon = outsidePolygon;
+        this.shapeInfo = shapeInfo;
+        Generate();
+    }
+
+    [ContextMenu("Generate Polygon")]
+    public void Generate()
+    {
+        // Clear output
         ClearOutput();
-        _outsidePolygon = outsidePolygon;
-        _shapeInfo = shapeInfo;
 
         // Generate points in a circle
-        _points = new Vector2[_shapeInfo.vertexCount];
-        for (int i = 0; i < _points.Length; i++)
+        points = new Vector2[shapeInfo.vertexCount];
+        for (int i = 0; i < points.Length; i++)
         {
             // Add each noise to value
-            float pct = (float)i / _points.Length;
+            float pct = (float)i / points.Length;
             float value = 0;
-            foreach (NoiseData noiseData in _shapeInfo.noiseData) value += noiseData.GetCyclicNoise(pct);
+            foreach (NoiseData noiseData in shapeInfo.noiseData) value += noiseData.GetCyclicNoise(pct);
 
             // Create and add point
-            _points[i] = value * new Vector2(Mathf.Cos(pct * Mathf.PI * 2), Mathf.Sin(pct * Mathf.PI * 2));
+            points[i] = value * new Vector2(Mathf.Cos(pct * Mathf.PI * 2), Mathf.Sin(pct * Mathf.PI * 2));
         }
 
         // Assign points to the polygon
-        _outsidePolygon.SetPath(0, _points);
+        outsidePolygon.SetPath(0, points);
     }
 
-    public void ClearInternal()
-    {
-        // Clear internal variables
-        _outsidePolygon = null;
-        _shapeInfo = null;
-    }
 
     public void ClearOutput()
     {
         // Clear output variables
-        _points = null;
+        points = null;
     }
-
-    #endregion
 }

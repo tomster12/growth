@@ -65,17 +65,17 @@ public class VoronoiMeshGenerator : MonoBehaviour
     [SerializeField] private bool showGizmoClipped = false;
     [SerializeField] private bool showGizmoMesh = false;
 
-    [Header("Pipeline Config")]
+    // --- Parameters ---
+    [Header("Parameters")]
+    [SerializeField] private MeshFilter meshFilter;
+    [SerializeField] private PolygonCollider2D outsidePolygon;
+    [SerializeField] private int seedCount;
+    [SerializeField] private float seedMinDistance;
     [SerializeField] private int pipelineMaxTries = 10;
     [SerializeField] private int seedMaxTries = 50;
     [SerializeField] private bool clearInternal = true;
 
     // --- Internal ---
-    private MeshFilter _meshFilter;
-    private PolygonCollider2D _outsidePolygon;
-    private int _seedCount;
-    private float _seedMinDistance;
-
     private Vector2[] _voronoiSeedSites;
     private VoronoiCalculator _voronoiCalculator;
     private VoronoiDiagram _voronoiDiagram;
@@ -83,15 +83,12 @@ public class VoronoiMeshGenerator : MonoBehaviour
     private VoronoiClipper _voronoiClipper;
 
     // --- Output ---
-    private MeshSite[] _meshSites;
-    private Mesh _mesh;
-    public MeshSite[] meshSites => _meshSites;
-    public Mesh mesh => _mesh;
+    public MeshSite[] meshSites { get; private set; }
+    public Mesh mesh { get; private set; }
 
 
     #region Generation Pipeline
 
-    [ContextMenu("Generate Mesh")]
     public void SafeGenerate(MeshFilter meshFilter, PolygonCollider2D outsidePolygon, int seedCount, float seedMinDistance)
     {
         // Keep trying Generate and catch errors
@@ -120,13 +117,19 @@ public class VoronoiMeshGenerator : MonoBehaviour
 
     public void Generate(MeshFilter meshFilter, PolygonCollider2D outsidePolygon, int seedCount, float seedMinDistance)
     {
+        this.meshFilter = meshFilter;
+        this.outsidePolygon = outsidePolygon;
+        this.seedCount = seedCount;
+        this.seedMinDistance = seedMinDistance;
+        Generate();
+    }
+
+    [ContextMenu("Generate Mesh")]
+    public void Generate()
+    {
         // Clear and cache
         ClearInternal();
         ClearOutput();
-        _meshFilter = meshFilter;
-        _outsidePolygon = outsidePolygon;
-        _seedCount = seedCount;
-        _seedMinDistance = seedMinDistance;
 
         // Run parameters
         _GenerateSeeds();
@@ -142,11 +145,6 @@ public class VoronoiMeshGenerator : MonoBehaviour
     public void ClearInternal()
     {
         // Clear internal variables
-        _meshFilter = null;
-        _outsidePolygon = null;
-        _seedCount = 0;
-        _seedMinDistance = 0;
-
         _voronoiSeedSites = null;
         _voronoiCalculator = null;
         _voronoiDiagram = null;
@@ -157,8 +155,8 @@ public class VoronoiMeshGenerator : MonoBehaviour
     public void ClearOutput()
     {
         // Clear external variables
-        _meshSites = null;
-        _mesh = null;
+        meshSites = null;
+        mesh = null;
     }
 
 
@@ -167,10 +165,10 @@ public class VoronoiMeshGenerator : MonoBehaviour
         // Generate a set number of seeds
         List<Vector2> voronoiSeedSiteList = new List<Vector2>();
         int tries = 0;
-        while (voronoiSeedSiteList.Count < _seedCount && tries < seedMaxTries)
+        while (voronoiSeedSiteList.Count < seedCount && tries < seedMaxTries)
         {
             // Generate in a random position
-            Vector2 seedWorld = Utility.RandomInPolygon(_outsidePolygon, tries != 0);
+            Vector2 seedWorld = Utility.RandomInPolygon(outsidePolygon, tries != 0);
             Vector2 seedLocal = transform.InverseTransformPoint(seedWorld);
             bool isValid = true;
             tries++;
@@ -179,7 +177,7 @@ public class VoronoiMeshGenerator : MonoBehaviour
             foreach (Vector2 seed in voronoiSeedSiteList)
             {
                 float dst = Vector3.Distance(seed, seedLocal);
-                if (dst < _seedMinDistance) { isValid = false; break; }
+                if (dst < seedMinDistance) { isValid = false; break; }
             }
 
             // If found a valid seed then add to list
@@ -192,7 +190,7 @@ public class VoronoiMeshGenerator : MonoBehaviour
         }
 
         // If hit max number of tries
-        if (tries == seedMaxTries) Debug.LogWarning("Hit max number of tries (" + voronoiSeedSiteList.Count + "/" + _seedCount + ")");
+        if (tries == seedMaxTries) Debug.LogWarning("Hit max number of tries (" + voronoiSeedSiteList.Count + "/" + seedCount + ")");
 
         // Update seed sites
         _voronoiSeedSites = voronoiSeedSiteList.ToArray();
@@ -219,7 +217,7 @@ public class VoronoiMeshGenerator : MonoBehaviour
     private void _ClipSites()
     {
         // Initialize variables
-        _clipperPolygon = _outsidePolygon.points.ToList();
+        _clipperPolygon = outsidePolygon.points.ToList();
         _voronoiClipper = new VoronoiClipper();
         _voronoiClipper.ClipDiagram(_voronoiDiagram, _clipperPolygon);
 
@@ -244,7 +242,7 @@ public class VoronoiMeshGenerator : MonoBehaviour
         List<Vector3> normals = new List<Vector3>();
         List<Vector2> uvs = new List<Vector2>();
         List<int> triangles = new List<int>();
-        Vector2[] polygonPoints = _outsidePolygon.points;
+        Vector2[] polygonPoints = outsidePolygon.points;
 
         // Extract mesh variables
         for (int i = 0; i < _voronoiClipper.clippedSites.Count; i++)
@@ -298,7 +296,7 @@ public class VoronoiMeshGenerator : MonoBehaviour
         _mesh.normals = normals.ToArray();
         _mesh.uv = uvs.ToArray();
         _mesh.triangles = triangles.ToArray();
-        _meshFilter.mesh = _mesh;
+        meshFilter.mesh = _mesh;
     }
 
     private void _ProcessSites()

@@ -7,23 +7,23 @@ using static WorldManager;
 
 public class WorldFoliageManager : MonoBehaviour
 {
-    // -- Editor --
-    [Header("References")]
+    // -- Parameters --
+    [Header("Parameters")]
     [SerializeField] WorldManager worldManager;
     [SerializeField] Transform foliageContainer;
 
-
-    // -- Main --
+    // -- Output --
     public List<SpriteRenderer> surfaceFoliage { get; private set; }
 
 
+    [ContextMenu("Generate Foliage")]
     public void Generate()
     {
-        GenerateFoliage();
+        _GenerateFoliage();
     }
 
-    [ContextMenu("Clear Foliage")]
-    public void ClearMain()
+    [ContextMenu("Clear Output")]
+    public void ClearOutput()
     {
         // Delete foliage container children
         for (int i = foliageContainer.childCount - 1; i >= 0; i--) GameObject.DestroyImmediate(foliageContainer.GetChild(i).gameObject);
@@ -32,7 +32,7 @@ public class WorldFoliageManager : MonoBehaviour
     }
 
 
-    private void GenerateFoliage()
+    private void _GenerateFoliage()
     {
         // For each edge (clockwise)
         surfaceFoliage = new List<SpriteRenderer>();

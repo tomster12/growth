@@ -68,7 +68,6 @@ public class WorldManager : MonoBehaviour
     [SerializeField] private float atmosphereSizeMax = 200.0f;
     [SerializeField] private float gravityForce = 10.0f;
     
-
     // --- Main ---
     public Mesh mesh { get; private set; }
     public List<WorldSite> worldSites { get; private set; }

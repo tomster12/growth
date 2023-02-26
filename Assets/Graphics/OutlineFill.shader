@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
 
 Shader "Tom/OutlineFill"
 {
@@ -6,7 +8,7 @@ Shader "Tom/OutlineFill"
         [Enum(UnityEngine.Rendering.CompareFunction)] _ZTest("ZTest", Float) = 0
         [HDR]_OutlineColor ("Outline Color", Color) = (1, 1, 1, 1)
         //_OutlineWidth ("Outline Width", Range(1.0, 3.0)) = 1.2
-        _OutlineWidth ("Outline Width", Range(0.0, 20.0)) = 1.2
+        _OutlineWidth ("Outline Width", Range(0.0, 2.0)) = 0.3
         _MainTex ("Texture", 2D) = "white" {}
     }
 
@@ -61,7 +63,16 @@ Shader "Tom/OutlineFill"
             v2f vert (appdata v)
             {
                 v2f o;
-                o.position = UnityObjectToClipPos(v.position * _OutlineWidth);
+
+                //    half3x3 m = (half3x3)UNITY_MATRIX_M;
+                //    half3 objectScale = half3(
+                //        length( half3( m[0][0], m[1][0], m[2][0] ) ),
+                //        length( half3( m[0][1], m[1][1], m[2][1] ) ),
+                //        length( half3( m[0][2], m[1][2], m[2][2] ) )
+                //    );
+
+                o.position = UnityObjectToClipPos(v.position + (v.position / length(v.position)) * _OutlineWidth);
+
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 o.color = _OutlineColor;
                 return o;
