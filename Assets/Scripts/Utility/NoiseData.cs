@@ -9,7 +9,7 @@ public class NoiseData
     [SerializeField] public float[] valueRange;
     [SerializeField] public float noiseScale = 1.0f;
 
-    public float seedOffset => (500.0f * Mathf.Abs(WorldManager.chosenSeed) / int.MaxValue);
+    public float seedOffset => (500.0f * Mathf.Abs(GeneratorController.globalSeed) / int.MaxValue);
 
 
     public NoiseData()

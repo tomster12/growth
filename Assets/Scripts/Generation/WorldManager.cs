@@ -7,7 +7,7 @@ using static VoronoiMeshGenerator;
 
 
 [ExecuteInEditMode]
-public class WorldManager : MonoBehaviour
+public class WorldManager : Generator
 {
     public enum ColorMode { NONE, STANDARD, RANDOM, DEPTH };
 
@@ -24,9 +24,6 @@ public class WorldManager : MonoBehaviour
         }
     }
 
-
-    // --- Static ---
-    public static int chosenSeed;
 
     // --- Editor ---
     [Header("====== References ======", order = 0)]
@@ -48,9 +45,7 @@ public class WorldManager : MonoBehaviour
     [Header("====== Pipeline Config ======", order = 1)]
     [Header("Overall", order = 2)]
     [SerializeField] private int pipelineMaxTries = 5;
-    [SerializeField] private int setSeed = -1;
     [SerializeField] public bool doNotGenerateShape;
-    [SerializeField] public bool toUpdate = false;
     [Header("Stage: Planet Polygon", order = 1)]
     [SerializeField] private PlanetPolygonGenerator.PlanetShapeInfo planetShapeInfo;
     [Header("Stage: Voronoi Mesh", order = 1)]
@@ -75,16 +70,6 @@ public class WorldManager : MonoBehaviour
     public ColorMode currentColorMode { get; private set; } = ColorMode.NONE;
 
     private SpriteRenderer atmosphere;
-    
-
-    private void Update()
-    {
-        if (toUpdate)
-        {
-            SafeGenerate();
-            toUpdate = false;
-        }
-    }
 
 
     #region Generation Pipeline
@@ -117,14 +102,11 @@ public class WorldManager : MonoBehaviour
     }
 
     [ContextMenu("Stage/- Generate")]
-    public void Generate()
+    public override void Generate()
     {
-        // Set seed to preset or random
-        chosenSeed = (setSeed != -1) ? setSeed : (int)DateTime.Now.Ticks;
-        UnityEngine.Random.InitState(chosenSeed);
 
         // Clear then run stages
-        ClearMain();
+        ClearOutput();
         _GenerateMesh();
         _ProcessSites();
         _InitializeComponents();
@@ -137,11 +119,11 @@ public class WorldManager : MonoBehaviour
     }
 
     [ContextMenu("Stage/- Clear")]
-    public void ClearMain()
+    public override void ClearOutput()
     {
         // Reset main variables
         if (mesh != null) mesh.Clear();
-        foliageManager.ClearMain();
+        foliageManager.ClearOutput();
         mesh = null;
         worldSites = null;
         surfaceEdges = null;
@@ -159,9 +141,13 @@ public class WorldManager : MonoBehaviour
 
         // Generate mesh
         meshGenerator.Generate(meshFilter, outsidePolygon, seedCount, seedMinDistance);
-        meshRenderer.material = meshMaterial;
         mesh = meshGenerator.mesh;
 
+        // Instantiate material
+        meshRenderer.material = Instantiate(meshMaterial);
+        float noiseScale = GetSurfaceRange()[0] / 30.0f;
+        meshRenderer.material.SetFloat("_NoiseScale", noiseScale);
+        
         // Generate world sites
         worldSites = new List<WorldSite>();
         foreach (MeshSite meshSite in meshGenerator.meshSites) worldSites.Add(new WorldSite(meshSite));
@@ -272,7 +258,7 @@ public class WorldManager : MonoBehaviour
         }
     }
 
-    [ContextMenu("Stage/3. Generate Atmosphere")]
+    [ContextMenu("Stage/3. Initialize Components")]
     private void _InitializeComponents()
     {
         // Create atmosphere object
@@ -373,4 +359,15 @@ public class WorldManager : MonoBehaviour
 
 
     public Vector3 GetClosestSurfacePoint(Vector2 pos) => outsidePolygon.ClosestPoint(pos);
+
+    public float[] GetSurfaceRange()
+    {
+        float min = 0, max = 0;
+        foreach (NoiseData noiseData in planetShapeInfo.noiseData)
+        {
+            min += noiseData.valueRange[0];
+            max += noiseData.valueRange[1];
+        }
+        return new float[] { min, max };
+    }
 }

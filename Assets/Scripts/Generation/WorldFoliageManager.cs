@@ -5,30 +5,43 @@ using static VoronoiMeshGenerator;
 using static WorldManager;
 
 
-public class WorldFoliageManager : MonoBehaviour
+public class WorldFoliageManager : Generator
 {
     // -- Parameters --
     [Header("Parameters")]
-    [SerializeField] WorldManager worldManager;
-    [SerializeField] Transform foliageContainer;
+    [SerializeField] private WorldManager worldManager;
+    [SerializeField] private Transform foliageContainer;
+    [SerializeField] private Transform objectContainer;
+    [SerializeField] private GameObject pebblePfb;
+    [SerializeField] private float pebbleChance = 0.01f;
 
     // -- Output --
     public List<SpriteRenderer> surfaceFoliage { get; private set; }
-
+    public List<GeneratorController> surfacePebbles { get; private set; }
+    
 
     [ContextMenu("Generate Foliage")]
-    public void Generate()
+    public override void Generate()
     {
         _GenerateFoliage();
+        _GeneratePebbles();
     }
 
     [ContextMenu("Clear Output")]
-    public void ClearOutput()
+    public override void ClearOutput()
     {
         // Delete foliage container children
         for (int i = foliageContainer.childCount - 1; i >= 0; i--) GameObject.DestroyImmediate(foliageContainer.GetChild(i).gameObject);
         if (surfaceFoliage == null) surfaceFoliage = new List<SpriteRenderer>();
         surfaceFoliage.Clear();
+
+        // Delete pebbles
+        if (surfacePebbles == null) surfacePebbles = new List<GeneratorController>();
+        foreach (GeneratorController p in surfacePebbles)
+        {
+            if (p != null) GameObject.DestroyImmediate(p.gameObject);
+        }
+        surfacePebbles.Clear();
     }
 
 
@@ -69,6 +82,37 @@ public class WorldFoliageManager : MonoBehaviour
             renderer.flipX = toFlipX;
             renderer.transform.localScale = new Vector3(renderer.transform.localScale.x, height, renderer.transform.localScale.z);
             surfaceFoliage.Add(renderer);
+        }
+    }
+
+    private void _GeneratePebbles()
+    {
+        for (int i = 0; i < worldManager.surfaceEdges.Count; i++)
+        {
+            float r = UnityEngine.Random.value;
+            if (r > pebbleChance) continue;
+
+            // Get edges and site
+            MeshSiteEdge edge = worldManager.surfaceEdges[i];
+            WorldSite site = worldManager.worldSites[edge.siteIndex];
+
+            // Generate a pebble on this edge
+            GameObject pebbleObj = Instantiate(pebblePfb);
+            GeneratorController pebble = pebbleObj.GetComponent<GeneratorController>();
+            pebbleObj.transform.parent = objectContainer;
+            surfacePebbles.Add(pebble);
+
+            // Generate the mesh and rotate
+            pebble.Generate();
+            pebble.transform.eulerAngles = new Vector3(0.0f, 0.0f, UnityEngine.Random.value * 360.0f);
+
+            // Position randomly
+            Vector2 a = worldManager.mesh.vertices[site.meshSite.meshVerticesI[edge.siteToVertexI]];
+            Vector2 b = worldManager.mesh.vertices[site.meshSite.meshVerticesI[edge.siteFromVertexI]];
+            float t = 0.25f + UnityEngine.Random.value * 0.5f;
+            Vector3 pos = transform.TransformPoint(Vector2.Lerp(a, b, t));
+            pos.z = 3.0f;
+            pebble.transform.position = pos;
         }
     }
 

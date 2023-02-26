@@ -7,7 +7,7 @@ using UnityEngine;
 using static GK.VoronoiClipper;
 
 
-public class VoronoiMeshGenerator : MonoBehaviour
+public class VoronoiMeshGenerator : Generator
 {
     [Serializable]
     public class MeshSiteVertex
@@ -125,7 +125,7 @@ public class VoronoiMeshGenerator : MonoBehaviour
     }
 
     [ContextMenu("Generate Mesh")]
-    public void Generate()
+    public override void Generate()
     {
         // Clear and cache
         ClearInternal();
@@ -142,7 +142,7 @@ public class VoronoiMeshGenerator : MonoBehaviour
         if (clearInternal) ClearInternal();
     }
 
-    public void ClearInternal()
+    public override void ClearInternal()
     {
         // Clear internal variables
         _voronoiSeedSites = null;
@@ -152,7 +152,7 @@ public class VoronoiMeshGenerator : MonoBehaviour
         _voronoiClipper = null;
     }
 
-    public void ClearOutput()
+    public override void ClearOutput()
     {
         // Clear external variables
         meshSites = null;
@@ -236,8 +236,8 @@ public class VoronoiMeshGenerator : MonoBehaviour
     private void _GenerateMeshAndSites()
     {
         // Setup all mesh data variables
-        _mesh = new Mesh();
-        _meshSites = new MeshSite[_voronoiClipper.clippedSites.Count];
+        mesh = new Mesh();
+        meshSites = new MeshSite[_voronoiClipper.clippedSites.Count];
         List<Vector3> vertices = new List<Vector3>();
         List<Vector3> normals = new List<Vector3>();
         List<Vector2> uvs = new List<Vector2>();
@@ -264,7 +264,7 @@ public class VoronoiMeshGenerator : MonoBehaviour
             meshSite.meshVerticesI = new int[clippedSite.clippedVertices.Count];
             meshSite.meshCentroidI = centroidVertexI;
             meshSite.neighbouringSites = new HashSet<int>();
-            _meshSites[i] = meshSite;
+            meshSites[i] = meshSite;
 
             // Add vertices vertex / uv / normal / color
             for (int o = 0; o < clippedSite.clippedVertices.Count; o++)
@@ -292,11 +292,11 @@ public class VoronoiMeshGenerator : MonoBehaviour
         }
 
         // Assign mesh variables
-        _mesh.vertices = vertices.ToArray();
-        _mesh.normals = normals.ToArray();
-        _mesh.uv = uvs.ToArray();
-        _mesh.triangles = triangles.ToArray();
-        meshFilter.mesh = _mesh;
+        mesh.vertices = vertices.ToArray();
+        mesh.normals = normals.ToArray();
+        mesh.uv = uvs.ToArray();
+        mesh.triangles = triangles.ToArray();
+        meshFilter.mesh = mesh;
     }
 
     private void _ProcessSites()

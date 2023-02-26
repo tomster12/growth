@@ -3,7 +3,7 @@ using System;
 using UnityEngine;
 
 
-public class PlanetPolygonGenerator : MonoBehaviour
+public class PlanetPolygonGenerator : Generator
 {
 
     [Serializable]
@@ -31,7 +31,7 @@ public class PlanetPolygonGenerator : MonoBehaviour
     }
 
     [ContextMenu("Generate Polygon")]
-    public void Generate()
+    public override void Generate()
     {
         // Clear output
         ClearOutput();
@@ -54,7 +54,7 @@ public class PlanetPolygonGenerator : MonoBehaviour
     }
 
 
-    public void ClearOutput()
+    public override void ClearOutput()
     {
         // Clear output variables
         points = null;
