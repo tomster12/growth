@@ -9,7 +9,7 @@ public class NoiseData
     [SerializeField] public float[] valueRange;
     [SerializeField] public float noiseScale = 1.0f;
 
-    public float seedOffset => (500.0f * Mathf.Abs(GeneratorController.globalSeed) / int.MaxValue);
+    private float currentOffset = 0;
 
 
     public NoiseData()
@@ -35,7 +35,7 @@ public class NoiseData
 
     public float GetNoise(float x, float y)
     {
-        return valueRange[0] + Mathf.PerlinNoise(x * noiseScale + seedOffset, y * noiseScale + seedOffset) * (valueRange[1] - valueRange[0]);
+        return valueRange[0] + Mathf.PerlinNoise(x * noiseScale + currentOffset, y * noiseScale + currentOffset) * (valueRange[1] - valueRange[0]);
     }
 
 
@@ -47,4 +47,7 @@ public class NoiseData
         float y = 0.5f + 0.5f * Mathf.Sin(a);
         return GetNoise(x, y);
     }
+
+
+    public void RandomizeOffset() => currentOffset = -100000 + UnityEngine.Random.value * 200000;
 }

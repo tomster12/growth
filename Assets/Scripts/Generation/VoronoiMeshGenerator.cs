@@ -169,7 +169,7 @@ public class VoronoiMeshGenerator : Generator
         {
             // Generate in a random position
             Vector2 seedWorld = Utility.RandomInPolygon(outsidePolygon, tries != 0);
-            Vector2 seedLocal = transform.InverseTransformPoint(seedWorld);
+            Vector2 seedLocal = outsidePolygon.transform.InverseTransformPoint(seedWorld);
             bool isValid = true;
             tries++;
 

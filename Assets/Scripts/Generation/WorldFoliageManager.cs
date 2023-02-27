@@ -23,6 +23,7 @@ public class WorldFoliageManager : Generator
     [ContextMenu("Generate Foliage")]
     public override void Generate()
     {
+        ClearOutput();
         _GenerateFoliage();
         _GeneratePebbles();
     }
@@ -70,8 +71,8 @@ public class WorldFoliageManager : Generator
             // Generate foliage and set position
             GameObject grass = Instantiate(site.groundMaterial.foliagePfb);
             grass.transform.parent = foliageContainer;
-            if (toFlipX) grass.transform.position = transform.TransformPoint(a + dir);
-            else grass.transform.position = transform.TransformPoint(a);
+            if (toFlipX) grass.transform.position = worldManager.worldTransform.TransformPoint(a + dir);
+            else grass.transform.position = worldManager.worldTransform.TransformPoint(a);
             grass.transform.right = dir.normalized;
 
             // Grow sprite to correct size
@@ -110,7 +111,7 @@ public class WorldFoliageManager : Generator
             Vector2 a = worldManager.mesh.vertices[site.meshSite.meshVerticesI[edge.siteToVertexI]];
             Vector2 b = worldManager.mesh.vertices[site.meshSite.meshVerticesI[edge.siteFromVertexI]];
             float t = 0.25f + UnityEngine.Random.value * 0.5f;
-            Vector3 pos = transform.TransformPoint(Vector2.Lerp(a, b, t));
+            Vector3 pos = worldManager.worldTransform.TransformPoint(Vector2.Lerp(a, b, t));
             pos.z = 3.0f;
             pebble.transform.position = pos;
         }

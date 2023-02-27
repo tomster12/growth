@@ -20,7 +20,7 @@ public class GeneratorController : MonoBehaviour
     [Header("Config")]
     [SerializeField] private int seed = 0;
     [SerializeField] public bool randomizeSeed = false;
-    [SerializeField] public bool leaveSeed = false;
+    [SerializeField] public bool resetSeed = true;
     [SerializeField] public bool toUpdate = false;
     [SerializeReference] public Generator[] generators;
 
@@ -39,7 +39,7 @@ public class GeneratorController : MonoBehaviour
     {
         // Set seed to preset or random
         if (randomizeSeed) seed = (int)DateTime.Now.Ticks;
-        if (!leaveSeed)
+        if (resetSeed)
         {
             UnityEngine.Random.InitState(seed);
             globalSeed = seed;

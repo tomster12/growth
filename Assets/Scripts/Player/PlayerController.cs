@@ -56,7 +56,7 @@ public class PlayerController : MonoBehaviour, IFollowable
     private void FixedUpdate()
     {
         // Calculate ground positions
-        groundPosition = world.GetClosestSurfacePoint(characterRB.transform.position);
+        groundPosition = world.GetClosestOverallPoint(characterRB.transform.position);
         groundDir = groundPosition - characterRB.transform.position;
         isGrounded = groundDir.magnitude < groundedHeight;
         upDir = groundDir.normalized * -1;

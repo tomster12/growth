@@ -19,8 +19,8 @@ public class PolygonMeshGenerator : Generator
     public override void Generate()
     {
         // Reset parent temporarily
-        Transform parent = transform.parent;
-        transform.parent = null;
+        Transform parent = polygon.transform.parent;
+        polygon.transform.parent = null;
 
         // Generate source mesh
         Mesh sourceMesh = polygon.CreateMesh(false, false);
@@ -42,7 +42,7 @@ public class PolygonMeshGenerator : Generator
             for (int o = i; o < i + 3; o++)
             {
                 Vector2 pos = sourceMesh.vertices[sourceMesh.triangles[o]];
-                pos = transform.InverseTransformPoint(pos);
+                pos = polygon.transform.InverseTransformPoint(pos);
                 vertices[o] = pos;
                 triangles[o] = o;
                 colors[o] = col;
@@ -62,6 +62,8 @@ public class PolygonMeshGenerator : Generator
         mesh.triangles = triangles;
         mesh.colors = colors;
         mf.mesh = mesh;
-        transform.parent = parent;
+
+        // Set transform back to previous
+        polygon.transform.parent = parent;
     }
 }

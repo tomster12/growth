@@ -46,7 +46,7 @@ public class WorldManager : Generator
     [Header("====== Pipeline Config ======", order = 1)]
     [Header("Overall", order = 2)]
     [SerializeField] private int pipelineMaxTries = 5;
-    [SerializeField] public bool doNotGenerateShape;
+    [SerializeField] private bool doNotGenerateShape;
     [Header("Stage: Planet Polygon", order = 1)]
     [SerializeField] private PlanetPolygonGenerator.PlanetShapeInfo planetShapeInfo;
     [Header("Stage: Voronoi Mesh", order = 1)]
@@ -69,6 +69,7 @@ public class WorldManager : Generator
     public List<WorldSite> worldSites { get; private set; }
     public List<MeshSiteEdge> surfaceEdges { get; private set; }
     public ColorMode currentColorMode { get; private set; } = ColorMode.NONE;
+    public Transform worldTransform => outsidePolygon.transform;
 
     private SpriteRenderer atmosphere;
 
@@ -129,7 +130,7 @@ public class WorldManager : Generator
         worldSites = null;
         surfaceEdges = null;
         currentColorMode = ColorMode.NONE;
-        if (atmosphere == null) atmosphere = transform.Find("Atmosphere")?.GetComponent<SpriteRenderer>();
+        if (atmosphere == null) atmosphere = worldTransform.Find("Atmosphere")?.GetComponent<SpriteRenderer>();
         if (atmosphere != null) DestroyImmediate(atmosphere.gameObject);
     }
 
@@ -266,7 +267,7 @@ public class WorldManager : Generator
         GameObject atmosphereGO = Instantiate(atmospherePfb);
         atmosphere = atmosphereGO.GetComponent<SpriteRenderer>();
         atmosphere.gameObject.name = "Atmosphere";
-        atmosphere.transform.parent = transform;
+        atmosphere.transform.parent = worldTransform;
         atmosphere.transform.localPosition = Vector3.zero;
 
         // Instantiate material
@@ -282,15 +283,15 @@ public class WorldManager : Generator
     [ContextMenu("Update/Components")]
     private void UpdateComponents()
     {
-        if (atmosphere == null) atmosphere = transform.Find("Atmosphere")?.GetComponent<SpriteRenderer>();
+        if (atmosphere == null) atmosphere = worldTransform.Find("Atmosphere")?.GetComponent<SpriteRenderer>();
 
         // Set global scale
         float targetScale = atmosphereSizeMax * 2.0f;
         atmosphere.transform.localScale = Vector3.one;
         atmosphere.transform.localScale = new Vector3(
-            targetScale / transform.lossyScale.x,
-            targetScale / transform.lossyScale.y,
-            targetScale / transform.lossyScale.z
+            targetScale / worldTransform.lossyScale.x,
+            targetScale / worldTransform.lossyScale.y,
+            targetScale / worldTransform.lossyScale.z
         );
 
         // Set shader min and max
@@ -359,7 +360,9 @@ public class WorldManager : Generator
     }
 
 
-    public Vector3 GetClosestSurfacePoint(Vector2 pos) => rb.ClosestPoint(pos);
+    public Vector3 GetClosestOverallPoint(Vector2 pos) => rb.ClosestPoint(pos);
+    
+    public Vector3 GetClosestSurfacePoint(Vector2 pos) => outsidePolygon.ClosestPoint(pos);
 
     public float[] GetSurfaceRange()
     {
