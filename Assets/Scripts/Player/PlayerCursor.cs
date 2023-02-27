@@ -19,11 +19,13 @@ public class PlayerCursor : MonoBehaviour
     [SerializeField] private float colorLerpSpeed = 3.0f;
 
 
-    private void Start()
-    {
-        Cursor.visible = false;
-    }
+    private void Start() => Focus();
 
+
+    private void Update()
+    {
+        if (Input.GetMouseButtonDown(0)) Focus();
+    }
 
     private void FixedUpdate()
     {
@@ -58,16 +60,22 @@ public class PlayerCursor : MonoBehaviour
             container.position = targetPos;
 
             // Spread out corners
-            cornerTL.transform.localPosition = Vector2.Lerp(cornerTL.transform.localPosition, new Vector2(-idleDistance,  idleDistance), Time.deltaTime * idleMovementSpeed);
-            cornerTR.transform.localPosition = Vector2.Lerp(cornerTR.transform.localPosition, new Vector2( idleDistance,  idleDistance), Time.deltaTime * idleMovementSpeed);
+            cornerTL.transform.localPosition = Vector2.Lerp(cornerTL.transform.localPosition, new Vector2(-idleDistance, idleDistance), Time.deltaTime * idleMovementSpeed);
+            cornerTR.transform.localPosition = Vector2.Lerp(cornerTR.transform.localPosition, new Vector2(idleDistance, idleDistance), Time.deltaTime * idleMovementSpeed);
             cornerBL.transform.localPosition = Vector2.Lerp(cornerBL.transform.localPosition, new Vector2(-idleDistance, -idleDistance), Time.deltaTime * idleMovementSpeed);
-            cornerBR.transform.localPosition = Vector2.Lerp(cornerBR.transform.localPosition, new Vector2( idleDistance, -idleDistance), Time.deltaTime * idleMovementSpeed);
-            
+            cornerBR.transform.localPosition = Vector2.Lerp(cornerBR.transform.localPosition, new Vector2(idleDistance, -idleDistance), Time.deltaTime * idleMovementSpeed);
+
             // Set colours
             cornerTL.color = Color.Lerp(cornerTL.color, idleColor, Time.deltaTime * colorLerpSpeed);
             cornerTR.color = Color.Lerp(cornerTR.color, idleColor, Time.deltaTime * colorLerpSpeed);
             cornerBL.color = Color.Lerp(cornerBL.color, idleColor, Time.deltaTime * colorLerpSpeed);
             cornerBR.color = Color.Lerp(cornerBR.color, idleColor, Time.deltaTime * colorLerpSpeed);
         }
+    }
+
+
+    void Focus()
+    {
+        Cursor.visible = false;
     }
 }

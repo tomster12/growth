@@ -34,6 +34,7 @@ public class WorldManager : Generator
     [Space(6, order = 0)]
     [Header("Components", order = 1)]
     [SerializeField] private PolygonCollider2D outsidePolygon;
+    [SerializeField] private Rigidbody2D rb;
     [SerializeField] private MeshRenderer meshRenderer;
     [SerializeField] private MeshFilter meshFilter;
     [SerializeField] private GravityAttractor gravityAttractor;
@@ -358,7 +359,7 @@ public class WorldManager : Generator
     }
 
 
-    public Vector3 GetClosestSurfacePoint(Vector2 pos) => outsidePolygon.ClosestPoint(pos);
+    public Vector3 GetClosestSurfacePoint(Vector2 pos) => rb.ClosestPoint(pos);
 
     public float[] GetSurfaceRange()
     {

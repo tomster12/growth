@@ -119,21 +119,21 @@ public class PlayerController : MonoBehaviour, IFollowable
         {
             if (jumpTimer == 0.0f) Gizmos.color = Color.green;
             else Gizmos.color = Color.white;
-            Gizmos.DrawLine(transform.position, transform.position + upDir);
+            Gizmos.DrawLine(characterRB.transform.position, characterRB.transform.position + upDir);
         }
 
         // Draw to ground
         if (groundPosition != Vector3.zero)
         {
             Gizmos.color = Color.blue;
-            Gizmos.DrawLine(transform.position, groundPosition);
+            Gizmos.DrawLine(characterRB.transform.position, groundPosition);
         }
 
         // Draw to target
         if (targetPosition != Vector3.zero && isGrounded)
         {
             Gizmos.color = Color.green;
-            Gizmos.DrawLine(transform.position, targetPosition);
+            Gizmos.DrawLine(characterRB.transform.position, targetPosition);
         }
     }
 }
