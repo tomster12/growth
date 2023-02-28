@@ -10,14 +10,19 @@ public class WorldFoliageManager : Generator
     // -- Parameters --
     [Header("Parameters")]
     [SerializeField] private WorldManager worldManager;
+    [SerializeField] private Transform featureContainer;
+    [SerializeField] private Transform foregroundContainer;
+    [SerializeField] private Transform terrainContainer;
     [SerializeField] private Transform foliageContainer;
-    [SerializeField] private Transform objectContainer;
     [SerializeField] private GameObject pebblePfb;
-    [SerializeField] private float pebbleChance = 0.01f;
+    [SerializeField] private GameObject boulderTerrainPfb;
+    [SerializeField] private GameObject boulderFeaturePfb;
+    [SerializeField] private float stoneChance = 0.03f;
+    [SerializeField] private float[] stoneChances = new float[] { 0.8f, 0.1f, 0.1f };
 
     // -- Output --
     public List<SpriteRenderer> surfaceFoliage { get; private set; }
-    public List<GeneratorController> surfacePebbles { get; private set; }
+    public List<GeneratorController> surfaceStones { get; private set; }
     
 
     [ContextMenu("Generate Foliage")]
@@ -25,7 +30,7 @@ public class WorldFoliageManager : Generator
     {
         ClearOutput();
         _GenerateFoliage();
-        _GeneratePebbles();
+        _GeneratePebblesAndBoulders();
     }
 
     [ContextMenu("Clear Output")]
@@ -37,12 +42,12 @@ public class WorldFoliageManager : Generator
         surfaceFoliage.Clear();
 
         // Delete pebbles
-        if (surfacePebbles == null) surfacePebbles = new List<GeneratorController>();
-        foreach (GeneratorController p in surfacePebbles)
+        if (surfaceStones == null) surfaceStones = new List<GeneratorController>();
+        foreach (GeneratorController p in surfaceStones)
         {
             if (p != null) GameObject.DestroyImmediate(p.gameObject);
         }
-        surfacePebbles.Clear();
+        surfaceStones.Clear();
     }
 
 
@@ -86,26 +91,42 @@ public class WorldFoliageManager : Generator
         }
     }
 
-    private void _GeneratePebbles()
+    private void _GeneratePebblesAndBoulders()
     {
         for (int i = 0; i < worldManager.surfaceEdges.Count; i++)
         {
             float r = UnityEngine.Random.value;
-            if (r > pebbleChance) continue;
+            if (r > stoneChance) continue;
 
             // Get edges and site
             MeshSiteEdge edge = worldManager.surfaceEdges[i];
             WorldSite site = worldManager.worldSites[edge.siteIndex];
 
             // Generate a pebble on this edge
-            GameObject pebbleObj = Instantiate(pebblePfb);
-            GeneratorController pebble = pebbleObj.GetComponent<GeneratorController>();
-            pebbleObj.transform.parent = objectContainer;
-            surfacePebbles.Add(pebble);
+            // Randomly pick a stone type
+            float sr = UnityEngine.Random.value;
+            GameObject stoneObj;
+            if (sr < stoneChances[0])
+            {
+                stoneObj = Instantiate(pebblePfb);
+                stoneObj.transform.parent = foregroundContainer;
+            }
+            else if (sr < (stoneChances[0] + stoneChances[1]))
+            {
+                stoneObj = Instantiate(boulderTerrainPfb);
+                stoneObj.transform.parent = terrainContainer;
+            }
+            else
+            {
+                stoneObj = Instantiate(boulderFeaturePfb);
+                stoneObj.transform.parent = featureContainer;
+            }
 
             // Generate the mesh and rotate
-            pebble.Generate();
-            pebble.transform.eulerAngles = new Vector3(0.0f, 0.0f, UnityEngine.Random.value * 360.0f);
+            GeneratorController stone = stoneObj.GetComponent<GeneratorController>();
+            surfaceStones.Add(stone);
+            stone.Generate();
+            stone.transform.eulerAngles = new Vector3(0.0f, 0.0f, UnityEngine.Random.value * 360.0f);
 
             // Position randomly
             Vector2 a = worldManager.mesh.vertices[site.meshSite.meshVerticesI[edge.siteToVertexI]];
@@ -113,7 +134,7 @@ public class WorldFoliageManager : Generator
             float t = 0.25f + UnityEngine.Random.value * 0.5f;
             Vector3 pos = worldManager.worldTransform.TransformPoint(Vector2.Lerp(a, b, t));
             pos.z = 3.0f;
-            pebble.transform.position = pos;
+            stone.transform.position = pos;
         }
     }
 

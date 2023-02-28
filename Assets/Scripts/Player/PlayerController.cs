@@ -23,20 +23,22 @@ public class PlayerController : MonoBehaviour, IFollowable
     [SerializeField] private float groundMovementSpeed = 2.0f;
     [SerializeField] private float jumpForce = 15.0f;
     [SerializeField] private float jumpTimerMax = 0.5f;
+    [SerializeField] private bool drawGizmos = false;
 
-    private Vector3 groundPosition, groundDir, upDir;
-    private Vector3 rightDir => new Vector3(upDir.y, -upDir.x, 0.0f);
-    private Vector3 targetPosition;
-
+    public Vector3 groundPosition { get; private set; }
+    public Vector3 groundDir { get; private set; }
+    public Vector3 upDir { get; private set; }
+    public Vector3 rightDir => new Vector3(upDir.y, -upDir.x, 0.0f);
+    public Vector3 targetPosition { get; private set; }
+    public bool isGrounded { get; private set; }
     private Vector3 inputDir;
     private bool inputJump;
-    private bool isGrounded;
     private float jumpTimer = 0.0f;
 
 
     private void Start()
     {
-        playerCamera.SetModeFollow(this);
+        playerCamera.SetModeFollow(this, true);
     }
 
 
@@ -60,7 +62,11 @@ public class PlayerController : MonoBehaviour, IFollowable
         groundDir = groundPosition - characterRB.transform.position;
         isGrounded = groundDir.magnitude < groundedHeight;
         upDir = groundDir.normalized * -1;
+        UpdateMovement();
+    }
 
+    private void UpdateMovement()
+    {
         //  Rotate upwards
         float angleDiff = (Vector2.SignedAngle(characterRB.transform.up, upDir) - 0) % 360 + 0;
         characterRB.AddTorque(angleDiff * rotationSpeed * Mathf.Deg2Rad);
@@ -114,6 +120,8 @@ public class PlayerController : MonoBehaviour, IFollowable
 
     private void OnDrawGizmos()
     {
+        if (!drawGizmos) return;
+
         // Draw upwards
         if (upDir != Vector3.zero)
         {

@@ -83,7 +83,6 @@ public class PlayerCamera : MonoBehaviour
         controlledTransform.up = Vector2.Lerp(controlledTransform.up, follow.GetFollowUpwards(), Time.deltaTime * followRotationSpeed);
     }
 
-
     private void UpdateCameraZoom()
     {
         // Set the zoom using zoom level
@@ -92,10 +91,18 @@ public class PlayerCamera : MonoBehaviour
     }
 
 
-    public void SetModeFollow(IFollowable follow)
+    public void SetModeFollow(IFollowable follow, bool set=false)
     {
         mode = CameraMode.FOLLOW;
         this.follow = follow;
+
+        // Set values
+        if (set)
+        {
+            Vector2 pos = follow.GetFollowTransform().position;
+            controlledTransform.position = new Vector3(pos.x, pos.y, controlledTransform.position.z);
+            controlledTransform.up = follow.GetFollowUpwards();
+        }
     }
 
     public void SetModeFree()

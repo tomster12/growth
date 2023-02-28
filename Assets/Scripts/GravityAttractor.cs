@@ -35,5 +35,6 @@ public class GravityAttractor : MonoBehaviour
         }
     }
 
+
     public Vector2 ClosestPoint(Vector2 pos) => rigidbodySurface ? rb.ClosestPoint(pos) : polygonCollider.ClosestPoint(pos);
 }
