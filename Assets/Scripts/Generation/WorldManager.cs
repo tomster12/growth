@@ -9,6 +9,9 @@ using static VoronoiMeshGenerator;
 [ExecuteInEditMode]
 public class WorldManager : Generator
 {
+    public static List<WorldManager> worlds = new List<WorldManager>();
+
+
     public enum ColorMode { NONE, STANDARD, RANDOM, DEPTH };
 
     public class WorldSite
@@ -72,6 +75,12 @@ public class WorldManager : Generator
     public Transform worldTransform => outsidePolygon.transform;
 
     private SpriteRenderer atmosphere;
+
+
+    private void Awake()
+    {
+        worlds.Add(this);
+    }
 
 
     #region Generation Pipeline

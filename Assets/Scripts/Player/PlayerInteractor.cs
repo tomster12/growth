@@ -40,6 +40,7 @@ public class PlayerInteractor : MonoBehaviour
     [Header("References")]
     [SerializeField] private Transform cursorContainer;
     [SerializeField] private SpriteRenderer cursorCornerTL, cursorCornerTR, cursorCornerBL, cursorCornerBR;
+    [SerializeField] private PlayerLegs playerLegs;
 
     [Header("Config")]
     [SerializeField] private Color cursorIdleColor = new Color(0.9f, 0.9f, 0.9f);
@@ -65,13 +66,22 @@ public class PlayerInteractor : MonoBehaviour
 
 
     private void Update()
-{
-    // Focus on click window
-    if (Input.GetMouseButtonDown(0)) Focus();
+    {
+        // Focus on click window
+        if (Input.GetMouseButtonDown(0)) Focus();
 
-    // Main update
-    UpdateHover();
-}
+        // Main update
+        UpdateHover();
+
+        // Point leg
+        if (Input.GetMouseButton(0))
+        {
+            playerLegs.isPointing = true;
+            playerLegs.pointingLeg = 2;
+            playerLegs.pointingPos = hoverPos;
+        }
+        else playerLegs.isPointing = false;
+    }
 
     private void FixedUpdate()
     {

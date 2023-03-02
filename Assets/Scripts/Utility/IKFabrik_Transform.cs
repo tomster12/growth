@@ -2,10 +2,9 @@
 using UnityEngine;
 
 
-public class IKFabrik_Transform : MonoBehaviour
+public class IKFabrik_Transform : IKFabrik
 {
-    [Header("References")]
-    [SerializeField] private IKFabrik_Seperated IK;
+    [Header("Transform References")]
     [SerializeField] private Transform target;
     [SerializeField] private Transform pole;
 
@@ -13,9 +12,9 @@ public class IKFabrik_Transform : MonoBehaviour
     private void Update()
     {
         // Update IK variables
-        IK.targetPos = target.position;
-        IK.targetRot = target.rotation;
-        IK.polePos = pole.position;
-        IK.poleRot = pole.rotation;
+        targetPos = target.position;
+        targetRot = target.rotation;
+        polePos = pole.position;
+        poleRot = pole.rotation;
     }
 }

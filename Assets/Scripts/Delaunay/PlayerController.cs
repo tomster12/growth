@@ -12,21 +12,27 @@ public class PlayerController : MonoBehaviour, IFollowable
 
     [Header("Config")]
     [SerializeField] private float rotationSpeed = 4.0f;
-    [SerializeField] private float _groundedHeight = 1.3f;
-    [SerializeField] private float _feetHeight = 1.0f;
+    [SerializeField] private float groundedSpacing = 0.3f;
     [SerializeField] private float feetRaiseStrength = 1.0f;
     [SerializeField] private float feetLowerStrength = 0.1f;
+    [SerializeField] private float verticalLeanHeight = 0.2f;
+    [SerializeField] private float baseFeetHeight = 1.0f;
+    public float feetHeight => baseFeetHeight + inputVerticalLean * verticalLeanHeight;
+    public float groundedHeight => feetHeight + groundedSpacing;
+    [Space(10)]
     [SerializeField] private float airDrag = 1.0f;
     [SerializeField] private float airAngularDrag = 1.0f;
     [SerializeField] private float airMovementSpeed = 0.5f;
+    [Space(10)]
     [SerializeField] private float groundDrag = 8.0f;
     [SerializeField] private float groundAngularDrag = 10.0f;
     [SerializeField] private float groundMovementSpeed = 2.0f;
+    [Space(10)]
     [SerializeField] private float jumpForce = 15.0f;
     [SerializeField] private float jumpTimerMax = 0.5f;
     [SerializeField] private float verticalJumpThreshold = 0.1f;
+    [Space(10)]
     [SerializeField] private bool drawGizmos = false;
-
 
     public Vector2 groundPosition { get; private set; }
     public Vector2 groundDir { get; private set; }
@@ -34,19 +40,19 @@ public class PlayerController : MonoBehaviour, IFollowable
     public Vector2 targetPosition { get; private set; }
     public bool isGrounded { get; private set; }
 
-    public float groundedHeight => _groundedHeight;
-    public float feetHeight => _feetHeight;
     public Vector2 rightDir => new Vector2(upDir.y, -upDir.x);
     public Rigidbody2D rb => characterRB;
     public new Transform transform => characterRB.transform;
 
-    private Vector2 inputDir;
+    public Vector2 inputDir { get; private set; }
     private bool inputJump;
+    private int inputVerticalLean;
     private float jumpTimer = 0.0f;
 
 
     private void Start()
     {
+        // Set camera to follow
         playerCamera.SetModeFollow(this, true);
     }
 
@@ -56,6 +62,7 @@ public class PlayerController : MonoBehaviour, IFollowable
         // Take in input
         inputDir = Vector3.zero;
         inputDir += Input.GetAxisRaw("Horizontal") * rightDir;
+        inputVerticalLean = Input.GetAxisRaw("Vertical") == 0 ? 0 : (int)Mathf.Sign(Input.GetAxisRaw("Vertical"));
         
         // Vertical movement while not grounded
         if (!isGrounded) inputDir += Input.GetAxisRaw("Horizontal") * rightDir;
@@ -66,8 +73,21 @@ public class PlayerController : MonoBehaviour, IFollowable
 
     private void FixedUpdate()
     {
+        // Calculate closest world and ground position
+        float closestDst = float.PositiveInfinity;
+        foreach (WorldManager world in WorldManager.worlds)
+        {
+            Vector2 closestGroundPosition = world.GetClosestOverallPoint(characterRB.transform.position);
+            float dst = (closestGroundPosition - (Vector2)rb.transform.position).magnitude;
+            if (dst < closestDst)
+            {
+                this.world = world;
+                groundPosition = closestGroundPosition;
+                closestDst = dst;
+            }
+        }
+
         // Calculate ground positions
-        groundPosition = world.GetClosestOverallPoint(characterRB.transform.position);
         groundDir = groundPosition - (Vector2)characterRB.transform.position;
         isGrounded = groundDir.magnitude < groundedHeight;
         upDir = groundDir.normalized * -1;
@@ -77,9 +97,10 @@ public class PlayerController : MonoBehaviour, IFollowable
     private void UpdateMovement()
     {
         //  Rotate upwards
-        float angleDiff = (Vector2.SignedAngle(characterRB.transform.up, upDir) - 0) % 360 + 0;
+        float angleDiff = isGrounded
+            ? (Vector2.SignedAngle(characterRB.transform.up, upDir)) % 360
+            : (Vector2.SignedAngle(characterRB.transform.up, rb.velocity.normalized)) % 360;
         characterRB.AddTorque(angleDiff * rotationSpeed * Mathf.Deg2Rad);
-        
 
         // - While grounded
         if (isGrounded)
