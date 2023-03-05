@@ -421,6 +421,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 11705718}
   hoverCollider: {fileID: 11705722}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &11705718
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3030,6 +3032,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 131764417}
   hoverCollider: {fileID: 131764421}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &131764417
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3512,6 +3516,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 159894004}
   hoverCollider: {fileID: 159894008}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &159894004
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4464,6 +4470,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 220304816}
   hoverCollider: {fileID: 220304820}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &220304816
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8520,6 +8528,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 391301158}
   hoverCollider: {fileID: 391301162}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &391301158
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8759,6 +8769,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 395662338}
   hoverCollider: {fileID: 395662342}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &395662338
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9542,6 +9554,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 405181495}
   hoverCollider: {fileID: 405181499}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &405181495
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9751,6 +9765,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 405229647}
   hoverCollider: {fileID: 405229651}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &405229647
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9960,6 +9976,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 407532967}
   hoverCollider: {fileID: 407532971}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &407532967
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10912,6 +10930,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 437889267}
   hoverCollider: {fileID: 437889271}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &437889267
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12875,6 +12895,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 497023784}
   hoverCollider: {fileID: 497023788}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &497023784
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13365,6 +13387,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 505909447}
   hoverCollider: {fileID: 505909451}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &505909447
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14471,6 +14495,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 540106128}
   hoverCollider: {fileID: 540106132}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &540106128
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17284,6 +17310,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 643560393}
   hoverCollider: {fileID: 643560397}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &643560393
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17494,6 +17522,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 644803850}
   hoverCollider: {fileID: 644803855}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &644803850
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18674,6 +18704,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 680254125}
   hoverCollider: {fileID: 680254129}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &680254125
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19406,6 +19438,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 722873753}
   hoverCollider: {fileID: 722873757}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &722873753
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -21660,6 +21694,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 769248155}
   hoverCollider: {fileID: 769248159}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &769248155
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24624,6 +24660,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 878112253}
   hoverCollider: {fileID: 878112257}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &878112253
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25810,6 +25848,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 930792067}
   hoverCollider: {fileID: 930792071}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &930792067
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26434,6 +26474,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 966915988}
   hoverCollider: {fileID: 966915992}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &966915988
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27217,6 +27259,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 995003520}
   hoverCollider: {fileID: 995003524}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &995003520
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27426,6 +27470,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1001142945}
   hoverCollider: {fileID: 1001142949}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1001142945
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27881,6 +27927,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1013675347}
   hoverCollider: {fileID: 1013675351}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1013675347
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28255,6 +28303,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1031320357}
   hoverCollider: {fileID: 1031320362}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1031320357
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28747,6 +28797,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1042791782}
   hoverCollider: {fileID: 1042791786}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1042791782
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -29284,6 +29336,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1054454216}
   hoverCollider: {fileID: 1054454220}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1054454216
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -30728,6 +30782,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1112493536}
   hoverCollider: {fileID: 1112493540}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1112493536
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -31183,6 +31239,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1117067184}
   hoverCollider: {fileID: 1117067188}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1117067184
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -32252,6 +32310,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1146683099}
   hoverCollider: {fileID: 1146683103}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1146683099
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -32617,6 +32677,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1155673851}
   hoverCollider: {fileID: 1155673855}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1155673851
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33836,6 +33898,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1186010489}
   hoverCollider: {fileID: 1186010493}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1186010489
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -34368,6 +34432,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1196861500}
   hoverCollider: {fileID: 1196861504}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1196861500
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -35233,6 +35299,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1247158205}
   hoverCollider: {fileID: 1247158209}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1247158205
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -36543,6 +36611,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1308916125}
   hoverCollider: {fileID: 1308916130}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1308916125
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -38213,6 +38283,170 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!43 &1382197430
+Mesh:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  serializedVersion: 10
+  m_SubMeshes:
+  - serializedVersion: 2
+    firstByte: 0
+    indexCount: 18
+    topology: 0
+    baseVertex: 0
+    firstVertex: 0
+    vertexCount: 18
+    localAABB:
+      m_Center: {x: 0.017004013, y: 0.0063819885, z: 0}
+      m_Extent: {x: 0.2111988, y: 0.28413773, z: 0}
+  m_Shapes:
+    vertices: []
+    shapes: []
+    channels: []
+    fullWeights: []
+  m_BindPose: []
+  m_BoneNameHashes: 
+  m_RootBoneNameHash: 0
+  m_BonesAABB: []
+  m_VariableBoneCountWeights:
+    m_Data: 
+  m_MeshCompression: 0
+  m_IsReadable: 1
+  m_KeepVertices: 1
+  m_KeepIndices: 1
+  m_IndexFormat: 0
+  m_IndexBuffer: 00000100020003000400050006000700080009000a000b000c000d000e000f0010001100
+  m_VertexData:
+    serializedVersion: 3
+    m_VertexCount: 18
+    m_Channels:
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 3
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 12
+      format: 0
+      dimension: 4
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    - stream: 0
+      offset: 0
+      format: 0
+      dimension: 0
+    m_DataSize: 504
+    _typelessdata: 00ae693e0000000000000000869b363f869b363f869b363f0000803f00634c3e00644cbe00000000869b363f869b363f869b363f0000803f00c53b3e00c63b3e00000000869b363f869b363f869b363f0000803f00c53b3e00c63b3e000000007af0343f7af0343f7af0343f0000803f00634c3e00644cbe000000007af0343f7af0343f7af0343f0000803f0000000000bf943e000000007af0343f7af0343f7af0343f0000803f00634c3e00644cbe00000000d68b3a3fd68b3a3fd68b3a3f0000803f0000000000368ebe00000000d68b3a3fd68b3a3fd68b3a3f0000803f0000000000bf943e00000000d68b3a3fd68b3a3fd68b3a3f0000803f0000000000368ebe00000000b050553fb050553fb050553f0000803f00481abe00481abe00000000b050553fb050553fb050553f0000803f0000000000bf943e00000000b050553fb050553fb050553f0000803f0000000000bf943e0000000083d32f3f83d32f3f83d32f3f0000803f00481abe00481abe0000000083d32f3f83d32f3f83d32f3f0000803f00f228be00f2283e0000000083d32f3f83d32f3f83d32f3f0000803f00db46be00000000000000000afb3d3f0afb3d3f0afb3d3f0000803f00f228be00f2283e000000000afb3d3f0afb3d3f0afb3d3f0000803f00481abe00481abe000000000afb3d3f0afb3d3f0afb3d3f0000803f
+  m_CompressedMesh:
+    m_Vertices:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_UV:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Normals:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Tangents:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Weights:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_NormalSigns:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_TangentSigns:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_FloatColors:
+      m_NumItems: 0
+      m_Range: 0
+      m_Start: 0
+      m_Data: 
+      m_BitSize: 0
+    m_BoneIndices:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_Triangles:
+      m_NumItems: 0
+      m_Data: 
+      m_BitSize: 0
+    m_UVInfo: 0
+  m_LocalAABB:
+    m_Center: {x: 0.017004013, y: 0.0063819885, z: 0}
+    m_Extent: {x: 0.2111988, y: 0.28413773, z: 0}
+  m_MeshUsageFlags: 0
+  m_BakedConvexCollisionMesh: 
+  m_BakedTriangleCollisionMesh: 
+  m_MeshMetrics[0]: 1
+  m_MeshMetrics[1]: 1
+  m_MeshOptimizationFlags: 1
+  m_StreamData:
+    serializedVersion: 2
+    offset: 0
+    size: 0
+    path: 
 --- !u!1 &1391991488
 GameObject:
   m_ObjectHideFlags: 0
@@ -38511,6 +38745,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1409324568}
   hoverCollider: {fileID: 1409324572}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1409324568
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -39212,6 +39448,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1434192933}
   hoverCollider: {fileID: 1434192937}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1434192933
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -40592,6 +40830,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1475542253}
   hoverCollider: {fileID: 1475542257}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1475542253
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -41734,6 +41974,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1512463787}
   hoverCollider: {fileID: 1512463791}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1512463787
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -42025,6 +42267,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1514693388}
   hoverCollider: {fileID: 1514693392}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1514693388
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -42891,6 +43135,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1534453594}
   hoverCollider: {fileID: 1534453599}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1534453594
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -43137,6 +43383,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1539722904}
   hoverCollider: {fileID: 1539722908}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1539722904
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -44529,6 +44777,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1593947918}
   hoverCollider: {fileID: 1593947922}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1593947918
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -45685,6 +45935,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1646883984}
   hoverCollider: {fileID: 1646883988}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1646883984
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -47768,6 +48020,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1730404243}
   hoverCollider: {fileID: 1730404247}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1730404243
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -47977,6 +48231,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1730451884}
   hoverCollider: {fileID: 1730451888}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1730451884
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -49109,6 +49365,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1773539368}
   hoverCollider: {fileID: 1773539372}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1773539368
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -50213,6 +50471,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1809588171}
   hoverCollider: {fileID: 1809588175}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1809588171
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -50617,6 +50877,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1815490092}
   hoverCollider: {fileID: 1815490096}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1815490092
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -50990,6 +51252,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1822786322}
   hoverCollider: {fileID: 1822786326}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1822786322
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -51199,6 +51463,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1822855510}
   hoverCollider: {fileID: 1822855514}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1822855510
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -53894,6 +54160,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1930930358}
   hoverCollider: {fileID: 1930930362}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1930930358
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54513,6 +54781,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1949867469}
   hoverCollider: {fileID: 1949867473}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1949867469
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54722,6 +54992,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1956500720}
   hoverCollider: {fileID: 1956500724}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1956500720
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -55587,6 +55859,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 1992653968}
   hoverCollider: {fileID: 1992653972}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &1992653968
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56697,6 +56971,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 2034137662}
   hoverCollider: {fileID: 2034137666}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &2034137662
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -58608,6 +58884,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outline: {fileID: 2122478911}
   hoverCollider: {fileID: 2122478915}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &2122478911
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -59257,6 +59535,203 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &854205155189348389
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 854205155189348410}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e30236f4aea43be4689f9e112d9e56e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  seed: 118810484
+  randomizeSeed: 0
+  resetSeed: 0
+  toUpdate: 0
+  generators:
+  - {fileID: 6981440747798049443}
+  - {fileID: 854205155189348407}
+--- !u!4 &854205155189348400
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 854205155189348410}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -36.16, y: 74.69, z: 3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 12
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!60 &854205155189348405
+PolygonCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 854205155189348410}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Points:
+    m_Paths:
+    - - {x: 0.22820191, y: 0}
+      - {x: 0.18337034, y: 0.18337034}
+      - {x: -0.000000012699016, y: 0.29051962}
+      - {x: -0.16498698, y: 0.16498698}
+      - {x: -0.19419445, y: -0.000000016977019}
+      - {x: -0.15066697, y: -0.15066703}
+      - {x: 0.0000000033122012, y: -0.2777555}
+      - {x: 0.19959795, y: -0.19959782}
+--- !u!114 &854205155189348406
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 854205155189348410}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c68b36e5e6f141b4fa8d1cd83375b4b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  baseOutlineMask: {fileID: 2100000, guid: 7c07f1ea1c5aa7242bbaac53e7a1fcfb, type: 2}
+  baseOutlineFill: {fileID: 2100000, guid: 5fe7295634e36644095f6ac650046a29, type: 2}
+--- !u!114 &854205155189348407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 854205155189348410}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da23c10e860f37a4b9cc5c05a8af0ac6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mf: {fileID: 854205155189348408}
+  polygon: {fileID: 854205155189348405}
+  colorRange:
+  - {r: 0.5377358, g: 0.5377358, b: 0.5377358, a: 1}
+  - {r: 0.9150943, g: 0.9150943, b: 0.9150943, a: 1}
+  colorNoise:
+    valueRange:
+    - 0
+    - 1
+    noiseScale: 3
+--- !u!33 &854205155189348408
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 854205155189348410}
+  m_Mesh: {fileID: 1382197430}
+--- !u!23 &854205155189348409
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 854205155189348410}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: d522089b7af6b3645bf49a7ecf070803, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &854205155189348410
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 854205155189348400}
+  - component: {fileID: 854205155189348408}
+  - component: {fileID: 854205155189348409}
+  - component: {fileID: 854205155189348405}
+  - component: {fileID: 6981440747798049443}
+  - component: {fileID: 854205155189348407}
+  - component: {fileID: 854205155189348389}
+  - component: {fileID: 854205155189348406}
+  - component: {fileID: 1077954223423449094}
+  m_Layer: 11
+  m_Name: Pluckable Stone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1077954223423449094
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 854205155189348410}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59dca7b3da9ff3d47be59f9d056533ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outline: {fileID: 854205155189348406}
+  hoverCollider: {fileID: 854205155189348405}
+  canHover: 1
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
+  rb: {fileID: 0}
+  controlForce: 30
+  controlDrag: 20
+  idleDrag: 0.5
+  targetPosition: {x: 0, y: 0}
+  rb: {fileID: 0}
 --- !u!114 &3193650149239164192
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -59458,3 +59933,23 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &6981440747798049443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 854205155189348410}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 393151930b50a4746b478d53b1cda916, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outsidePolygon: {fileID: 854205155189348405}
+  shapeInfo:
+    vertexCount: 8
+    noiseData:
+    - valueRange:
+      - 0.05
+      - 0.5
+      noiseScale: 0.6

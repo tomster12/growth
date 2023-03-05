@@ -2,41 +2,31 @@
 using UnityEngine;
 
 
-public interface IHoverable
+public class ComponentHoverable : MonoBehaviour, IHoverable
 {
-    public void SetHovered(bool isHovered);
+    public static Color WHITE = new Color(1.0f, 1.0f, 1.0f);
 
-    public Bounds GetBounds();
-
-    public GameObject GetGameObject();
-}
-
-
-public class HoverableObject : MonoBehaviour, IHoverable
-{
-    [Header("References")]
+    [Header("Hoverable References")]
     [SerializeField] private OutlineController outline;
     [SerializeField] private Collider2D hoverCollider;
 
+    public bool canHover = true;
+    public Color hoverColor = WHITE;
     public bool isHovered { get; private set; }
 
 
     public void SetHovered(bool isHovered)
     {
         if (this.isHovered == isHovered) return;
+        if (!canHover && isHovered) return;
 
         // Update variables
         this.isHovered = isHovered;
         outline.enabled = this.isHovered;
     }
 
-    public Bounds GetBounds()
-    {
-        return hoverCollider.bounds;
-    }
 
-    public GameObject GetGameObject()
-    {
-        return gameObject;
-    }
+    public Bounds GetBounds() => hoverCollider.bounds;
+    
+    public GameObject GetGameObject() => gameObject;
 }

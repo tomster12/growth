@@ -7,9 +7,9 @@ using static VoronoiMeshGenerator;
 
 
 [ExecuteInEditMode]
-public class WorldManager : Generator
+public class World : Generator
 {
-    public static List<WorldManager> worlds = new List<WorldManager>();
+    public static List<World> worlds = new List<World>();
 
 
     public enum ColorMode { NONE, STANDARD, RANDOM, DEPTH };
@@ -33,7 +33,7 @@ public class WorldManager : Generator
     [Header("Generators", order = 1)]
     [SerializeField] private PlanetPolygonGenerator planetPolygonGenerator;
     [SerializeField] private VoronoiMeshGenerator meshGenerator;
-    [SerializeField] private WorldFoliageManager foliageManager;
+    [SerializeField] private WorldFoliager foliageManager;
     [Space(6, order = 0)]
     [Header("Components", order = 1)]
     [SerializeField] private PolygonCollider2D outsidePolygon;

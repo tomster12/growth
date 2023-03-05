@@ -1,42 +1,124 @@
 
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
+[Serializable]
+public abstract class InteractionInput
+{
+    public static InteractionInput LMB = new InteractionMouseInput(0);
+    public static InteractionInput RMB = new InteractionMouseInput(0);
 
-public class HoverInfo
+    public String name;
+
+    public abstract bool CheckInput();
+    public abstract bool CheckInputDown();
+    public abstract bool CheckInputUp();
+}
+
+public class InteractionKeyInput : InteractionInput
+{
+    public KeyCode code;
+
+    public InteractionKeyInput(KeyCode code)
+    {
+        this.name = code.ToString();
+        this.code = code;
+    }
+
+    public override bool CheckInput() => Input.GetKey(code);
+    public override bool CheckInputDown() => Input.GetKeyDown(code);
+    public override bool CheckInputUp() => Input.GetKeyUp(code);
+}
+
+public class InteractionMouseInput : InteractionInput
+{
+    public int button;
+
+    public InteractionMouseInput(int button)
+    {
+        this.name = button == 0 ? "LMB" : button == 1 ? "RMB" : button.ToString();
+        this.button = button;
+    }
+
+    public override bool CheckInput() => Input.GetMouseButton(button);
+    public override bool CheckInputDown() => Input.GetMouseButtonDown(button);
+    public override bool CheckInputUp() => Input.GetMouseButtonUp(button);
+}
+
+[Serializable]
+public class Interaction
+{
+    public enum Visibility { HIDDEN, ICON, FULL }
+
+    public bool isEnabled;
+    public Visibility visibility;
+    public String name;
+    public Action callback;
+    public InteractionInput input;
+
+    public Interaction(bool isEnabled, Visibility visibility, string name, Action callback, InteractionInput input)
+    {
+        this.isEnabled = isEnabled;
+        this.visibility = visibility;
+        this.name = name;
+        this.callback = callback;
+        this.input = input;
+    }
+}
+
+
+public interface IHoverable
+{
+    public void SetHovered(bool isHovered);
+
+    public Bounds GetBounds();
+    public GameObject GetGameObject();
+}
+
+public interface IInteractable
+{
+    public List<Interaction> GetInteractions();
+}
+
+
+public class HoverManager
 {
     public bool isHovering;
-    public IHoverable cursorHoveredIHoverable;
-    public GameObject cursorHoveredGameObject;
+    public bool isInteractable;
+    
+    public GameObject hoveredGO;
+    public IHoverable hoveredIHoverable;
+    public IInteractable hoveredIInteractable;
+    public List<Interaction> interactions;
 
-    public void Hover(IHoverable newIHoverable)
+
+    public void Hover(GameObject newGO, IHoverable newIHoverable)
     {
-        // Not cursorHovering new
-        if (cursorHoveredIHoverable == newIHoverable) return;
+        if (newGO == hoveredGO) return;
 
-        // UncursorHover old
-        if (cursorHoveredIHoverable != null)
-        {
-            cursorHoveredIHoverable.SetHovered(false);
-            cursorHoveredIHoverable = null;
-            cursorHoveredGameObject = null;
-            isHovering = false;
-        }
+        // Unhover old
+        if (hoveredIHoverable != null) hoveredIHoverable.SetHovered(false);
+
+        // Set variables
+        hoveredIHoverable = newIHoverable;
+        hoveredGO = newGO;
+        isHovering = true;
 
         // Hover new
-        if (newIHoverable != null)
-        {
-            cursorHoveredIHoverable = newIHoverable;
-            cursorHoveredGameObject = cursorHoveredIHoverable.GetGameObject();
-            cursorHoveredIHoverable.SetHovered(true);
-            isHovering = true;
-        }
+        if (newIHoverable != null) hoveredIHoverable.SetHovered(true);
+
+        // Check if is interactable
+        IInteractable newIInteracble = newGO.GetComponent<IInteractable>();
+        hoveredIInteractable = newIInteracble;
+        isInteractable = hoveredIInteractable != null;
+        if (isInteractable) interactions = hoveredIInteractable.GetInteractions();
     }
 }
 
 
 public class PlayerInteractor : MonoBehaviour
 {
-
     [Header("References")]
     [SerializeField] private Transform cursorContainer;
     [SerializeField] private SpriteRenderer cursorCornerTL, cursorCornerTR, cursorCornerBL, cursorCornerBR;
@@ -52,7 +134,7 @@ public class PlayerInteractor : MonoBehaviour
     [SerializeField] private float cursorColorLerpSpeed = 3.0f;
 
     public Vector2 hoverPos { get; private set; }
-    public HoverInfo hoverInfo { get; private set; } = new HoverInfo();
+    public HoverManager hover { get; private set; } = new HoverManager();
 
 
     private void Start()
@@ -72,6 +154,15 @@ public class PlayerInteractor : MonoBehaviour
 
         // Main update
         UpdateHover();
+
+        // Check interactions
+        if (hover.isHovering && hover.isInteractable)
+        {
+            foreach (Interaction interaction in hover.interactions)
+            {
+                if (interaction.isEnabled && interaction.input.CheckInputDown()) interaction.callback.Invoke();
+            }
+        }
 
         // Point leg
         if (Input.GetMouseButton(0))
@@ -98,27 +189,29 @@ public class PlayerInteractor : MonoBehaviour
         RaycastHit2D[] hits = Physics2D.RaycastAll(hoverPos, Vector2.zero);
 
         // Get new cursorHovered object
-        IHoverable newIHoverable = null;
+        GameObject hoveredGO = null;
+        IHoverable hoveredIHoverable = null;
         foreach (RaycastHit2D hit in hits)
         {
             IHoverable hitIHoverable = hit.transform.GetComponent<IHoverable>();
             if (hitIHoverable != null)
             {
-                newIHoverable = hitIHoverable;
+                hoveredGO = hit.transform.gameObject;
+                hoveredIHoverable = hitIHoverable;
                 break;
             }
         }
 
         // Hover new object
-        hoverInfo.Hover(newIHoverable);
+        hover.Hover(hoveredGO, hoveredIHoverable);
     }
 
     private void UpdateCursor()
     {
     // Surround cursorHover object
-    if (hoverInfo.isHovering)
+    if (hover.isHovering)
     {
-        Bounds b = hoverInfo.cursorHoveredIHoverable.GetBounds();
+        Bounds b = hover.hoveredIHoverable.GetBounds();
 
         // Move to centre
         Vector2 targetPos = b.center;
@@ -160,6 +253,6 @@ public class PlayerInteractor : MonoBehaviour
 
     void Focus()
     {
-        Cursor.visible = false;
+        UnityEngine.Cursor.visible = false;
     }
 }

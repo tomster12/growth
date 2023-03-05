@@ -6,7 +6,7 @@ public class PlayerController : MonoBehaviour, IFollowable
 {
     [Header("References")]
     [SerializeField] private PlayerCamera playerCamera;
-    [SerializeField] private WorldManager world;
+    [SerializeField] private World world;
     [SerializeField] private GravityObject characterGravity;
     [SerializeField] private Rigidbody2D characterRB;
 
@@ -75,7 +75,7 @@ public class PlayerController : MonoBehaviour, IFollowable
     {
         // Calculate closest world and ground position
         float closestDst = float.PositiveInfinity;
-        foreach (WorldManager world in WorldManager.worlds)
+        foreach (World world in World.worlds)
         {
             Vector2 closestGroundPosition = world.GetClosestOverallPoint(characterRB.transform.position);
             float dst = (closestGroundPosition - (Vector2)rb.transform.position).magnitude;

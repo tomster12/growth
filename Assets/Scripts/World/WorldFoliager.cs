@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 using static VoronoiMeshGenerator;
-using static WorldManager;
+using static World;
 
 
-public class WorldFoliageManager : Generator
+public class WorldFoliager : Generator
 {
     // -- Parameters --
     [Header("Parameters")]
-    [SerializeField] private WorldManager worldManager;
+    [SerializeField] private World worldManager;
     [SerializeField] private Transform featureContainer;
     [SerializeField] private Transform foregroundContainer;
     [SerializeField] private Transform terrainContainer;
@@ -30,7 +30,7 @@ public class WorldFoliageManager : Generator
     {
         ClearOutput();
         _GenerateFoliage();
-        _GeneratePebblesAndBoulders();
+        _GenerateStones();
     }
 
     [ContextMenu("Clear Output")]
@@ -91,7 +91,7 @@ public class WorldFoliageManager : Generator
         }
     }
 
-    private void _GeneratePebblesAndBoulders()
+    private void _GenerateStones()
     {
         for (int i = 0; i < worldManager.surfaceEdges.Count; i++)
         {
