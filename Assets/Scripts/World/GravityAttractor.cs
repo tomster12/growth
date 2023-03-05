@@ -23,6 +23,7 @@ public class GravityAttractor : MonoBehaviour
         foreach (GravityObject obj in GravityObject.gravityObjects)
         {
             if (!obj.isEnabled) continue;
+            if (!obj.rb.simulated) continue;
             Vector2 centreDir = centre - obj.centre;
             if (centreDir.magnitude < gravityRadius)
             {

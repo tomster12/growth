@@ -1,36 +1,41 @@
 
-using System.Collections.Generic;
 using UnityEngine;
 
-public class PluckableStone : ComponentControllable
-{
-    [Header("References")]
-    [SerializeField] private Rigidbody rb;
 
+public class PluckableStone : WorldObject
+{
     public bool isPlucked { get; private set; }
 
     Interaction interactionPluck;
-    
 
-    protected override void Start()
+
+    protected override void Awake()
     {
-        base.Start();
-
-        // Initialize interaction
-        interactionPluck = new Interaction(true, Interaction.Visibility.FULL, "Pluck", Pluck, InteractionInput.LMB);
-        interactions.Add(interactionPluck);
-
-        // Initialize variables
-        canHover = true;
-        SetCanControl(false);
+        hasComponentHighlight = true;
+        hasComponentPickup = true;
+        base.Awake();
     }
 
-    
-    public void Pluck()
+    protected void Start()
     {
-        // Pluck stone
+        // Initialize interaction
+        interactionPluck = new Interaction(true, Interaction.Visibility.FULL, "Pluck", InteractionInput.LMB, null, OnPluck, null);
+        interactions.Add(interactionPluck);
+        
+        // Initialize variables
+        isPlucked = false;
+        SetCanPickup(false);
+    }
+
+
+    public void OnPluck()
+    {
+        if (isPlucked) return;
+
+        // Update variables
         isPlucked = true;
         interactionPluck.isEnabled = false;
-        SetCanControl(true);
+        InitComponentPhysical();
+        SetCanPickup(true);
     }
 }

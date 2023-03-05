@@ -16,6 +16,7 @@ public abstract class InteractionInput
     public abstract bool CheckInputUp();
 }
 
+[Serializable]
 public class InteractionKeyInput : InteractionInput
 {
     public KeyCode code;
@@ -31,6 +32,7 @@ public class InteractionKeyInput : InteractionInput
     public override bool CheckInputUp() => Input.GetKeyUp(code);
 }
 
+[Serializable]
 public class InteractionMouseInput : InteractionInput
 {
     public int button;
@@ -50,75 +52,70 @@ public class InteractionMouseInput : InteractionInput
 public class Interaction
 {
     public enum Visibility { HIDDEN, ICON, FULL }
+    public enum Type { CLICK, ITEM }
 
     public bool isEnabled;
     public Visibility visibility;
     public String name;
-    public Action callback;
     public InteractionInput input;
+    public Action holdCallback, downCallback, upCallback;
 
-    public Interaction(bool isEnabled, Visibility visibility, string name, Action callback, InteractionInput input)
+    public Interaction(bool isEnabled, Visibility visibility, string name, InteractionInput input, Action holdCallback, Action downCallback, Action upCallback)
     {
         this.isEnabled = isEnabled;
         this.visibility = visibility;
         this.name = name;
-        this.callback = callback;
         this.input = input;
+        this.holdCallback = holdCallback;
+        this.downCallback = downCallback;
+        this.upCallback = upCallback;
+    }
+
+    public bool TryInteract()
+    {
+        if (!isEnabled) return false;
+        else if (input.CheckInput() && holdCallback != null) holdCallback();
+        else if (input.CheckInputDown() && downCallback != null) downCallback();
+        else if (input.CheckInputUp() && upCallback != null) upCallback();
+        else return false;
+        return true;
     }
 }
 
 
-public interface IHoverable
-{
-    public void SetHovered(bool isHovered);
-
-    public Bounds GetBounds();
-    public GameObject GetGameObject();
-}
-
-public interface IInteractable
-{
-    public List<Interaction> GetInteractions();
-}
-
-
+[Serializable]
 public class HoverManager
 {
     public bool isHovering;
-    public bool isInteractable;
-    
-    public GameObject hoveredGO;
-    public IHoverable hoveredIHoverable;
-    public IInteractable hoveredIInteractable;
+    public WorldObject currentWO;
     public List<Interaction> interactions;
 
 
-    public void Hover(GameObject newGO, IHoverable newIHoverable)
+    public void Hover(WorldObject newWO)
     {
-        if (newGO == hoveredGO) return;
+        if (newWO == currentWO) return;
 
         // Unhover old
-        if (hoveredIHoverable != null) hoveredIHoverable.SetHovered(false);
+        if (currentWO != null) currentWO.SetHovered(false);
 
         // Set variables
-        hoveredIHoverable = newIHoverable;
-        hoveredGO = newGO;
-        isHovering = true;
+        currentWO = newWO;
+        isHovering = currentWO != null;
 
         // Hover new
-        if (newIHoverable != null) hoveredIHoverable.SetHovered(true);
-
-        // Check if is interactable
-        IInteractable newIInteracble = newGO.GetComponent<IInteractable>();
-        hoveredIInteractable = newIInteracble;
-        isInteractable = hoveredIInteractable != null;
-        if (isInteractable) interactions = hoveredIInteractable.GetInteractions();
+        if (isHovering)
+        {
+            currentWO.SetHovered(true);
+            interactions = currentWO.GetInteractions();
+        }
     }
 }
 
 
 public class PlayerInteractor : MonoBehaviour
 {
+    public static PlayerInteractor instance;
+
     [Header("References")]
     [SerializeField] private Transform cursorContainer;
     [SerializeField] private SpriteRenderer cursorCornerTL, cursorCornerTR, cursorCornerBL, cursorCornerBR;
@@ -137,13 +134,18 @@ public class PlayerInteractor : MonoBehaviour
     public HoverManager hover { get; private set; } = new HoverManager();
 
 
+    private void Awake()
+    {
+        instance = this;
+    }
+
     private void Start()
     {
         Focus();
 
         // Move cursor to mouse pos immediately
         hoverPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        cursorContainer.position = hoverPos;
+        cursorContainer.position = new Vector2(hoverPos.x, hoverPos.y);
     }
 
 
@@ -156,11 +158,11 @@ public class PlayerInteractor : MonoBehaviour
         UpdateHover();
 
         // Check interactions
-        if (hover.isHovering && hover.isInteractable)
+        if (hover.isHovering)
         {
             foreach (Interaction interaction in hover.interactions)
             {
-                if (interaction.isEnabled && interaction.input.CheckInputDown()) interaction.callback.Invoke();
+                if (interaction.TryInteract()) break;
             }
         }
 
@@ -189,66 +191,60 @@ public class PlayerInteractor : MonoBehaviour
         RaycastHit2D[] hits = Physics2D.RaycastAll(hoverPos, Vector2.zero);
 
         // Get new cursorHovered object
-        GameObject hoveredGO = null;
-        IHoverable hoveredIHoverable = null;
+        WorldObject hoveredWO = null;
         foreach (RaycastHit2D hit in hits)
         {
-            IHoverable hitIHoverable = hit.transform.GetComponent<IHoverable>();
-            if (hitIHoverable != null)
-            {
-                hoveredGO = hit.transform.gameObject;
-                hoveredIHoverable = hitIHoverable;
-                break;
-            }
+            WorldObject hitWO = hit.transform.GetComponent<WorldObject>();
+            if (hitWO != null) { hoveredWO = hitWO; break; }
         }
 
         // Hover new object
-        hover.Hover(hoveredGO, hoveredIHoverable);
+        hover.Hover(hoveredWO);
     }
 
     private void UpdateCursor()
     {
-    // Surround cursorHover object
-    if (hover.isHovering)
-    {
-        Bounds b = hover.hoveredIHoverable.GetBounds();
+        // Surround cursorHover object
+        if (hover.isHovering)
+        {
+            Bounds b = hover.currentWO.GetHighlightBounds();
 
-        // Move to centre
-        Vector2 targetPos = b.center;
-        cursorContainer.position = Vector2.Lerp(cursorContainer.position, targetPos, Time.deltaTime * cursorHoverMovementSpeed);
+            // Move to centre
+            Vector2 targetPos = b.center;
+            cursorContainer.position = Vector2.Lerp(cursorContainer.position, targetPos, Time.deltaTime * cursorHoverMovementSpeed);
 
-        // Surround with cursorCorners
-        cursorCornerTL.transform.position = Vector2.Lerp(cursorCornerTL.transform.position, new Vector2(b.center.x - b.extents.x - cursorHoverGap, b.center.y + b.extents.y + cursorHoverGap), Time.deltaTime * cursorHoverMovementSpeed);
-        cursorCornerTR.transform.position = Vector2.Lerp(cursorCornerTR.transform.position, new Vector2(b.center.x + b.extents.x + cursorHoverGap, b.center.y + b.extents.y + cursorHoverGap), Time.deltaTime * cursorHoverMovementSpeed);
-        cursorCornerBL.transform.position = Vector2.Lerp(cursorCornerBL.transform.position, new Vector2(b.center.x - b.extents.x - cursorHoverGap, b.center.y - b.extents.y - cursorHoverGap), Time.deltaTime * cursorHoverMovementSpeed);
-        cursorCornerBR.transform.position = Vector2.Lerp(cursorCornerBR.transform.position, new Vector2(b.center.x + b.extents.x + cursorHoverGap, b.center.y - b.extents.y - cursorHoverGap), Time.deltaTime * cursorHoverMovementSpeed);
+            // Surround with cursorCorners
+            cursorCornerTL.transform.position = Vector2.Lerp(cursorCornerTL.transform.position, new Vector2(b.center.x - b.extents.x - cursorHoverGap, b.center.y + b.extents.y + cursorHoverGap), Time.deltaTime * cursorHoverMovementSpeed);
+            cursorCornerTR.transform.position = Vector2.Lerp(cursorCornerTR.transform.position, new Vector2(b.center.x + b.extents.x + cursorHoverGap, b.center.y + b.extents.y + cursorHoverGap), Time.deltaTime * cursorHoverMovementSpeed);
+            cursorCornerBL.transform.position = Vector2.Lerp(cursorCornerBL.transform.position, new Vector2(b.center.x - b.extents.x - cursorHoverGap, b.center.y - b.extents.y - cursorHoverGap), Time.deltaTime * cursorHoverMovementSpeed);
+            cursorCornerBR.transform.position = Vector2.Lerp(cursorCornerBR.transform.position, new Vector2(b.center.x + b.extents.x + cursorHoverGap, b.center.y - b.extents.y - cursorHoverGap), Time.deltaTime * cursorHoverMovementSpeed);
 
-        // Set colours
-        cursorCornerTL.color = Color.Lerp(cursorCornerTL.color, cursorHoverColor, Time.deltaTime * cursorColorLerpSpeed);
-        cursorCornerTR.color = Color.Lerp(cursorCornerTR.color, cursorHoverColor, Time.deltaTime * cursorColorLerpSpeed);
-        cursorCornerBL.color = Color.Lerp(cursorCornerBL.color, cursorHoverColor, Time.deltaTime * cursorColorLerpSpeed);
-        cursorCornerBR.color = Color.Lerp(cursorCornerBR.color, cursorHoverColor, Time.deltaTime * cursorColorLerpSpeed);
+            // Set colours
+            cursorCornerTL.color = Color.Lerp(cursorCornerTL.color, cursorHoverColor, Time.deltaTime * cursorColorLerpSpeed);
+            cursorCornerTR.color = Color.Lerp(cursorCornerTR.color, cursorHoverColor, Time.deltaTime * cursorColorLerpSpeed);
+            cursorCornerBL.color = Color.Lerp(cursorCornerBL.color, cursorHoverColor, Time.deltaTime * cursorColorLerpSpeed);
+            cursorCornerBR.color = Color.Lerp(cursorCornerBR.color, cursorHoverColor, Time.deltaTime * cursorColorLerpSpeed);
+        }
+
+        // Is idling
+        else
+        {
+            // Move to mouse
+            cursorContainer.position = new Vector2(hoverPos.x, hoverPos.y);
+
+            // Spread out cursorCorners
+            cursorCornerTL.transform.localPosition = Vector2.Lerp(cursorCornerTL.transform.localPosition, new Vector2(-cursorIdleDistance, cursorIdleDistance), Time.deltaTime * cursorIdleMovementSpeed);
+            cursorCornerTR.transform.localPosition = Vector2.Lerp(cursorCornerTR.transform.localPosition, new Vector2(cursorIdleDistance, cursorIdleDistance), Time.deltaTime * cursorIdleMovementSpeed);
+            cursorCornerBL.transform.localPosition = Vector2.Lerp(cursorCornerBL.transform.localPosition, new Vector2(-cursorIdleDistance, -cursorIdleDistance), Time.deltaTime * cursorIdleMovementSpeed);
+            cursorCornerBR.transform.localPosition = Vector2.Lerp(cursorCornerBR.transform.localPosition, new Vector2(cursorIdleDistance, -cursorIdleDistance), Time.deltaTime * cursorIdleMovementSpeed);
+
+            // Set colours
+            cursorCornerTL.color = Color.Lerp(cursorCornerTL.color, cursorIdleColor, Time.deltaTime * cursorColorLerpSpeed);
+            cursorCornerTR.color = Color.Lerp(cursorCornerTR.color, cursorIdleColor, Time.deltaTime * cursorColorLerpSpeed);
+            cursorCornerBL.color = Color.Lerp(cursorCornerBL.color, cursorIdleColor, Time.deltaTime * cursorColorLerpSpeed);
+            cursorCornerBR.color = Color.Lerp(cursorCornerBR.color, cursorIdleColor, Time.deltaTime * cursorColorLerpSpeed);
+        }
     }
-
-    // Is idling
-    else
-    {
-        // Move to mouse
-        cursorContainer.position = hoverPos;
-
-        // Spread out cursorCorners
-        cursorCornerTL.transform.localPosition = Vector2.Lerp(cursorCornerTL.transform.localPosition, new Vector2(-cursorIdleDistance, cursorIdleDistance), Time.deltaTime * cursorIdleMovementSpeed);
-        cursorCornerTR.transform.localPosition = Vector2.Lerp(cursorCornerTR.transform.localPosition, new Vector2(cursorIdleDistance, cursorIdleDistance), Time.deltaTime * cursorIdleMovementSpeed);
-        cursorCornerBL.transform.localPosition = Vector2.Lerp(cursorCornerBL.transform.localPosition, new Vector2(-cursorIdleDistance, -cursorIdleDistance), Time.deltaTime * cursorIdleMovementSpeed);
-        cursorCornerBR.transform.localPosition = Vector2.Lerp(cursorCornerBR.transform.localPosition, new Vector2(cursorIdleDistance, -cursorIdleDistance), Time.deltaTime * cursorIdleMovementSpeed);
-
-        // Set colours
-        cursorCornerTL.color = Color.Lerp(cursorCornerTL.color, cursorIdleColor, Time.deltaTime * cursorColorLerpSpeed);
-        cursorCornerTR.color = Color.Lerp(cursorCornerTR.color, cursorIdleColor, Time.deltaTime * cursorColorLerpSpeed);
-        cursorCornerBL.color = Color.Lerp(cursorCornerBL.color, cursorIdleColor, Time.deltaTime * cursorColorLerpSpeed);
-        cursorCornerBR.color = Color.Lerp(cursorCornerBR.color, cursorIdleColor, Time.deltaTime * cursorColorLerpSpeed);
-    }
-}
 
 
     void Focus()

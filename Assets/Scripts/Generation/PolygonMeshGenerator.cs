@@ -18,10 +18,6 @@ public class PolygonMeshGenerator : Generator
     [ContextMenu("Generate Mesh")]
     public override void Generate()
     {
-        // Reset parent temporarily
-        Transform parent = polygon.transform.parent;
-        polygon.transform.parent = null;
-
         // Generate source mesh
         Mesh sourceMesh = polygon.CreateMesh(false, false);
         sourceMesh.RecalculateBounds();
@@ -50,11 +46,11 @@ public class PolygonMeshGenerator : Generator
         }
 
         // Center all the vertices
-        //Vector3 averagePosition = Vector2.zero;
-        //foreach (Vector3 v in vertices) averagePosition += v;
-        //averagePosition /= vertices.Length;
-        //for (int i = 0; i < vertices.Length; i++) vertices[i] = vertices[i] - averagePosition;
-        //polygon.offset -= (Vector2)averagePosition;
+        Vector3 averagePosition = Vector2.zero;
+        foreach (Vector3 v in vertices) averagePosition += v;
+        averagePosition /= vertices.Length;
+        for (int i = 0; i < vertices.Length; i++) vertices[i] = vertices[i] - averagePosition;
+        polygon.offset -= (Vector2)averagePosition;
 
         // Create new mesh and set
         mesh = new Mesh();
@@ -62,8 +58,5 @@ public class PolygonMeshGenerator : Generator
         mesh.triangles = triangles;
         mesh.colors = colors;
         mf.mesh = mesh;
-
-        // Set transform back to previous
-        polygon.transform.parent = parent;
     }
 }

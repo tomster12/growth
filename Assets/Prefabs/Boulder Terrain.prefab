@@ -16,8 +16,6 @@ GameObject:
   - component: {fileID: 2022025293066536359}
   - component: {fileID: 2022025293066536352}
   - component: {fileID: 2022025293066536377}
-  - component: {fileID: 2022025293066536362}
-  - component: {fileID: 2022025293066536360}
   m_Layer: 8
   m_Name: Boulder Terrain
   m_TagString: Untagged
@@ -219,31 +217,3 @@ MonoBehaviour:
   toUpdate: 0
   generators:
   - {fileID: 2022025293066536352}
---- !u!114 &2022025293066536362
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2022025293066536358}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c68b36e5e6f141b4fa8d1cd83375b4b9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  baseOutlineMask: {fileID: 2100000, guid: 7c07f1ea1c5aa7242bbaac53e7a1fcfb, type: 2}
-  baseOutlineFill: {fileID: 2100000, guid: 5fe7295634e36644095f6ac650046a29, type: 2}
---- !u!114 &2022025293066536360
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2022025293066536358}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e07ac2c63fdc66944a6266469bd16066, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  outline: {fileID: 2022025293066536362}
-  hoverCollider: {fileID: 2022025293066536361}
