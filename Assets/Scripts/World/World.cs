@@ -35,6 +35,13 @@ public class World : Generator
     [SerializeField] private VoronoiMeshGenerator meshGenerator;
     [SerializeField] private WorldFoliager foliageManager;
     [Space(6, order = 0)]
+    [Header("Containers", order = 1)]
+    [SerializeField] private Transform _featureContainer;
+    [SerializeField] private Transform _backgroundContainer;
+    [SerializeField] private Transform _foregroundContainer;
+    [SerializeField] private Transform _terrainContainer;
+    [SerializeField] private Transform _foliageContainer;
+    [Space(6, order = 0)]
     [Header("Components", order = 1)]
     [SerializeField] private PolygonCollider2D outsidePolygon;
     [SerializeField] private Rigidbody2D rb;
@@ -42,7 +49,7 @@ public class World : Generator
     [SerializeField] private MeshFilter meshFilter;
     [SerializeField] private GravityAttractor gravityAttractor;
     [Space(6, order = 0)]
-    [Header("Prefabs", order =01)]
+    [Header("Prefabs", order = 1)]
     [SerializeField] private GameObject atmospherePfb;
     [Space(20, order = 0)]
 
@@ -73,6 +80,12 @@ public class World : Generator
     public List<MeshSiteEdge> surfaceEdges { get; private set; }
     public ColorMode currentColorMode { get; private set; } = ColorMode.NONE;
     public Transform worldTransform => outsidePolygon.transform;
+
+    public Transform featureContainer => _featureContainer;
+    public Transform backgroundContainer => _backgroundContainer;
+    public Transform foregroundContainer => _foregroundContainer;
+    public Transform terrainContainer => _terrainContainer;
+    public Transform foliageContainer => _foliageContainer;
 
     private SpriteRenderer atmosphere;
 
@@ -115,7 +128,6 @@ public class World : Generator
     [ContextMenu("Stage/- Generate")]
     public override void Generate()
     {
-
         // Clear then run stages
         ClearOutput();
         _GenerateMesh();
@@ -141,6 +153,36 @@ public class World : Generator
         currentColorMode = ColorMode.NONE;
         if (atmosphere == null) atmosphere = worldTransform.Find("Atmosphere")?.GetComponent<SpriteRenderer>();
         if (atmosphere != null) DestroyImmediate(atmosphere.gameObject);
+        _ClearContainers();
+    }
+
+    private void _ClearContainers()
+    {
+        for (int i = featureContainer.childCount - 1; i >= 0; i--)
+        {
+            GameObject child = featureContainer.GetChild(i).gameObject;
+            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
+        }
+        for (int i = backgroundContainer.childCount - 1; i >= 0; i--)
+        {
+            GameObject child = backgroundContainer.GetChild(i).gameObject;
+            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
+        }
+        for (int i = foregroundContainer.childCount - 1; i >= 0; i--)
+        {
+            GameObject child = foregroundContainer.GetChild(i).gameObject;
+            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
+        }
+        for (int i = terrainContainer.childCount - 1; i >= 0; i--)
+        {
+            GameObject child = terrainContainer.GetChild(i).gameObject;
+            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
+        }
+        for (int i = foliageContainer.childCount - 1; i >= 0; i--)
+        {
+            GameObject child = foliageContainer.GetChild(i).gameObject;
+            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
+        }
     }
 
 

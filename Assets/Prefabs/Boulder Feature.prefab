@@ -208,8 +208,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: -13510131
-  randomizeSeed: 1
-  resetSeed: 1
+  randomizeSeed: 0
+  resetSeed: 0
   toUpdate: 0
   generators:
   - {fileID: 6099407925653884423}

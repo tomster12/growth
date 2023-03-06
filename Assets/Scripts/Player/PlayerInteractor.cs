@@ -1,115 +1,8 @@
 
 using System;
 using System.Collections.Generic;
+using UnityEditor.UI;
 using UnityEngine;
-
-[Serializable]
-public abstract class InteractionInput
-{
-    public static InteractionInput LMB = new InteractionMouseInput(0);
-    public static InteractionInput RMB = new InteractionMouseInput(0);
-
-    public String name;
-
-    public abstract bool CheckInput();
-    public abstract bool CheckInputDown();
-    public abstract bool CheckInputUp();
-}
-
-[Serializable]
-public class InteractionKeyInput : InteractionInput
-{
-    public KeyCode code;
-
-    public InteractionKeyInput(KeyCode code)
-    {
-        this.name = code.ToString();
-        this.code = code;
-    }
-
-    public override bool CheckInput() => Input.GetKey(code);
-    public override bool CheckInputDown() => Input.GetKeyDown(code);
-    public override bool CheckInputUp() => Input.GetKeyUp(code);
-}
-
-[Serializable]
-public class InteractionMouseInput : InteractionInput
-{
-    public int button;
-
-    public InteractionMouseInput(int button)
-    {
-        this.name = button == 0 ? "LMB" : button == 1 ? "RMB" : button.ToString();
-        this.button = button;
-    }
-
-    public override bool CheckInput() => Input.GetMouseButton(button);
-    public override bool CheckInputDown() => Input.GetMouseButtonDown(button);
-    public override bool CheckInputUp() => Input.GetMouseButtonUp(button);
-}
-
-[Serializable]
-public class Interaction
-{
-    public enum Visibility { HIDDEN, ICON, FULL }
-    public enum Type { CLICK, ITEM }
-
-    public bool isEnabled;
-    public Visibility visibility;
-    public String name;
-    public InteractionInput input;
-    public Action holdCallback, downCallback, upCallback;
-
-    public Interaction(bool isEnabled, Visibility visibility, string name, InteractionInput input, Action holdCallback, Action downCallback, Action upCallback)
-    {
-        this.isEnabled = isEnabled;
-        this.visibility = visibility;
-        this.name = name;
-        this.input = input;
-        this.holdCallback = holdCallback;
-        this.downCallback = downCallback;
-        this.upCallback = upCallback;
-    }
-
-    public bool TryInteract()
-    {
-        if (!isEnabled) return false;
-        else if (input.CheckInput() && holdCallback != null) holdCallback();
-        else if (input.CheckInputDown() && downCallback != null) downCallback();
-        else if (input.CheckInputUp() && upCallback != null) upCallback();
-        else return false;
-        return true;
-    }
-}
-
-
-[Serializable]
-public class HoverManager
-{
-    public bool isHovering;
-    public WorldObject currentWO;
-    public List<Interaction> interactions;
-
-
-    public void Hover(WorldObject newWO)
-    {
-        if (newWO == currentWO) return;
-
-        // Unhover old
-        if (currentWO != null) currentWO.SetHovered(false);
-
-        // Set variables
-        currentWO = newWO;
-        isHovering = currentWO != null;
-
-        // Hover new
-        if (isHovering)
-        {
-            currentWO.SetHovered(true);
-            interactions = currentWO.GetInteractions();
-        }
-    }
-}
 
 
 public class PlayerInteractor : MonoBehaviour
@@ -131,7 +24,8 @@ public class PlayerInteractor : MonoBehaviour
     [SerializeField] private float cursorColorLerpSpeed = 3.0f;
 
     public Vector2 hoverPos { get; private set; }
-    public HoverManager hover { get; private set; } = new HoverManager();
+    public WorldObject hoveredWO { get; private set; }
+    public WorldObject controlledWO { get; private set; }
 
 
     private void Awake()
@@ -156,24 +50,7 @@ public class PlayerInteractor : MonoBehaviour
 
         // Main update
         UpdateHover();
-
-        // Check interactions
-        if (hover.isHovering)
-        {
-            foreach (Interaction interaction in hover.interactions)
-            {
-                if (interaction.TryInteract()) break;
-            }
-        }
-
-        // Point leg
-        if (Input.GetMouseButton(0))
-        {
-            playerLegs.isPointing = true;
-            playerLegs.pointingLeg = 2;
-            playerLegs.pointingPos = hoverPos;
-        }
-        else playerLegs.isPointing = false;
+        UpdateControlled();
     }
 
     private void FixedUpdate()
@@ -191,23 +68,58 @@ public class PlayerInteractor : MonoBehaviour
         RaycastHit2D[] hits = Physics2D.RaycastAll(hoverPos, Vector2.zero);
 
         // Get new cursorHovered object
-        WorldObject hoveredWO = null;
+        WorldObject newHoveredWO = null;
         foreach (RaycastHit2D hit in hits)
         {
             WorldObject hitWO = hit.transform.GetComponent<WorldObject>();
-            if (hitWO != null) { hoveredWO = hitWO; break; }
+            if (hitWO != null) { newHoveredWO = hitWO; break; }
         }
 
-        // Hover new object
-        hover.Hover(hoveredWO);
+        // Update hovered WO
+        if (newHoveredWO != hoveredWO)
+        {
+            if (hoveredWO != null) hoveredWO.SetHovered(false);
+            hoveredWO = newHoveredWO;
+            if (hoveredWO != null) hoveredWO.SetHovered(true);
+        }
+    }
+
+    private void UpdateControlled()
+    {
+        if (controlledWO != null)
+        {
+            controlledWO.controlPosition = hoverPos;
+            if (Input.GetMouseButtonDown(0))
+            {
+                controlledWO.SetControlled(false);
+            }
+        }
+        else if (hoveredWO != null && !hoveredWO.canControl)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                if (hoveredWO.SetControlled(true)) controlledWO = hoveredWO;
+            }
+        }
+        
+
+        // Point leg
+        if (Input.GetMouseButton(0))
+        {
+            playerLegs.isPointing = true;
+            playerLegs.pointingLeg = 2;
+            playerLegs.pointingPos = hoverPos;
+        }
+        else playerLegs.isPointing = false;
+
     }
 
     private void UpdateCursor()
     {
         // Surround cursorHover object
-        if (hover.isHovering)
+        if (hoveredWO != null)
         {
-            Bounds b = hover.currentWO.GetHighlightBounds();
+            Bounds b = hoveredWO.GetHoverBounds();
 
             // Move to centre
             Vector2 targetPos = b.center;

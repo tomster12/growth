@@ -2,11 +2,10 @@
 using System.Linq;
 using UnityEngine;
 
+
 public class OutlineController : MonoBehaviour
 {
     public enum Mode { OutlineFull, Disabled }
-
-    [SerializeField] private Material baseOutlineMask, baseOutlineFill;
 
     private Renderer[] renderers;
     private Material outlineMask, outlineFill;
@@ -43,8 +42,8 @@ public class OutlineController : MonoBehaviour
         if (isInitialized) return;
 
         renderers = GetComponentsInChildren<Renderer>();
-        outlineMask = Instantiate(baseOutlineMask);
-        outlineFill = Instantiate(baseOutlineFill);
+        outlineMask = Instantiate((Material)Resources.Load("Materials/OutlineMask", typeof(Material)));
+        outlineFill = Instantiate((Material)Resources.Load("Materials/OutlineFill", typeof(Material)));
         outlineMask.name = "OutlineMask (Instance)";
         outlineFill.name = "OutlineFill (Instance)";
         isInitialized = true;

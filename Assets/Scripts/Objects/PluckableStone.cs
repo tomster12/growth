@@ -9,11 +9,10 @@ public class PluckableStone : WorldObject
     Interaction interactionPluck;
 
 
-    protected override void Awake()
+    protected void Awake()
     {
-        hasComponentHighlight = true;
-        hasComponentPickup = true;
-        base.Awake();
+        InitComponentHighlight();
+        InitComponentControl();
     }
 
     protected void Start()
@@ -24,7 +23,7 @@ public class PluckableStone : WorldObject
         
         // Initialize variables
         isPlucked = false;
-        SetCanPickup(false);
+        SetCanControl(false);
     }
 
 
@@ -36,6 +35,6 @@ public class PluckableStone : WorldObject
         isPlucked = true;
         interactionPluck.isEnabled = false;
         InitComponentPhysical();
-        SetCanPickup(true);
+        SetCanControl(true);
     }
 }
