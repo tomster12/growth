@@ -74,18 +74,8 @@ public class PlayerController : MonoBehaviour, IFollowable
     private void FixedUpdate()
     {
         // Calculate closest world and ground position
-        float closestDst = float.PositiveInfinity;
-        foreach (World world in World.worlds)
-        {
-            Vector2 closestGroundPosition = world.GetClosestOverallPoint(characterRB.transform.position);
-            float dst = (closestGroundPosition - (Vector2)rb.transform.position).magnitude;
-            if (dst < closestDst)
-            {
-                this.world = world;
-                groundPosition = closestGroundPosition;
-                closestDst = dst;
-            }
-        }
+        World.GetClosestWorld(characterRB.transform.position, out Vector2 closestGroundPosition);
+        groundPosition = closestGroundPosition;
 
         // Calculate ground positions
         groundDir = groundPosition - (Vector2)characterRB.transform.position;

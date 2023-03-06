@@ -25,7 +25,6 @@ public class WorldObject : MonoBehaviour
         // If controlled move towards target
         if (isControlled)
         {
-            controlPosition = PlayerInteractor.instance.hoverPos;
             Vector2 dir = controlPosition - (Vector2)physicalRB.transform.position;
             physicalRB.AddForce(dir * controlForce);
         }
@@ -118,7 +117,6 @@ public class WorldObject : MonoBehaviour
     #region Component: Control
 
     [Header("Component: Control - Config")]
-    [SerializeField] protected float controlForce = 30.0f;
     [SerializeField] protected float controlDrag = 20.0f;
     [SerializeField] protected float idleDrag = 0.5f;
 
@@ -126,6 +124,7 @@ public class WorldObject : MonoBehaviour
     public bool isControlled { get; private set; }
     public bool canControl { get; private set; }
     public Vector2 controlPosition;
+    public float controlForce;
 
 
     protected void InitComponentControl()

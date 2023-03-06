@@ -43,7 +43,7 @@ public class PlayerCamera : MonoBehaviour
     }
 
 
-    private void Update()
+    private void LateUpdate()
     {
         // Handle scrolling
         var scrollWheelInput = Input.GetAxis("Mouse ScrollWheel");

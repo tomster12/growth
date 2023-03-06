@@ -1,18 +1,24 @@
 
-using System;
 using System.Collections.Generic;
-using UnityEditor.UI;
 using UnityEngine;
+using System.Runtime.InteropServices;
+
+
 
 
 public class PlayerInteractor : MonoBehaviour
 {
+    [DllImport("user32.dll")]
+    public static extern bool SetCursorPos(int X, int Y);
     public static PlayerInteractor instance;
 
+
     [Header("References")]
+    [SerializeField] private PlayerController playerController;
+    [SerializeField] private PlayerLegs playerLegs;
     [SerializeField] private Transform cursorContainer;
     [SerializeField] private SpriteRenderer cursorCornerTL, cursorCornerTR, cursorCornerBL, cursorCornerBR;
-    [SerializeField] private PlayerLegs playerLegs;
+    [SerializeField] private SpriteRenderer centreIndicator;
 
     [Header("Config")]
     [SerializeField] private Color cursorIdleColor = new Color(0.9f, 0.9f, 0.9f);
@@ -22,10 +28,15 @@ public class PlayerInteractor : MonoBehaviour
     [SerializeField] private float cursorHoverMovementSpeed = 20.0f;
     [SerializeField] private float cursorHoverGap = 0.2f;
     [SerializeField] private float cursorColorLerpSpeed = 3.0f;
+    [SerializeField] private float controlForce = 25.0f;
+    [SerializeField] private float hoverDistance = 20.0f;
+    [SerializeField] private float controlDistance = 10.0f;
 
     public Vector2 hoverPos { get; private set; }
     public WorldObject hoveredWO { get; private set; }
-    public WorldObject controlledWO { get; private set; }
+    public bool isControlling { get; private set; }
+    private List<Interaction> hoveredInteractions;
+    private LineRenderer hoverDistanceRenderer;
 
 
     private void Awake()
@@ -37,9 +48,15 @@ public class PlayerInteractor : MonoBehaviour
     {
         Focus();
 
+        // Initiaize hover distance renderer
+        hoverDistanceRenderer = gameObject.AddComponent<LineRenderer>();
+
         // Move cursor to mouse pos immediately
         hoverPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         cursorContainer.position = new Vector2(hoverPos.x, hoverPos.y);
+
+        // Hide centre indicator
+        centreIndicator.gameObject.SetActive(false);
     }
 
 
@@ -51,13 +68,17 @@ public class PlayerInteractor : MonoBehaviour
         // Main update
         UpdateHover();
         UpdateControlled();
-    }
 
-    private void FixedUpdate()
-    {
-        // Main update
-        UpdateCursor();
+        // Update interactions
+        if (hoveredInteractions != null)
+        {
+            foreach (Interaction interaction in hoveredInteractions) interaction.TryInteract();
+        }
     }
+    
+
+    private void LateUpdate() => UpdateCursor();
+
 
     private void UpdateHover()
     {
@@ -67,55 +88,80 @@ public class PlayerInteractor : MonoBehaviour
         // Raycast at mouse on all cursorHoverables
         RaycastHit2D[] hits = Physics2D.RaycastAll(hoverPos, Vector2.zero);
 
-        // Get new cursorHovered object
-        WorldObject newHoveredWO = null;
-        foreach (RaycastHit2D hit in hits)
+        // Not controlling so could hover
+        if (!isControlling)
         {
-            WorldObject hitWO = hit.transform.GetComponent<WorldObject>();
-            if (hitWO != null) { newHoveredWO = hitWO; break; }
-        }
+            WorldObject newHoveredWO = null;
 
-        // Update hovered WO
-        if (newHoveredWO != hoveredWO)
-        {
-            if (hoveredWO != null) hoveredWO.SetHovered(false);
-            hoveredWO = newHoveredWO;
-            if (hoveredWO != null) hoveredWO.SetHovered(true);
+            // - Mouse close enough to hover new
+            if ((hoverPos - (Vector2)playerController.transform.position).magnitude < hoverDistance)
+            {
+                foreach (RaycastHit2D hit in hits)
+                {
+                    WorldObject hitWO = hit.transform.GetComponent<WorldObject>();
+                    if (hitWO != null) { newHoveredWO = hitWO; break; }
+                }
+            }
+
+            // - Overwrite current hover
+            if (newHoveredWO != hoveredWO)
+            {
+                if (hoveredWO != null) hoveredWO.SetHovered(false);
+                hoveredWO = newHoveredWO;
+                if (hoveredWO != null)
+                {
+                    hoveredWO.SetHovered(true);
+                    hoveredInteractions = hoveredWO.GetInteractions();
+                }
+                else hoveredInteractions = null;
+            }
         }
     }
 
     private void UpdateControlled()
     {
-        if (controlledWO != null)
+        // Currently controlling
+        if (isControlling)
         {
-            controlledWO.controlPosition = hoverPos;
-            if (Input.GetMouseButtonDown(0))
-            {
-                controlledWO.SetControlled(false);
-            }
-        }
-        else if (hoveredWO != null && !hoveredWO.canControl)
-        {
-            if (Input.GetMouseButtonDown(0))
-            {
-                if (hoveredWO.SetControlled(true)) controlledWO = hoveredWO;
-            }
-        }
-        
+            // - Set control position
+            Vector2 limitedHoverDir = Vector2.ClampMagnitude(hoverPos - (Vector2)playerController.transform.position, controlDistance);
+            Vector2 limitedHoverPos = (Vector2)playerController.transform.position + limitedHoverDir;
+            hoveredWO.controlPosition = limitedHoverPos;
+            hoveredWO.controlForce = controlForce;
 
-        // Point leg
-        if (Input.GetMouseButton(0))
-        {
+            // - Point leg
             playerLegs.isPointing = true;
             playerLegs.pointingLeg = 2;
-            playerLegs.pointingPos = hoverPos;
-        }
-        else playerLegs.isPointing = false;
+            playerLegs.pointingPos = hoveredWO.transform.position;
 
+            // - Drop object
+            if (Input.GetMouseButtonDown(0))
+            {
+                hoveredWO.SetControlled(false);
+                isControlling = false;
+            }
+        }
+
+        // Not controlling
+        else
+        {
+            // - Stop pointing legs
+            playerLegs.isPointing = false;
+
+            // - Hovering and clicked
+            if (hoveredWO != null && hoveredWO.canControl && Input.GetMouseButtonDown(0))
+            {
+                // - Try set controlled
+                if (hoveredWO.SetControlled(true)) isControlling = true;
+            }
+        }
     }
 
     private void UpdateCursor()
     {
+        // Enable centre indicator optionally
+        centreIndicator.gameObject.SetActive(isControlling);
+
         // Surround cursorHover object
         if (hoveredWO != null)
         {
@@ -123,14 +169,31 @@ public class PlayerInteractor : MonoBehaviour
 
             // Move to centre
             Vector2 targetPos = b.center;
-            cursorContainer.position = Vector2.Lerp(cursorContainer.position, targetPos, Time.deltaTime * cursorHoverMovementSpeed);
+            Vector2 targetTLPos = new Vector2(b.center.x - b.extents.x - cursorHoverGap, b.center.y + b.extents.y + cursorHoverGap);
+            Vector2 targetTRPos = new Vector2(b.center.x + b.extents.x + cursorHoverGap, b.center.y + b.extents.y + cursorHoverGap);
+            Vector2 targetBLPos = new Vector2(b.center.x - b.extents.x - cursorHoverGap, b.center.y - b.extents.y - cursorHoverGap);
+            Vector2 targetBRPos = new Vector2(b.center.x + b.extents.x + cursorHoverGap, b.center.y - b.extents.y - cursorHoverGap);
+            if (isControlling)
+            {
+                // Set to controlling pos
+                cursorContainer.position = targetPos;
+                cursorCornerTL.transform.position = targetTLPos;
+                cursorCornerTR.transform.position = targetTRPos;
+                cursorCornerBL.transform.position = targetBLPos;
+                cursorCornerBR.transform.position = targetBRPos;
 
-            // Surround with cursorCorners
-            cursorCornerTL.transform.position = Vector2.Lerp(cursorCornerTL.transform.position, new Vector2(b.center.x - b.extents.x - cursorHoverGap, b.center.y + b.extents.y + cursorHoverGap), Time.deltaTime * cursorHoverMovementSpeed);
-            cursorCornerTR.transform.position = Vector2.Lerp(cursorCornerTR.transform.position, new Vector2(b.center.x + b.extents.x + cursorHoverGap, b.center.y + b.extents.y + cursorHoverGap), Time.deltaTime * cursorHoverMovementSpeed);
-            cursorCornerBL.transform.position = Vector2.Lerp(cursorCornerBL.transform.position, new Vector2(b.center.x - b.extents.x - cursorHoverGap, b.center.y - b.extents.y - cursorHoverGap), Time.deltaTime * cursorHoverMovementSpeed);
-            cursorCornerBR.transform.position = Vector2.Lerp(cursorCornerBR.transform.position, new Vector2(b.center.x + b.extents.x + cursorHoverGap, b.center.y - b.extents.y - cursorHoverGap), Time.deltaTime * cursorHoverMovementSpeed);
-
+                // Set centre indicator to true mouse pos
+                centreIndicator.transform.position = new Vector2(hoverPos.x, hoverPos.y);
+            }
+            else
+            {
+                // Lerp centre and corners around object
+                cursorContainer.position = Vector2.Lerp(cursorContainer.position, targetPos, Time.deltaTime * cursorHoverMovementSpeed);
+                cursorCornerTL.transform.position = Vector2.Lerp(cursorCornerTL.transform.position, targetTLPos, Time.deltaTime * cursorHoverMovementSpeed);
+                cursorCornerTR.transform.position = Vector2.Lerp(cursorCornerTR.transform.position, targetTRPos, Time.deltaTime * cursorHoverMovementSpeed);
+                cursorCornerBL.transform.position = Vector2.Lerp(cursorCornerBL.transform.position, targetBLPos, Time.deltaTime * cursorHoverMovementSpeed);
+                cursorCornerBR.transform.position = Vector2.Lerp(cursorCornerBR.transform.position, targetBRPos, Time.deltaTime * cursorHoverMovementSpeed);
+            }
             // Set colours
             cursorCornerTL.color = Color.Lerp(cursorCornerTL.color, cursorHoverColor, Time.deltaTime * cursorColorLerpSpeed);
             cursorCornerTR.color = Color.Lerp(cursorCornerTR.color, cursorHoverColor, Time.deltaTime * cursorColorLerpSpeed);
@@ -141,10 +204,8 @@ public class PlayerInteractor : MonoBehaviour
         // Is idling
         else
         {
-            // Move to mouse
+            // Set to mouse and lerp corners
             cursorContainer.position = new Vector2(hoverPos.x, hoverPos.y);
-
-            // Spread out cursorCorners
             cursorCornerTL.transform.localPosition = Vector2.Lerp(cursorCornerTL.transform.localPosition, new Vector2(-cursorIdleDistance, cursorIdleDistance), Time.deltaTime * cursorIdleMovementSpeed);
             cursorCornerTR.transform.localPosition = Vector2.Lerp(cursorCornerTR.transform.localPosition, new Vector2(cursorIdleDistance, cursorIdleDistance), Time.deltaTime * cursorIdleMovementSpeed);
             cursorCornerBL.transform.localPosition = Vector2.Lerp(cursorCornerBL.transform.localPosition, new Vector2(-cursorIdleDistance, -cursorIdleDistance), Time.deltaTime * cursorIdleMovementSpeed);

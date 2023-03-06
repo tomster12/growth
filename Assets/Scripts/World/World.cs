@@ -10,7 +10,26 @@ using static VoronoiMeshGenerator;
 public class World : Generator
 {
     public static List<World> worlds = new List<World>();
-
+    
+    public static World GetClosestWorld(Vector2 pos, out Vector2 groundPosition)
+    {
+        // Loop over and find the closest world
+        World closestWorld = null;
+        float closestDst = float.PositiveInfinity;
+        groundPosition = pos;
+        foreach (World world in World.worlds)
+        {
+            Vector2 closestGroundPosition = world.GetClosestOverallPoint(pos);
+            float dst = (closestGroundPosition - pos).magnitude;
+            if (dst < closestDst)
+            {
+                closestWorld = world;
+                groundPosition = closestGroundPosition;
+                closestDst = dst;
+            }
+        }
+        return closestWorld;
+    }
 
     public enum ColorMode { NONE, STANDARD, RANDOM, DEPTH };
 
