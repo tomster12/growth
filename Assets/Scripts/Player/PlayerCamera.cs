@@ -6,6 +6,7 @@ using UnityEngine.Experimental.Rendering.Universal;
 public interface IFollowable
 {
     public Transform GetFollowTransform();
+    public Vector2 GetFollowPosition();
     public Vector2 GetFollowUpwards();
 }
 
@@ -43,7 +44,7 @@ public class PlayerCamera : MonoBehaviour
     }
 
 
-    private void LateUpdate()
+    private void FixedUpdate()
     {
         // Handle scrolling
         var scrollWheelInput = Input.GetAxis("Mouse ScrollWheel");
@@ -76,7 +77,7 @@ public class PlayerCamera : MonoBehaviour
     private void UpdateMovementFollow()
     {
         // Follow object position
-        Vector2 pos = follow.GetFollowTransform().position;
+        Vector2 pos = follow.GetFollowPosition();
         controlledTransform.position = new Vector3(pos.x, pos.y, controlledTransform.position.z);
 
         // Follow object rotation

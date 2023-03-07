@@ -187,6 +187,7 @@ public class IKFabrik : MonoBehaviour
 
     public void OnDrawGizmos()
     {
+        #if UNITY_EDITOR
         // Loop upwards through transforms
         Transform current = boneEnd;
         for (int i = 0; i < boneCount && current != null && current.parent != null; i++)
@@ -203,6 +204,7 @@ public class IKFabrik : MonoBehaviour
             // Move upwards to parent
             current = current.parent;
         }
+        #endif
     }
 
 

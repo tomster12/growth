@@ -142,6 +142,8 @@ public class PlayerController : MonoBehaviour, IFollowable
 
     public Transform GetFollowTransform() => characterRB.transform;
 
+    public Vector2 GetFollowPosition() => characterRB.position;
+
     public Vector2 GetFollowUpwards() => upDir;
 
     public Vector2  GetJumpDir()
