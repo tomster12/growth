@@ -82,7 +82,7 @@ public class WorldObject : MonoBehaviour
 
     public bool hasComponentPhysical { get; protected set; }
 
-    protected Rigidbody2D physicalRB;
+    public Rigidbody2D physicalRB { get; protected set; }
     protected GravityObject physicalGO;
 
 

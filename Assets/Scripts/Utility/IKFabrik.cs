@@ -20,7 +20,7 @@ public class IKFabrik : MonoBehaviour
     public Quaternion poleRot;
 
     // --- Internal ---
-    private int boneCount;
+    public int boneCount { get; private set; }
     public Transform[] bones { get; private set; }
     public float[] boneLengths { get; private set; }
     public float totalLength { get; private set; }

@@ -3,7 +3,9 @@ guid: 34afb01643b30384c98cdc71ab48a908
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - materialDottedPfb: {fileID: 2100000, guid: 2fb26cf900ea7494f93ad51734a84ccb, type: 2}
+  - materialSolidPfb: {fileID: 2100000, guid: 98b84de2cdbe36549a59363e45fafe97, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

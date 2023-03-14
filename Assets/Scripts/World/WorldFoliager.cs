@@ -88,6 +88,8 @@ public class WorldFoliager : Generator
             // Get edges and site
             MeshSiteEdge edge = world.surfaceEdges[i];
             WorldSite site = world.worldSites[edge.siteIndex];
+            Vector2 a = world.mesh.vertices[site.meshSite.meshVerticesI[edge.siteToVertexI]];
+            Vector2 b = world.mesh.vertices[site.meshSite.meshVerticesI[edge.siteFromVertexI]];
 
             // Generate a pebble on this edge
             // Randomly pick a stone type
@@ -97,6 +99,8 @@ public class WorldFoliager : Generator
             {
                 stoneObj = Instantiate(pebblePfb);
                 stoneObj.transform.parent = world.foregroundContainer;
+                PluckableStone pluckable = stoneObj.GetComponent<PluckableStone>();
+                pluckable.popDir = Vector2.Perpendicular(b - a);
             }
             else if (sr < (stoneChances[0] + stoneChances[1]))
             {
@@ -116,8 +120,6 @@ public class WorldFoliager : Generator
             stone.transform.eulerAngles = new Vector3(0.0f, 0.0f, UnityEngine.Random.value * 360.0f);
 
             // Position randomly
-            Vector2 a = world.mesh.vertices[site.meshSite.meshVerticesI[edge.siteToVertexI]];
-            Vector2 b = world.mesh.vertices[site.meshSite.meshVerticesI[edge.siteFromVertexI]];
             float t = 0.25f + UnityEngine.Random.value * 0.5f;
             Vector3 pos = world.worldTransform.TransformPoint(Vector2.Lerp(a, b, t));
             pos.z = 3.0f;

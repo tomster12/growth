@@ -134,6 +134,11 @@ public class PlayerLegs : MonoBehaviour
             + (playerController.upDir.normalized * kneeHeight * 2);
     }
 
+    public Vector2 GetLegEnd(int legIndex)
+    {
+        if (legIndex < 0 || legIndex > 3) return Vector2.zero;
+        return legIK[legIndex].bones[legIK[legIndex].boneCount - 1].position;
+    }
 
     [ContextMenu("Set Leg Lengths")]
     private void Editor_SetLegLengths()

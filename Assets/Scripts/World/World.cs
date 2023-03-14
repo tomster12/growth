@@ -431,7 +431,7 @@ public class World : Generator
 
 
     public Vector3 GetClosestOverallPoint(Vector2 pos) => rb.ClosestPoint(pos);
-    
+
     public Vector3 GetClosestSurfacePoint(Vector2 pos) => outsidePolygon.ClosestPoint(pos);
 
     public float[] GetSurfaceRange()

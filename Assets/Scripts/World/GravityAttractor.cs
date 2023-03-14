@@ -11,8 +11,9 @@ public class GravityAttractor : MonoBehaviour
     public PolygonCollider2D polygonCollider => _polygonCollider;
 
     [Header("Config")]
-    [SerializeField] public float gravityForce = 200; // Standard Range: 150-300
-    [SerializeField] public float gravityRadius = 200;
+    [SerializeField] public float gravityForce = 200.0f; // Standard Range: 150-300
+    [SerializeField] public float gravityRadius = 200.0f;
+    [SerializeField] public float minimumDistance = 3.0f;
     [SerializeField] public bool rigidbodySurface = true;
     public Vector2 centre => rb.transform.position;
 
@@ -30,7 +31,8 @@ public class GravityAttractor : MonoBehaviour
                 Vector2 surface = ClosestPoint(obj.centre);
                 Vector2 surfaceDir = surface - obj.centre;
                 if (surfaceDir.magnitude == 0) continue;
-                float force = gravityForce * (rb.mass * obj.rb.mass) / surfaceDir.magnitude;
+                float cleanMagnitude = Mathf.Max(surfaceDir.magnitude, minimumDistance);
+                float force = gravityForce * (rb.mass * obj.rb.mass) / cleanMagnitude;
                 obj.rb.AddForce(surfaceDir.normalized * force);
             }
         }

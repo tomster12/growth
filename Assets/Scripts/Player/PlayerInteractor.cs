@@ -17,7 +17,6 @@ public class PlayerInteractor : MonoBehaviour
     [SerializeField] private Transform cursorContainer;
     [SerializeField] private SpriteRenderer cursorCornerTL, cursorCornerTR, cursorCornerBL, cursorCornerBR;
     [SerializeField] private SpriteRenderer centreIndicator;
-    [SerializeField] private LineHelper lineHelper;
 
     [Header("Config")]
     [SerializeField] private Color cursorColorFar = new Color(0.6f, 0.6f, 0.6f);
@@ -32,17 +31,30 @@ public class PlayerInteractor : MonoBehaviour
     [SerializeField] private float controlForce = 25.0f;
     [SerializeField] private float hoverDistance = 20.0f;
     [SerializeField] private float controlDistance = 10.0f;
+    [SerializeField] private float controlWarningDistance = 3.0f;
+    [SerializeField] private Color controlWarningColor = new Color(0.9f, 0.2f, 0.2f, 0.3f);
+    [SerializeField] private Color controlDirColor = new Color(1.0f, 1.0f, 1.0f, 0.1f);
 
     public Vector2 hoverPos { get; private set; }
     public WorldObject hoveredWO { get; private set; }
     public float cursorDistance { get; private set; }
     public bool isControlling { get; private set; }
     private List<Interaction> hoveredInteractions;
+    private LineHelper controlLimitLH;
+    private LineHelper controlDirLH;
 
 
     private void Awake()
     {
         instance = this;
+
+        // Initialize line helpers
+        GameObject controlLimitLHGO = new GameObject();
+        controlLimitLHGO.transform.parent = transform;
+        controlLimitLH = controlLimitLHGO.AddComponent<LineHelper>();
+        GameObject controlDirLHGO = new GameObject();
+        controlDirLHGO.transform.parent = transform;
+        controlDirLH = controlDirLHGO.AddComponent<LineHelper>();
     }
 
     private void Start()
@@ -128,15 +140,24 @@ public class PlayerInteractor : MonoBehaviour
             playerLegs.pointingPos = hoveredWO.transform.position;
 
             // - Mouse outside control length so show circle
-            if (hoverDir.magnitude > (controlDistance - 0.2f))
+            float outsidePct = Mathf.Min(1.0f - (controlDistance - hoverDir.magnitude) / controlWarningDistance, 1.0f);
+            if (outsidePct > 0.0f)
             {
-                lineHelper.SetActive(true);
-                lineHelper.DrawCircle((Vector2)playerController.transform.position, controlDistance, Color.white);
+                controlLimitLH.SetActive(true);
+                Color lerpColor = new Color(controlWarningColor.r, controlWarningColor.g, controlWarningColor.b, controlWarningColor.a* outsidePct);
+                controlLimitLH.DrawCircle(playerController.transform.position, controlDistance, lerpColor, LineHelper.LineFill.DOTTED);
             }
             else
             {
-                lineHelper.SetActive(false);
+                controlLimitLH.SetActive(false);
             }
+
+            // - Line renderer to controlled
+            controlDirLH.SetActive(true);
+            Vector2 legEnd = playerLegs.GetLegEnd(playerLegs.pointingLeg);
+            Vector3 controlDirLHFrom = new Vector3(legEnd.x, legEnd.y, playerController.transform.position.z + 0.1f);
+            Vector3 controlDirLHTo = new Vector3(hoveredWO.physicalRB.position.x, hoveredWO.physicalRB.position.y, playerController.transform.position.z + 0.1f);
+            controlDirLH.DrawLine(controlDirLHFrom, controlDirLHTo, controlDirColor, LineHelper.LineFill.SOLID);
 
             // - Drop object
             if (Input.GetMouseButtonDown(0))
@@ -152,11 +173,20 @@ public class PlayerInteractor : MonoBehaviour
             // - Stop pointing legs
             playerLegs.isPointing = false;
 
+            // - Disable line renderers
+            controlLimitLH.SetActive(false);
+            controlDirLH.SetActive(false);
+
             // - Hovering and clicked
             if (hoveredWO != null && hoveredWO.canControl && Input.GetMouseButtonDown(0))
             {
                 // - Try set controlled
-                if (hoveredWO.SetControlled(true)) isControlling = true;
+                if (hoveredWO.SetControlled(true))
+                {
+                    isControlling = true;
+                    hoveredWO.controlPosition = hoveredWO.physicalRB.transform.position;
+                    hoveredWO.controlForce = controlForce;
+                }
             }
         }
 

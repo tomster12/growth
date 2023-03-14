@@ -43,6 +43,8 @@ Material:
     - Vector1_c84622c11c3f4cf58dd5b9077e00ffa9: 6.34
     - Vector1_d9fb87a3fb364b1e84999ae776844659: 1
     - Vector1_e56bbc39674e4718a26d26a1e17dde3c: 1.87
+    - _QueueControl: 0
+    - _QueueOffset: 0
     - _WireThickness: 100
     m_Colors:
     - Color_f201afa9e9d441dca02a8c98e640a295: {r: 0.009545456, g: 0, b: 0.021, a: 0.4392157}
