@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Runtime.InteropServices;
-
-
-
+using UnityEngine.PlayerLoop;
 
 public class PlayerInteractor : MonoBehaviour
 {
@@ -19,6 +17,7 @@ public class PlayerInteractor : MonoBehaviour
     [SerializeField] private Transform cursorContainer;
     [SerializeField] private SpriteRenderer cursorCornerTL, cursorCornerTR, cursorCornerBL, cursorCornerBR;
     [SerializeField] private SpriteRenderer centreIndicator;
+    [SerializeField] private LineHelper lineHelper;
 
     [Header("Config")]
     [SerializeField] private Color cursorColorFar = new Color(0.6f, 0.6f, 0.6f);
@@ -59,7 +58,14 @@ public class PlayerInteractor : MonoBehaviour
     }
 
 
-    private void LateUpdate()
+    private void Update()
+    {
+        HandleInput();
+        UpdateHover();
+        UpdateControlled();
+    }
+
+    private void HandleInput()
     {
         // Update cursor pos
         hoverPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -67,17 +73,6 @@ public class PlayerInteractor : MonoBehaviour
 
         // Focus on click window
         if (Input.GetMouseButtonDown(0)) Focus();
-
-        // Main updates
-        UpdateHover();
-        UpdateControlled();
-        UpdateCursor();
-
-        // Update interactions
-        if (hoveredInteractions != null)
-        {
-            foreach (Interaction interaction in hoveredInteractions) interaction.TryInteract();
-        }
     }
 
     private void UpdateHover()
@@ -121,7 +116,8 @@ public class PlayerInteractor : MonoBehaviour
         if (isControlling)
         {
             // - Set control position
-            Vector2 limitedHoverDir = Vector2.ClampMagnitude(hoverPos - (Vector2)playerController.transform.position, controlDistance);
+            Vector2 hoverDir = hoverPos - (Vector2)playerController.transform.position;
+            Vector2 limitedHoverDir = Vector2.ClampMagnitude(hoverDir, controlDistance);
             Vector2 limitedHoverPos = (Vector2)playerController.transform.position + limitedHoverDir;
             hoveredWO.controlPosition = limitedHoverPos;
             hoveredWO.controlForce = controlForce;
@@ -130,6 +126,17 @@ public class PlayerInteractor : MonoBehaviour
             playerLegs.isPointing = true;
             playerLegs.pointingLeg = 2;
             playerLegs.pointingPos = hoveredWO.transform.position;
+
+            // - Mouse outside control length so show circle
+            if (hoverDir.magnitude > (controlDistance - 0.2f))
+            {
+                lineHelper.SetActive(true);
+                lineHelper.DrawCircle((Vector2)playerController.transform.position, controlDistance, Color.white);
+            }
+            else
+            {
+                lineHelper.SetActive(false);
+            }
 
             // - Drop object
             if (Input.GetMouseButtonDown(0))
@@ -152,9 +159,21 @@ public class PlayerInteractor : MonoBehaviour
                 if (hoveredWO.SetControlled(true)) isControlling = true;
             }
         }
+
+        // Update interactions
+        if (hoveredInteractions != null)
+        {
+            foreach (Interaction interaction in hoveredInteractions) interaction.TryInteract();
+        }
     }
 
-    private void UpdateCursor()
+
+    private void FixedUpdate()
+    {
+        FixedUpdateCursor();
+    }
+
+    private void FixedUpdateCursor()
     {
         // Enable centre indicator optionally
         centreIndicator.gameObject.SetActive(isControlling);
@@ -195,7 +214,7 @@ public class PlayerInteractor : MonoBehaviour
         // Is idling so just normal square
         else
         {
-            cursorContainer.position = hoverPos;
+            cursorContainer.position = new Vector2(Mathf.Round(hoverPos.x * 12) / 12, Mathf.Round(hoverPos.y * 12) / 12);
             cursorCornerTL.transform.localPosition = Vector2.Lerp(cursorCornerTL.transform.localPosition, new Vector2(-cursorIdleDistance, cursorIdleDistance), Time.deltaTime * cursorIdleMovementSpeed);
             cursorCornerTR.transform.localPosition = Vector2.Lerp(cursorCornerTR.transform.localPosition, new Vector2(cursorIdleDistance, cursorIdleDistance), Time.deltaTime * cursorIdleMovementSpeed);
             cursorCornerBL.transform.localPosition = Vector2.Lerp(cursorCornerBL.transform.localPosition, new Vector2(-cursorIdleDistance, -cursorIdleDistance), Time.deltaTime * cursorIdleMovementSpeed);

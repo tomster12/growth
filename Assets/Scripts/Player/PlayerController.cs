@@ -59,6 +59,11 @@ public class PlayerController : MonoBehaviour, IFollowable
 
     private void Update()
     {
+        HandleInput();
+    }
+
+    private void HandleInput()
+    {
         // Take in input
         inputDir = Vector3.zero;
         inputDir += Input.GetAxisRaw("Horizontal") * rightDir;
@@ -71,6 +76,7 @@ public class PlayerController : MonoBehaviour, IFollowable
         inputJump = Input.GetKey(KeyCode.Space);
     }
 
+
     private void FixedUpdate()
     {
         // Calculate closest world and ground position
@@ -81,10 +87,10 @@ public class PlayerController : MonoBehaviour, IFollowable
         groundDir = groundPosition - (Vector2)characterRB.transform.position;
         isGrounded = groundDir.magnitude < groundedHeight;
         upDir = groundDir.normalized * -1;
-        UpdateMovement();
+        FixedUpdateMovement();
     }
 
-    private void UpdateMovement()
+    private void FixedUpdateMovement()
     {
         //  Rotate upwards
         float angleDiff = isGrounded

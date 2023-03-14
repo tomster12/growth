@@ -75,10 +75,10 @@ Material:
     - _RepeatCount: 100
     - _Sharpness: 100
     - _SmoothnessTextureChannel: 0
-    - _Spacing: 4.33
+    - _Spacing: 1.95
     - _SpecularHighlights: 1
     - _SrcBlend: 5
-    - _Thickness: 1.39
+    - _Thickness: 0.76
     - _UVSec: 0
     - _ZWrite: 0
     m_Colors:

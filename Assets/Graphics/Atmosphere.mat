@@ -39,6 +39,8 @@ Material:
     - Vector1_e64852e4715d419b921504a219d918cf: 30
     - _Max: 200
     - _Min: 60
+    - _QueueControl: 0
+    - _QueueOffset: 0
     m_Colors:
     - Vector2_8bdeb56776424c8bb529c07cd8d4bc09: {r: 0.5, g: 1, b: 0, a: 0}
   m_BuildTextureStacks: []
