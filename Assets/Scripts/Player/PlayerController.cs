@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour, IFollowable
 {
     [Header("References")]
     [SerializeField] private PlayerCamera playerCamera;
+    [SerializeField] private PlayerInteractor playerInteractor;
     [SerializeField] private World world;
     [SerializeField] private GravityObject characterGravity;
     [SerializeField] private Rigidbody2D characterRB;
@@ -46,7 +47,7 @@ public class PlayerController : MonoBehaviour, IFollowable
 
     public Vector2 inputDir { get; private set; }
     private bool inputJump;
-    private int inputVerticalLean;
+    private float inputVerticalLean;
     private float jumpTimer = 0.0f;
 
 
@@ -67,7 +68,9 @@ public class PlayerController : MonoBehaviour, IFollowable
         // Take in input
         inputDir = Vector3.zero;
         inputDir += Input.GetAxisRaw("Horizontal") * rightDir;
-        inputVerticalLean = Input.GetAxisRaw("Vertical") == 0 ? 0 : (int)Mathf.Sign(Input.GetAxisRaw("Vertical"));
+        inputVerticalLean = (playerInteractor.squeezeAmount != 0.0f)
+                            ? (-playerInteractor.squeezeAmount)
+                            : (Input.GetAxisRaw("Vertical") == 0 ? 0 : (int)Mathf.Sign(Input.GetAxisRaw("Vertical")));
         
         // Vertical movement while not grounded
         if (!isGrounded) inputDir += Input.GetAxisRaw("Horizontal") * rightDir;

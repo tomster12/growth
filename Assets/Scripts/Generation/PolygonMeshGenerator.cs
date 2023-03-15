@@ -1,6 +1,6 @@
 
 using UnityEngine;
-
+using UnityEngine.Rendering;
 
 public class PolygonMeshGenerator : Generator
 {
@@ -8,6 +8,7 @@ public class PolygonMeshGenerator : Generator
     [Header("Parameters")]
     [SerializeField] private MeshFilter mf;
     [SerializeField] private PolygonCollider2D polygon;
+    [SerializeField] private CircleCollider2D circleToFit;
     [SerializeField] private Color[] colorRange = new Color[] { new Color(0, 0, 0), new Color(1, 1, 1) };
     [SerializeField] private NoiseData colorNoise = new NoiseData(new float[] { 0, 1 });
     
@@ -51,6 +52,14 @@ public class PolygonMeshGenerator : Generator
         averagePosition /= vertices.Length;
         for (int i = 0; i < vertices.Length; i++) vertices[i] = vertices[i] - averagePosition;
         polygon.offset -= (Vector2)averagePosition;
+
+        // Fit circle collider
+        if (circleToFit != null)
+        {
+            float smallest = float.PositiveInfinity;
+            foreach (Vector3 v in vertices) smallest = Mathf.Min(v.magnitude, smallest);
+            circleToFit.radius = smallest;
+        }
 
         // Create new mesh and set
         mesh = new Mesh();

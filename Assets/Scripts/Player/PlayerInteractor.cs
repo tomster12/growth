@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Runtime.InteropServices;
 using UnityEngine.PlayerLoop;
 
-public class PlayerInteractor : MonoBehaviour
+public class PlayerInteractor : MonoBehaviour, IInteractor
 {
     [DllImport("user32.dll")]
     public static extern bool SetCursorPos(int X, int Y);
@@ -29,19 +29,21 @@ public class PlayerInteractor : MonoBehaviour
     [SerializeField] private float cursorHoverGap = 0.2f;
     [SerializeField] private float cursorColorLerpSpeed = 3.0f;
     [SerializeField] private float controlForce = 25.0f;
-    [SerializeField] private float hoverDistance = 20.0f;
-    [SerializeField] private float controlDistance = 10.0f;
+    [SerializeField] private float maxHoverDistance = 15.0f;
+    [SerializeField] private float maxControlDistance = 9.0f;
     [SerializeField] private float controlWarningDistance = 3.0f;
     [SerializeField] private Color controlWarningColor = new Color(0.9f, 0.2f, 0.2f, 0.3f);
     [SerializeField] private Color controlDirColor = new Color(1.0f, 1.0f, 1.0f, 0.1f);
 
-    public Vector2 hoverPos { get; private set; }
-    public WorldObject hoveredWO { get; private set; }
-    public float cursorDistance { get; private set; }
-    public bool isControlling { get; private set; }
-    private List<Interaction> hoveredInteractions;
     private LineHelper controlLimitLH;
     private LineHelper controlDirLH;
+    private Vector2 hoverPos;
+    private float hoverDistance;
+    private WorldObject targetWO;
+    private List<Interaction> targetInteractions;
+    private bool isControlling;
+    private bool isInteracting;
+    public float squeezeAmount { get; private set; }
 
 
     private void Awake()
@@ -75,13 +77,14 @@ public class PlayerInteractor : MonoBehaviour
         HandleInput();
         UpdateHover();
         UpdateControlled();
+        UpdateInteraction();
     }
 
     private void HandleInput()
     {
         // Update cursor pos
         hoverPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        cursorDistance = (hoverPos - (Vector2)playerController.transform.position).magnitude;
+        maxHoverDistance = (hoverPos - (Vector2)playerController.transform.position).magnitude;
 
         // Focus on click window
         if (Input.GetMouseButtonDown(0)) Focus();
@@ -89,17 +92,16 @@ public class PlayerInteractor : MonoBehaviour
 
     private void UpdateHover()
     {
-        // Raycast at mouse on all cursorHoverables
-        RaycastHit2D[] hits = Physics2D.RaycastAll(hoverPos, Vector2.zero);
-
-        // Not controlling so could hover
-        if (!isControlling)
+        // Only retarget if not controlling or interacting
+        if (!isControlling && !isInteracting)
         {
             WorldObject newHoveredWO = null;
 
             // - Mouse close enough to hover new
-            if (cursorDistance < hoverDistance)
+            if (hoverDistance < maxHoverDistance)
             {
+                // Raycast at mouse on all cursorHoverables
+                RaycastHit2D[] hits = Physics2D.RaycastAll(hoverPos, Vector2.zero);
                 foreach (RaycastHit2D hit in hits)
                 {
                     WorldObject hitWO = hit.transform.GetComponent<WorldObject>();
@@ -108,16 +110,16 @@ public class PlayerInteractor : MonoBehaviour
             }
 
             // - Overwrite current hover
-            if (newHoveredWO != hoveredWO)
+            if (newHoveredWO != targetWO)
             {
-                if (hoveredWO != null) hoveredWO.SetHovered(false);
-                hoveredWO = newHoveredWO;
-                if (hoveredWO != null)
+                if (targetWO != null) targetWO.SetHovered(false);
+                targetWO = newHoveredWO;
+                if (targetWO != null)
                 {
-                    hoveredWO.SetHovered(true);
-                    hoveredInteractions = hoveredWO.GetInteractions();
+                    targetWO.SetHovered(true);
+                    targetInteractions = targetWO.GetInteractions();
                 }
-                else hoveredInteractions = null;
+                else targetInteractions = null;
             }
         }
     }
@@ -129,23 +131,23 @@ public class PlayerInteractor : MonoBehaviour
         {
             // - Set control position
             Vector2 hoverDir = hoverPos - (Vector2)playerController.transform.position;
-            Vector2 limitedHoverDir = Vector2.ClampMagnitude(hoverDir, controlDistance);
+            Vector2 limitedHoverDir = Vector2.ClampMagnitude(hoverDir, maxControlDistance);
             Vector2 limitedHoverPos = (Vector2)playerController.transform.position + limitedHoverDir;
-            hoveredWO.controlPosition = limitedHoverPos;
-            hoveredWO.controlForce = controlForce;
+            targetWO.controlPosition = limitedHoverPos;
+            targetWO.controlForce = controlForce;
 
             // - Point leg
             playerLegs.isPointing = true;
             playerLegs.pointingLeg = 2;
-            playerLegs.pointingPos = hoveredWO.transform.position;
+            playerLegs.pointingPos = targetWO.transform.position;
 
             // - Mouse outside control length so show circle
-            float outsidePct = Mathf.Min(1.0f - (controlDistance - hoverDir.magnitude) / controlWarningDistance, 1.0f);
+            float outsidePct = Mathf.Min(1.0f - (hoverDistance - hoverDir.magnitude) / controlWarningDistance, 1.0f);
             if (outsidePct > 0.0f)
             {
                 controlLimitLH.SetActive(true);
-                Color lerpColor = new Color(controlWarningColor.r, controlWarningColor.g, controlWarningColor.b, controlWarningColor.a* outsidePct);
-                controlLimitLH.DrawCircle(playerController.transform.position, controlDistance, lerpColor, LineHelper.LineFill.DOTTED);
+                Color lerpColor = new Color(controlWarningColor.r, controlWarningColor.g, controlWarningColor.b, controlWarningColor.a * outsidePct);
+                controlLimitLH.DrawCircle(playerController.transform.position, maxControlDistance, lerpColor, LineHelper.LineFill.DOTTED);
             }
             else
             {
@@ -156,15 +158,11 @@ public class PlayerInteractor : MonoBehaviour
             controlDirLH.SetActive(true);
             Vector2 legEnd = playerLegs.GetLegEnd(playerLegs.pointingLeg);
             Vector3 controlDirLHFrom = new Vector3(legEnd.x, legEnd.y, playerController.transform.position.z + 0.1f);
-            Vector3 controlDirLHTo = new Vector3(hoveredWO.physicalRB.position.x, hoveredWO.physicalRB.position.y, playerController.transform.position.z + 0.1f);
+            Vector3 controlDirLHTo = new Vector3(targetWO.physicalRB.position.x, targetWO.physicalRB.position.y, playerController.transform.position.z + 0.1f);
             controlDirLH.DrawLine(controlDirLHFrom, controlDirLHTo, controlDirColor, LineHelper.LineFill.SOLID);
 
             // - Drop object
-            if (Input.GetMouseButtonDown(0))
-            {
-                hoveredWO.SetControlled(false);
-                isControlling = false;
-            }
+            if (Input.GetMouseButtonDown(0)) SetTargetControlled(false);
         }
 
         // Not controlling
@@ -177,47 +175,42 @@ public class PlayerInteractor : MonoBehaviour
             controlLimitLH.SetActive(false);
             controlDirLH.SetActive(false);
 
-            // - Hovering and clicked
-            if (hoveredWO != null && hoveredWO.canControl && Input.GetMouseButtonDown(0))
-            {
-                // - Try set controlled
-                if (hoveredWO.SetControlled(true))
-                {
-                    isControlling = true;
-                    hoveredWO.controlPosition = hoveredWO.physicalRB.transform.position;
-                    hoveredWO.controlForce = controlForce;
-                }
-            }
+            // - Not interacting, hovering and clicked
+            if (!isInteracting && targetWO != null && targetWO.canControl && Input.GetMouseButtonDown(0)) SetTargetControlled(true);
         }
+    }
 
+    private void UpdateInteraction()
+    {
         // Update interactions
-        if (hoveredInteractions != null)
+        if (targetInteractions != null)
         {
-            foreach (Interaction interaction in hoveredInteractions) interaction.TryInteract();
+            foreach (Interaction interaction in targetInteractions) interaction.TryInteract(this);
         }
     }
 
 
     private void FixedUpdate()
     {
-        FixedUpdateCursor();
+        UpdateCursor();
     }
 
-    private void FixedUpdateCursor()
+    private void UpdateCursor()
     {
         // Enable centre indicator optionally
         centreIndicator.gameObject.SetActive(isControlling);
 
         // Hovering / controlling so surround object
-        if (hoveredWO != null)
+        if (targetWO != null)
         {
             // Calculate targets
-            Bounds b = hoveredWO.GetHoverBounds();
+            Bounds b = targetWO.GetHoverBounds();
             Vector2 targetPos = b.center;
-            Vector2 targetTLPos = new Vector2(b.center.x - b.extents.x - cursorHoverGap, b.center.y + b.extents.y + cursorHoverGap);
-            Vector2 targetTRPos = new Vector2(b.center.x + b.extents.x + cursorHoverGap, b.center.y + b.extents.y + cursorHoverGap);
-            Vector2 targetBLPos = new Vector2(b.center.x - b.extents.x - cursorHoverGap, b.center.y - b.extents.y - cursorHoverGap);
-            Vector2 targetBRPos = new Vector2(b.center.x + b.extents.x + cursorHoverGap, b.center.y - b.extents.y - cursorHoverGap);
+            float gap = cursorHoverGap * (1.0f - squeezeAmount);
+            Vector2 targetTLPos = new Vector2(b.center.x - b.extents.x - gap, b.center.y + b.extents.y + gap);
+            Vector2 targetTRPos = new Vector2(b.center.x + b.extents.x + gap, b.center.y + b.extents.y + gap);
+            Vector2 targetBLPos = new Vector2(b.center.x - b.extents.x - gap, b.center.y - b.extents.y - gap);
+            Vector2 targetBRPos = new Vector2(b.center.x + b.extents.x + gap, b.center.y - b.extents.y - gap);
             
             // - Controlling so set positions
             if (isControlling)
@@ -233,11 +226,11 @@ public class PlayerInteractor : MonoBehaviour
             // - Just hovering so lerp positions
             else
             {
-                cursorContainer.position = Vector2.Lerp(cursorContainer.position, targetPos, Time.deltaTime * cursorHoverMovementSpeed);
-                cursorCornerTL.transform.position = Vector2.Lerp(cursorCornerTL.transform.position, targetTLPos, Time.deltaTime * cursorHoverMovementSpeed);
-                cursorCornerTR.transform.position = Vector2.Lerp(cursorCornerTR.transform.position, targetTRPos, Time.deltaTime * cursorHoverMovementSpeed);
-                cursorCornerBL.transform.position = Vector2.Lerp(cursorCornerBL.transform.position, targetBLPos, Time.deltaTime * cursorHoverMovementSpeed);
-                cursorCornerBR.transform.position = Vector2.Lerp(cursorCornerBR.transform.position, targetBRPos, Time.deltaTime * cursorHoverMovementSpeed);
+                cursorContainer.position = Vector2.Lerp(cursorContainer.position, targetPos, Time.fixedDeltaTime * cursorHoverMovementSpeed);
+                cursorCornerTL.transform.position = Vector2.Lerp(cursorCornerTL.transform.position, targetTLPos, Time.fixedDeltaTime * cursorHoverMovementSpeed);
+                cursorCornerTR.transform.position = Vector2.Lerp(cursorCornerTR.transform.position, targetTRPos, Time.fixedDeltaTime * cursorHoverMovementSpeed);
+                cursorCornerBL.transform.position = Vector2.Lerp(cursorCornerBL.transform.position, targetBLPos, Time.fixedDeltaTime * cursorHoverMovementSpeed);
+                cursorCornerBR.transform.position = Vector2.Lerp(cursorCornerBR.transform.position, targetBRPos, Time.fixedDeltaTime * cursorHoverMovementSpeed);
             }
         }
 
@@ -245,29 +238,71 @@ public class PlayerInteractor : MonoBehaviour
         else
         {
             cursorContainer.position = new Vector2(Mathf.Round(hoverPos.x * 12) / 12, Mathf.Round(hoverPos.y * 12) / 12);
-            cursorCornerTL.transform.localPosition = Vector2.Lerp(cursorCornerTL.transform.localPosition, new Vector2(-cursorIdleDistance, cursorIdleDistance), Time.deltaTime * cursorIdleMovementSpeed);
-            cursorCornerTR.transform.localPosition = Vector2.Lerp(cursorCornerTR.transform.localPosition, new Vector2(cursorIdleDistance, cursorIdleDistance), Time.deltaTime * cursorIdleMovementSpeed);
-            cursorCornerBL.transform.localPosition = Vector2.Lerp(cursorCornerBL.transform.localPosition, new Vector2(-cursorIdleDistance, -cursorIdleDistance), Time.deltaTime * cursorIdleMovementSpeed);
-            cursorCornerBR.transform.localPosition = Vector2.Lerp(cursorCornerBR.transform.localPosition, new Vector2(cursorIdleDistance, -cursorIdleDistance), Time.deltaTime * cursorIdleMovementSpeed);
+            cursorCornerTL.transform.localPosition = Vector2.Lerp(cursorCornerTL.transform.localPosition, new Vector2(-cursorIdleDistance, cursorIdleDistance), Time.fixedDeltaTime * cursorIdleMovementSpeed);
+            cursorCornerTR.transform.localPosition = Vector2.Lerp(cursorCornerTR.transform.localPosition, new Vector2(cursorIdleDistance, cursorIdleDistance), Time.fixedDeltaTime * cursorIdleMovementSpeed);
+            cursorCornerBL.transform.localPosition = Vector2.Lerp(cursorCornerBL.transform.localPosition, new Vector2(-cursorIdleDistance, -cursorIdleDistance), Time.fixedDeltaTime * cursorIdleMovementSpeed);
+            cursorCornerBR.transform.localPosition = Vector2.Lerp(cursorCornerBR.transform.localPosition, new Vector2(cursorIdleDistance, -cursorIdleDistance), Time.fixedDeltaTime * cursorIdleMovementSpeed);
         }
 
         // Calculate correct color
         Color cursorColor =
             (isControlling) ? cursorColorControl
-            : (cursorDistance > hoverDistance) ? cursorColorFar
-            : (hoveredWO != null) ? cursorColoHover
+            : (hoverDistance > maxHoverDistance) ? cursorColorFar
+            : (targetWO != null) ? cursorColoHover
             : cursorColorIdle;
 
         // Lerp colours
-        cursorCornerTL.color = Color.Lerp(cursorCornerTL.color, cursorColor, Time.deltaTime * cursorColorLerpSpeed);
-        cursorCornerTR.color = Color.Lerp(cursorCornerTR.color, cursorColor, Time.deltaTime * cursorColorLerpSpeed);
-        cursorCornerBL.color = Color.Lerp(cursorCornerBL.color, cursorColor, Time.deltaTime * cursorColorLerpSpeed);
-        cursorCornerBR.color = Color.Lerp(cursorCornerBR.color, cursorColor, Time.deltaTime * cursorColorLerpSpeed);
+        cursorCornerTL.color = Color.Lerp(cursorCornerTL.color, cursorColor, Time.fixedDeltaTime * cursorColorLerpSpeed);
+        cursorCornerTR.color = Color.Lerp(cursorCornerTR.color, cursorColor, Time.fixedDeltaTime * cursorColorLerpSpeed);
+        cursorCornerBL.color = Color.Lerp(cursorCornerBL.color, cursorColor, Time.fixedDeltaTime * cursorColorLerpSpeed);
+        cursorCornerBR.color = Color.Lerp(cursorCornerBR.color, cursorColor, Time.fixedDeltaTime * cursorColorLerpSpeed);
     }
 
 
-    void Focus()
+    private void Focus()
     {
         UnityEngine.Cursor.visible = false;
     }
+
+
+    private bool SetTargetControlled(bool toControl)
+    {
+        if (targetWO == null || toControl == isControlling) return false;
+
+        // Try begin controlling (pickup)
+        if (toControl)
+        {
+            if (targetWO.SetControlled(true))
+            {
+                isControlling = true;
+                targetWO.controlPosition = targetWO.physicalRB.transform.position;
+                targetWO.controlForce = controlForce;
+                return true;
+            }
+        }
+
+        // Try stop controlling (drop)
+        else
+        {
+            if (targetWO.SetControlled(false))
+            {
+                isControlling = false;
+                return true;
+            }
+        }
+
+        // Somethings gone wrong
+        return false;
+    }
+
+
+    #region IInteractor
+
+    public void Interaction_SetSqueezeAmount(float squeezeAmount) => this.squeezeAmount= squeezeAmount;
+
+    public void Interaction_SetInteracting(bool isInteracting) => this.isInteracting = isInteracting;
+    
+    public void Interaction_SetControlled(bool toControl) => SetTargetControlled(toControl);
+
+    #endregion
 }

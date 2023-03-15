@@ -63,9 +63,12 @@ public class WorldFoliager : Generator
             // Generate foliage and set position
             GameObject grass = Instantiate(site.groundMaterial.foliagePfb);
             grass.transform.parent = world.foliageContainer;
-            if (toFlipX) grass.transform.position = world.worldTransform.TransformPoint(a + dir);
-            else grass.transform.position = world.worldTransform.TransformPoint(a);
+            Vector3 pos;
+            if (toFlipX) pos = world.worldTransform.TransformPoint(a + dir);
+            else pos = world.worldTransform.TransformPoint(a);
             grass.transform.right = dir.normalized;
+            pos.z = world.foliageContainer.transform.position.z;
+            grass.transform.position = pos;
 
             // Grow sprite to correct size
             float width = dir.magnitude + 0.04f;
@@ -122,7 +125,7 @@ public class WorldFoliager : Generator
             // Position randomly
             float t = 0.25f + UnityEngine.Random.value * 0.5f;
             Vector3 pos = world.worldTransform.TransformPoint(Vector2.Lerp(a, b, t));
-            pos.z = 3.0f;
+            pos.z = stoneObj.transform.parent.position.z;
             stone.transform.position = pos;
         }
     }

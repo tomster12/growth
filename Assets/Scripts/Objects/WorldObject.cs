@@ -22,12 +22,7 @@ public class WorldObject : MonoBehaviour
 
     protected void FixedUpdate()
     {
-        // If controlled move towards target
-        if (isControlled)
-        {
-            Vector2 dir = controlPosition - (Vector2)physicalRB.transform.position;
-            physicalRB.AddForce(dir * controlForce);
-        }
+        FixedUpdateControl();
     }
 
     
@@ -148,12 +143,22 @@ public class WorldObject : MonoBehaviour
     }
 
 
+    private void FixedUpdateControl()
+    {
+        // If controlled move towards target
+        if (isControlled)
+        {
+            Vector2 dir = controlPosition - (Vector2)physicalRB.transform.position;
+            physicalRB.AddForce(dir * controlForce);
+        }
+    }
+
+
     public void SetCanControl(bool canControl)
     {
         // Update variables
         this.canControl = canControl;
     }
-
 
     public void OnControl() => SetControlled(true);
     public void OnDrop() => SetControlled(false);

@@ -56,9 +56,9 @@ public class Interaction
     public Visibility visibility;
     public String name;
     public InteractionInput input;
-    public Action holdCallback, downCallback, upCallback;
+    public Action<IInteractor> holdCallback, downCallback, upCallback;
 
-    public Interaction(bool isEnabled, Visibility visibility, string name, InteractionInput input, Action holdCallback, Action downCallback, Action upCallback)
+    public Interaction(bool isEnabled, Visibility visibility, string name, InteractionInput input, Action<IInteractor> holdCallback, Action<IInteractor> downCallback, Action<IInteractor> upCallback)
     {
         this.isEnabled = isEnabled;
         this.visibility = visibility;
@@ -69,14 +69,23 @@ public class Interaction
         this.upCallback = upCallback;
     }
 
-    public bool TryInteract()
+    public bool TryInteract(IInteractor interactorI)
     {
         if (!isEnabled) return false;
-        else if (input.CheckInput() && holdCallback != null) holdCallback();
-        else if (input.CheckInputDown() && downCallback != null) downCallback();
-        else if (input.CheckInputUp() && upCallback != null) upCallback();
+        else if (input.CheckInput() && holdCallback != null) holdCallback(interactorI);
+        else if (input.CheckInputDown() && downCallback != null) downCallback(interactorI);
+        else if (input.CheckInputUp() && upCallback != null) upCallback(interactorI);
         else return false;
         return true;
     }
 }
 
+
+public interface IInteractor
+{
+    public void Interaction_SetSqueezeAmount(float squeezeAmount);
+
+    public void Interaction_SetInteracting(bool isInteracting);
+
+    public void Interaction_SetControlled(bool toControl);
+}
