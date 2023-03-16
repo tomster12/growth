@@ -5,7 +5,7 @@ using UnityEngine;
 public class PluckableStone : WorldObject
 {
     [Header("Pluck Config")]
-    [SerializeField] private float pluckTimerMax = 1.0f;
+    [SerializeField] private float pluckTimerMax = 1.5f;
     [SerializeField] private float pluckVelocity = 30.0f;
     [SerializeField] private GameObject pluckPsysPfb;
 
@@ -42,7 +42,7 @@ public class PluckableStone : WorldObject
         if (isPlucking)
         {
             pluckTimer = Mathf.Min(pluckTimer + Time.deltaTime, pluckTimerMax);
-            interactorI.Interaction_SetSqueezeAmount(pluckTimer / pluckTimerMax);
+            interactorI.Interaction_SetSqueezeAmount(1.5f * pluckTimer / pluckTimerMax);
             if (pluckTimer >= pluckTimerMax) Pluck();
         }
         else pluckTimer = 0.0f;
@@ -53,6 +53,7 @@ public class PluckableStone : WorldObject
     {
         if (isPlucked) return;
         isPlucking = true;
+        interactionPluck.isActive = true;
         pluckTimer = 0.0f;
         this.interactorI = interactorI;
         this.interactorI.Interaction_SetInteracting(true);
@@ -65,6 +66,7 @@ public class PluckableStone : WorldObject
         pluckTimer = 0.0f;
         if (this.interactorI != null)
         {
+            interactionPluck.isActive = false;
             this.interactorI.Interaction_SetSqueezeAmount(0.0f);
             this.interactorI.Interaction_SetInteracting(false);
             this.interactorI = null;
@@ -78,13 +80,14 @@ public class PluckableStone : WorldObject
         // Update variables
         isPlucked = true;
         isPlucking = false;
-        
+        interactionPluck.isActive = false;
+        interactionPluck.isEnabled = false;
+
         pluckTimer = 0.0f;
-        this.interactorI.Interaction_SetSqueezeAmount(0.0f);
+        interactorI.Interaction_SetSqueezeAmount(0.0f);
         interactorI.Interaction_SetInteracting(false);
         interactorI = null;
 
-        interactionPluck.isEnabled = false;
         InitComponentPhysical();
         SetCanControl(true);
 

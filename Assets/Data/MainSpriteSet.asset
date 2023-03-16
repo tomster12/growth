@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf070313027b10f4183b3661e108450e, type: 3}
+  m_Name: MainSpriteSet
+  m_EditorClassIdentifier: 
+  inputSpriteList:
+  - {fileID: -1317780107, guid: 9d67b93c3ee112348a3bc3cfe5eb5002, type: 3}
+  - {fileID: -316872274, guid: 9d67b93c3ee112348a3bc3cfe5eb5002, type: 3}
+  - {fileID: 1657193144, guid: 9d67b93c3ee112348a3bc3cfe5eb5002, type: 3}
+  - {fileID: 1233691079, guid: 9d67b93c3ee112348a3bc3cfe5eb5002, type: 3}
+  - {fileID: 423576484, guid: 9d67b93c3ee112348a3bc3cfe5eb5002, type: 3}
+  - {fileID: -384511822, guid: 9d67b93c3ee112348a3bc3cfe5eb5002, type: 3}
+  symbolSpriteList:
+  - {fileID: -1916002299, guid: 7fd00f1f9789fb74092056b2e23802a4, type: 3}

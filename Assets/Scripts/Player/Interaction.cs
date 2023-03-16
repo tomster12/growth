@@ -22,7 +22,7 @@ public class InteractionKeyInput : InteractionInput
 
     public InteractionKeyInput(KeyCode code)
     {
-        this.name = code.ToString();
+        name = code.ToString();
         this.code = code;
     }
 
@@ -38,7 +38,7 @@ public class InteractionMouseInput : InteractionInput
 
     public InteractionMouseInput(int button)
     {
-        this.name = button == 0 ? "LMB" : button == 1 ? "RMB" : button.ToString();
+        name = button == 0 ? "lmb" : button == 1 ? "rmb" : button.ToString();
         this.button = button;
     }
 
@@ -53,7 +53,10 @@ public class Interaction
     public enum Visibility { HIDDEN, ICON, FULL }
 
     public bool isEnabled;
+    public bool isActive;
+    public bool isBlocked;
     public Visibility visibility;
+
     public String name;
     public InteractionInput input;
     public Action<IInteractor> holdCallback, downCallback, upCallback;

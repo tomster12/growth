@@ -222,7 +222,7 @@ MonoBehaviour:
   _hasComponentControl: 1
   controlPosition: {x: 0, y: 0}
   controlForce: 100
-  pluckTimerMax: 1
+  pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
   popDir: {x: 0, y: 0}

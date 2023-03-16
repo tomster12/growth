@@ -1,15 +1,12 @@
 
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Runtime.InteropServices;
-using UnityEngine.PlayerLoop;
+
 
 public class PlayerInteractor : MonoBehaviour, IInteractor
 {
-    [DllImport("user32.dll")]
-    public static extern bool SetCursorPos(int X, int Y);
     public static PlayerInteractor instance;
-
 
     [Header("References")]
     [SerializeField] private PlayerController playerController;
@@ -17,17 +14,24 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
     [SerializeField] private Transform cursorContainer;
     [SerializeField] private SpriteRenderer cursorCornerTL, cursorCornerTR, cursorCornerBL, cursorCornerBR;
     [SerializeField] private SpriteRenderer centreIndicator;
+    [SerializeField] private ChildOrganiser promptOrganiser;
+
+    [Header("Prefabs")]
+    [SerializeField] private GameObject promptPfb;
 
     [Header("Config")]
     [SerializeField] private Color cursorColorFar = new Color(0.6f, 0.6f, 0.6f);
     [SerializeField] private Color cursorColorIdle = new Color(0.8f, 0.8f, 0.8f);
     [SerializeField] private Color cursorColoHover = new Color(0.9f, 0.9f, 0.9f);
     [SerializeField] private Color cursorColorControl = new Color(1.0f, 1.0f, 1.0f);
-    [SerializeField] private float cursorIdleDistance = 0.75f;
+    [SerializeField] private Color cursorColorInteractable = new Color(1.0f, 0.3f, 0.3f);
+    [SerializeField] private Color cursorColorInteracting = new Color(0.5f, 0.5f, 0.5f);
+     [SerializeField] private float cursorIdleDistance = 0.75f;
     [SerializeField] private float cursorIdleMovementSpeed = 50.0f;
     [SerializeField] private float cursorHoverMovementSpeed = 20.0f;
     [SerializeField] private float cursorHoverGap = 0.2f;
-    [SerializeField] private float cursorColorLerpSpeed = 3.0f;
+    [SerializeField] private float cursorControlGap = 0.05f;
+     [SerializeField] private float cursorColorLerpSpeed = 3.0f;
     [SerializeField] private float controlForce = 25.0f;
     [SerializeField] private float maxHoverDistance = 15.0f;
     [SerializeField] private float maxControlDistance = 9.0f;
@@ -35,7 +39,9 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
     [SerializeField] private Color controlWarningColor = new Color(0.9f, 0.2f, 0.2f, 0.3f);
     [SerializeField] private Color controlOutsideColor = new Color(0.9f, 0.2f, 0.2f, 0.3f);
     [SerializeField] private Color controlDirColor = new Color(1.0f, 1.0f, 1.0f, 0.1f);
+    [SerializeField] private float promptOffset = 1.0f;
 
+    private int enabledInteractions => targetInteractions == null ? 0 : targetInteractions.Where(i => i.isEnabled).Count();
     private LineHelper controlLimitLH;
     private LineHelper controlDirLH;
     private Vector2 hoverPos;
@@ -119,8 +125,13 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
                 {
                     targetWO.SetHovered(true);
                     targetInteractions = targetWO.GetInteractions();
+                    InitializePrompts();
                 }
-                else targetInteractions = null;
+                else
+                {
+                    targetInteractions = null;
+                    InitializePrompts();
+                }
             }
         }
     }
@@ -191,7 +202,7 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
             foreach (Interaction interaction in targetInteractions) interaction.TryInteract(this);
         }
     }
-
+    
 
     private void FixedUpdate()
     {
@@ -237,7 +248,7 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
             // Calculate targets
             Bounds b = targetWO.GetHoverBounds();
             Vector2 targetPos = b.center;
-            float gap = cursorHoverGap * (1.0f - squeezeAmount);
+            float gap = isControlling ? cursorControlGap : (cursorHoverGap * (1.0f - squeezeAmount));
             Vector2 targetTLPos = new Vector2(b.center.x - b.extents.x - gap, b.center.y + b.extents.y + gap);
             Vector2 targetTRPos = new Vector2(b.center.x + b.extents.x + gap, b.center.y + b.extents.y + gap);
             Vector2 targetBLPos = new Vector2(b.center.x - b.extents.x - gap, b.center.y - b.extents.y - gap);
@@ -268,7 +279,9 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
 
         // Calculate correct color
         Color cursorColor =
-            (isControlling) ? cursorColorControl
+            (isInteracting) ? cursorColorInteracting
+            : (enabledInteractions > 0) ? cursorColorInteractable
+            : (isControlling) ? cursorColorControl
             : (hoverDistance > maxHoverDistance) ? cursorColorFar
             : (targetWO != null) ? cursorColoHover
             : cursorColorIdle;
@@ -278,12 +291,34 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         cursorCornerTR.color = Color.Lerp(cursorCornerTR.color, cursorColor, Time.deltaTime * cursorColorLerpSpeed);
         cursorCornerBL.color = Color.Lerp(cursorCornerBL.color, cursorColor, Time.deltaTime * cursorColorLerpSpeed);
         cursorCornerBR.color = Color.Lerp(cursorCornerBR.color, cursorColor, Time.deltaTime * cursorColorLerpSpeed);
+
+        // Move prompt organiser
+        Vector3 promptPosition = new Vector3(cursorCornerTR.transform.localPosition.x + promptOffset, 0.0f, 0.0f);
+        promptOrganiser.transform.localPosition = promptPosition;
     }
 
 
     private void Focus()
     {
         UnityEngine.Cursor.visible = false;
+    }
+
+
+    private void InitializePrompts()
+    {
+        // Clear organiser, add all children, update organiser
+        promptOrganiser.Clear();
+        if (targetInteractions != null)
+        {
+            foreach (Interaction interaction in targetInteractions)
+            {
+                GameObject promptGO = Instantiate(promptPfb);
+                Prompt prompt = promptGO.GetComponent<Prompt>();
+                prompt.SetInteraction(interaction);
+                promptOrganiser.AddChild(prompt);
+            }
+            promptOrganiser.UpdateChildren();
+        }
     }
 
 
