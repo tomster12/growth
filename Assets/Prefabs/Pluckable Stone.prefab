@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 3338917768004317440}
   - component: {fileID: 3338917768004317458}
   - component: {fileID: 3132586360992694577}
+  - component: {fileID: 9030188980349619821}
   m_Layer: 11
   m_Name: Pluckable Stone
   m_TagString: Untagged
@@ -102,7 +103,7 @@ PolygonCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.0058032125, y: 0.066986665}
+  m_Offset: {x: 0.02290959, y: 0.014661304}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -114,14 +115,14 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 0.26293233, y: 0}
-      - {x: 0.1350057, y: 0.1350057}
-      - {x: -0.0000000066471126, y: 0.15206821}
-      - {x: -0.13146225, y: 0.13146225}
-      - {x: -0.26293328, y: -0.000000022986358}
-      - {x: -0.24289447, y: -0.24289456}
-      - {x: 0.0000000044756345, y: -0.375319}
-      - {x: 0.23820744, y: -0.23820728}
+    - - {x: 0.23920204, y: 0}
+      - {x: 0.17766891, y: 0.17766891}
+      - {x: -0.000000013497114, y: 0.30877796}
+      - {x: -0.23821583, y: 0.23821583}
+      - {x: -0.37265384, y: -0.000000032578434}
+      - {x: -0.27611813, y: -0.27611822}
+      - {x: 0.0000000042746175, y: -0.3584621}
+      - {x: 0.21087544, y: -0.2108753}
 --- !u!58 &3338917768004317451
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -137,7 +138,7 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 0.2
+  m_Radius: 0.26251623
 --- !u!114 &5003367570503228308
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -155,7 +156,7 @@ MonoBehaviour:
     vertexCount: 8
     noiseData:
     - valueRange:
-      - 0.05
+      - 0.2
       - 0.5
       noiseScale: 0.6
 --- !u!114 &3338917768004317440
@@ -193,8 +194,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e30236f4aea43be4689f9e112d9e56e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  seed: 1284002101
-  randomizeSeed: 0
+  seed: -1368059696
+  randomizeSeed: 1
   resetSeed: 0
   toUpdate: 0
   generators:
@@ -215,8 +216,25 @@ MonoBehaviour:
   cl: {fileID: 3338917768004317451}
   controlDrag: 20
   idleDrag: 0.5
+  density: 2
+  _hasComponentHighlight: 1
+  _hasComponentPhysical: 0
+  _hasComponentControl: 1
   controlPosition: {x: 0, y: 0}
   controlForce: 100
   pluckTimerMax: 1
-  pluckPSPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
+  pluckVelocity: 12.5
+  pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
   popDir: {x: 0, y: 0}
+--- !u!114 &9030188980349619821
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3338917768004317453}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c68b36e5e6f141b4fa8d1cd83375b4b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

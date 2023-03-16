@@ -216,8 +216,8 @@ public class World : Generator
         mesh = meshGenerator.mesh;
 
         // Instantiate material
-        meshRenderer.material = Instantiate(meshMaterial);
         float noiseScale = GetSurfaceRange()[0] / 30.0f;
+        meshRenderer.material = Instantiate(meshMaterial);
         meshRenderer.material.SetFloat("_NoiseScale", noiseScale);
         
         // Generate world sites
@@ -341,7 +341,7 @@ public class World : Generator
         atmosphere.transform.localPosition = Vector3.zero;
 
         // Instantiate material
-        atmosphere.material = Instantiate(atmosphere.material);
+        atmosphere.sharedMaterial = Instantiate(atmosphere.sharedMaterial);
 
         // Update object
         UpdateComponents();

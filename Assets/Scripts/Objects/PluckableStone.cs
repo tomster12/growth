@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class PluckableStone : WorldObject
 {
-    private static float popForce = 80.0f;
-
+    [Header("Pluck Config")]
     [SerializeField] private float pluckTimerMax = 1.0f;
-    [SerializeField] private GameObject pluckPSPfb;
-    
+    [SerializeField] private float pluckVelocity = 30.0f;
+    [SerializeField] private GameObject pluckPsysPfb;
+
     public bool isPlucked { get; private set; }
     public bool isPlucking { get; private set; }
 
@@ -16,7 +16,7 @@ public class PluckableStone : WorldObject
     private IInteractor interactorI;
     private float pluckTimer;
 
-    public Vector2 popDir;
+    [HideInInspector] public Vector2 popDir;
 
 
     protected void Awake()
@@ -63,9 +63,12 @@ public class PluckableStone : WorldObject
         if (isPlucked) return;
         isPlucking = false;
         pluckTimer = 0.0f;
-        this.interactorI.Interaction_SetSqueezeAmount(0.0f);
-        this.interactorI.Interaction_SetInteracting(false);
-        this.interactorI = null;
+        if (this.interactorI != null)
+        {
+            this.interactorI.Interaction_SetSqueezeAmount(0.0f);
+            this.interactorI.Interaction_SetInteracting(false);
+            this.interactorI = null;
+        }
     }
 
     private void Pluck()
@@ -86,13 +89,13 @@ public class PluckableStone : WorldObject
         SetCanControl(true);
 
         // Move out of ground
-        physicalRB.transform.position += (Vector3)(popDir.normalized * cl.bounds.extents * 2f);
+        physicalRB.transform.position += (Vector3)(popDir.normalized * cl.bounds.extents * 1.5f);
 
-        // Pop in a direction
-        physicalRB.AddForce(popDir.normalized * popForce);
+        // Pop in a direction (ignore mass)
+        physicalRB.AddForce(popDir.normalized * pluckVelocity * physicalRB.mass, ForceMode2D.Impulse);
 
         // Produce particles
-        GameObject particlesGO = Instantiate(pluckPSPfb);
+        GameObject particlesGO = Instantiate(pluckPsysPfb);
         particlesGO.transform.position = physicalRB.transform.position;
         particlesGO.transform.up = popDir.normalized;
     }
