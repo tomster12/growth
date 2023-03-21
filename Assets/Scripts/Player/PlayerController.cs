@@ -50,6 +50,8 @@ public class PlayerController : MonoBehaviour, IFollowable
     private float inputVerticalLean;
     private float jumpTimer = 0.0f;
 
+    public float movementSlowdown = 0.0f;
+
 
     private void Start()
     {
@@ -115,9 +117,10 @@ public class PlayerController : MonoBehaviour, IFollowable
 
             if (upComponent > 0) characterRB.AddForce(dir * feetRaiseStrength, ForceMode2D.Impulse);
             else characterRB.AddForce(dir * feetLowerStrength, ForceMode2D.Impulse);
-            
+
             // Force with input
-            characterRB.AddForce(inputDir.normalized * groundMovementSpeed, ForceMode2D.Impulse);
+            float speed = groundMovementSpeed * (1.0f - movementSlowdown);
+            characterRB.AddForce(inputDir.normalized * speed, ForceMode2D.Impulse);
 
             // Jump force if inputting and can
             if (inputJump && jumpTimer == 0.0f)

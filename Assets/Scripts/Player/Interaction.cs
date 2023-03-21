@@ -50,37 +50,75 @@ public class InteractionMouseInput : InteractionInput
 [Serializable]
 public class Interaction
 {
-    public enum Visibility { HIDDEN, ICON, FULL }
+    public enum Visibility { HIDDEN, INPUT, ICON, TEXT }
 
-    public bool isEnabled;
-    public bool isActive;
-    public bool isBlocked;
-    public Visibility visibility;
+    public bool isEnabled { get; protected set; }
+    public bool isActive { get; protected set; }
+    public bool isBlocked { get; protected set; }
 
-    public String name;
-    public InteractionInput input;
-    public Action<IInteractor> holdCallback, downCallback, upCallback;
+    public String name { get; private set; }
+    public InteractionInput input { get; private set; }
+    public Visibility visibility { get; protected set; }
 
-    public Interaction(bool isEnabled, Visibility visibility, string name, InteractionInput input, Action<IInteractor> holdCallback, Action<IInteractor> downCallback, Action<IInteractor> upCallback)
+    private Sprite blockedSprite;
+    private Sprite spriteInputInactive;
+    private Sprite spriteInputActive;
+    private Sprite spriteIconInactive;
+    private Sprite spriteIconActive;
+
+
+    public Interaction(string name, InteractionInput input, Visibility visibility, String iconSpriteName)
     {
-        this.isEnabled = isEnabled;
-        this.visibility = visibility;
+        isEnabled = true;
+        isActive = false;
+        isBlocked = false;
+
         this.name = name;
         this.input = input;
-        this.holdCallback = holdCallback;
-        this.downCallback = downCallback;
-        this.upCallback = upCallback;
+        this.visibility = visibility;
+
+        blockedSprite = SpriteSet.instance.GetSprite("cross");
+        spriteInputInactive = SpriteSet.instance.GetSprite(this.input.name + "_inactive");
+        spriteInputActive  = SpriteSet.instance.GetSprite(this.input.name + "_active");
+        if (iconSpriteName != null)
+        {
+            spriteIconInactive = SpriteSet.instance.GetSprite(iconSpriteName + "_inactive");
+            spriteIconActive = SpriteSet.instance.GetSprite(iconSpriteName + "_active");
+        }
     }
+
 
     public bool TryInteract(IInteractor interactorI)
     {
         if (!isEnabled) return false;
-        else if (input.CheckInput() && holdCallback != null) holdCallback(interactorI);
-        else if (input.CheckInputDown() && downCallback != null) downCallback(interactorI);
-        else if (input.CheckInputUp() && upCallback != null) upCallback(interactorI);
+        else if (input.CheckInputDown()) OnInputDown(interactorI);
+        else if (input.CheckInput()) OnHold(interactorI);
+        else if (input.CheckInputUp()) OnInputUp(interactorI);
         else return false;
         return true;
     }
+
+    
+    public Sprite GetCurrentSpriteInput()
+    {
+        if (isBlocked) return blockedSprite;
+        if (!isActive) return spriteInputInactive;
+        return spriteInputActive;
+    }
+
+    public Sprite GetCurrentSpriteIcon()
+    {
+        if (isBlocked) return blockedSprite;
+        if (!isActive) return spriteIconInactive;
+        return spriteIconActive;
+    }
+
+
+    protected virtual void OnHold(IInteractor interactorI) { }
+
+    protected virtual void OnInputDown(IInteractor interactorI) { }
+
+    protected virtual void OnInputUp(IInteractor interactorI) { }
 }
 
 
