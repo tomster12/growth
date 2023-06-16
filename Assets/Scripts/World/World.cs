@@ -52,7 +52,7 @@ public class World : Generator
     [Header("Generators", order = 1)]
     [SerializeField] private PlanetPolygonGenerator planetPolygonGenerator;
     [SerializeField] private VoronoiMeshGenerator meshGenerator;
-    [SerializeField] private WorldFoliager foliageManager;
+    [SerializeField] private WorldBiomeGenerator worldBiomeManager;
     [Space(6, order = 0)]
     [Header("Containers", order = 1)]
     [SerializeField] private Transform _featureContainer;
@@ -82,11 +82,6 @@ public class World : Generator
     [SerializeField] private Material meshMaterial;
     [SerializeField] private int seedCount = 300;
     [SerializeField] private float seedMinDistance = 0.02f;
-    [Header("Stage: Site Processing", order = 1)]
-    [SerializeField] private GroundMaterial materialDirt;
-    [SerializeField] private GroundMaterial materialStone;
-    [SerializeField] private NoiseData energyMaxNoise = new NoiseData(new float[2] { 40, 200 });
-    [SerializeField] private NoiseData energyPctNoise = new NoiseData();
     [Header("Stage: Component Initialization", order = 1)]
     [SerializeField] private Material atmosphereMaterial;
     [SerializeField] private float atmosphereSizeMin = 150.0f;
@@ -152,12 +147,7 @@ public class World : Generator
         _GenerateMesh();
         _ProcessSites();
         _InitializeComponents();
-
-        // Run other managers
-        foliageManager.Generate();
-
-        // Generated so set initial colour
-        SetColourMode(ColorMode.STANDARD);
+        _GenerateBiome();
     }
 
     [ContextMenu("Stage/- Clear")]
@@ -165,7 +155,7 @@ public class World : Generator
     {
         // Reset main variables
         if (mesh != null) mesh.Clear();
-        foliageManager.ClearOutput();
+        worldBiomeManager.ClearOutput();
         mesh = null;
         worldSites = null;
         surfaceEdges = null;
@@ -272,7 +262,6 @@ public class World : Generator
             surfaceEdgesUnordered.Remove(picked);
         }
 
-
         // Calculate edge distance using neighbours
         HashSet<int> closedSet = new HashSet<int>();
         Stack<int> openSet = new Stack<int>();
@@ -311,23 +300,6 @@ public class World : Generator
                 }
             }
         }
-
-
-        // Loop over sites
-        foreach (WorldSite worldSite in worldSites)
-        {
-            // Generate site energy
-            Vector2 centre = mesh.vertices[worldSite.meshSite.meshCentroidI];
-            worldSite.maxEnergy = energyMaxNoise.GetNoise(centre);
-            float pct = energyPctNoise.GetNoise(centre);
-            if (UnityEngine.Random.value < 0.02f) pct = 0.0f;
-            worldSite.energy = pct * worldSite.maxEnergy;
-
-            // Generate site terrain
-            if (worldSite.outsideDistance >= 3) worldSite.groundMaterial = materialStone;
-            else if (worldSite.outsideDistance >= 2 && UnityEngine.Random.value < 0.8f) worldSite.groundMaterial = materialStone;
-            else worldSite.groundMaterial = materialDirt;
-        }
     }
 
     [ContextMenu("Stage/3. Initialize Components")]
@@ -342,18 +314,6 @@ public class World : Generator
 
         // Instantiate material
         atmosphere.sharedMaterial = Instantiate(atmosphere.sharedMaterial);
-
-        // Update object
-        UpdateComponents();
-    }
-
-    #endregion
-
-
-    [ContextMenu("Update/Components")]
-    private void UpdateComponents()
-    {
-        if (atmosphere == null) atmosphere = worldTransform.Find("Atmosphere")?.GetComponent<SpriteRenderer>();
 
         // Set global scale
         float targetScale = atmosphereSizeMax * 2.0f;
@@ -372,62 +332,14 @@ public class World : Generator
         gravityAttractor.gravityRadius = atmosphereSizeMax;
         gravityAttractor.gravityForce = gravityForce;
     }
-
-    [ContextMenu("Update/Colours")]
-    private void UpdateColours()
+    
+    [ContextMenu("Stage/4. Generate Biome")]
+    private void _GenerateBiome()
     {
-        // Update colours of the mesh
-        Color[] meshColors = new Color[mesh.vertexCount];
-        foreach (var site in worldSites)
-        {
-            Color col = Color.magenta;
-
-            if (currentColorMode == ColorMode.RANDOM)
-            {
-                col = new Color(
-                    0.75f + UnityEngine.Random.value * 0.25f,
-                    0.75f + UnityEngine.Random.value * 0.25f,
-                    0.75f + UnityEngine.Random.value * 0.25f
-                );
-            }
-
-            else if (currentColorMode == ColorMode.DEPTH)
-            {
-                float pct = Mathf.Max(1.0f - site.outsideDistance * 0.2f, 0.0f);
-                col = new Color(pct, pct, pct);
-            }
-
-            else if (currentColorMode == ColorMode.STANDARD)
-            {
-                float pct = site.energy / site.maxEnergy;
-                col = Color.Lerp(site.groundMaterial.materialColorRange[0], site.groundMaterial.materialColorRange[1], pct);
-            }
-
-            meshColors[site.meshSite.meshCentroidI] = col;
-            foreach (int v in site.meshSite.meshVerticesI) meshColors[v] = col;
-        }
-        mesh.colors = meshColors;
-
-        // Update foliage manager
-        foliageManager.UpdateColours();
+        worldBiomeManager.Generate();
     }
 
-
-    [ContextMenu("Color/Set STANDARD")]
-    private void SetColourModeEnergy() { SetColourMode(ColorMode.STANDARD); }
-
-    [ContextMenu("Color/Set RANDOM")]
-    private void SetColourModeRandom() { SetColourMode(ColorMode.RANDOM); }
-
-    [ContextMenu("Color/Set DEPTH")]
-    private void SetColourModeDepth() { SetColourMode(ColorMode.DEPTH); }
-
-    private void SetColourMode(ColorMode mode)
-    {
-        if (currentColorMode == mode) return;
-        currentColorMode = mode;
-        UpdateColours();
-    }
+    #endregion
 
 
     public Vector3 GetClosestOverallPoint(Vector2 pos) => rb.ClosestPoint(pos);
