@@ -217,7 +217,6 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         }
     }
     
-
     private void FixedUpdate()
     {
         FixedUpdateCursor();
@@ -308,7 +307,6 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         // Move prompt organiser
         promptOrganiser.transform.localPosition = Vector3.right * promptOffset;
     }
-
 
     private void Focus()
     {

@@ -5,7 +5,7 @@ using static VoronoiMeshGenerator;
 using static World;
 
 
-public class WorldBiomeGenerator : Generator
+public class WorldBiomeGenerator : MonoBehaviour, IGenerator
 {
     // --- Editor ---
     [Header("References")]
@@ -22,29 +22,30 @@ public class WorldBiomeGenerator : Generator
     [SerializeField] private NoiseData energyMaxNoise = new NoiseData(new float[2] { 40, 200 });
     [SerializeField] private NoiseData energyPctNoise = new NoiseData();
 
-    // -- Output --
     public List<SpriteRenderer> surfaceFoliage { get; private set; } = new List<SpriteRenderer>();
-    public List<GeneratorController> surfaceStones { get; private set; } = new List<GeneratorController>();
+    public List<IGeneratorController> surfaceStones { get; private set; } = new List<IGeneratorController>();
+    public bool isGenerated { get; private set; } = false;
     
 
-    [ContextMenu("Generate Biome")]
-    public override void Generate()
-    {
-        ClearInternal();
-        _GenerateMaterial();
-        _GenerateFoliage();
-        _GenerateStones();
-        _SetColors();
-    }
-
-    public override void ClearInternal()
+    public void Clear()
     {
         // Assume they are already deleted
         surfaceFoliage.Clear();
         surfaceStones.Clear();
+        isGenerated = false;
     }
-    
-    private void _GenerateMaterial()
+
+    public void Generate()
+    {
+        Clear();
+        Step_GenerateMaterial();
+        Step_GenerateFoliage();
+        Step_GenerateStones();
+        Step_SetColors();
+        isGenerated = true;
+    }
+
+    private void Step_GenerateMaterial()
     {
         // Loop over sites
         foreach (WorldSite worldSite in world.worldSites)
@@ -63,7 +64,7 @@ public class WorldBiomeGenerator : Generator
         }
     }
 
-    private void _GenerateFoliage()
+    private void Step_GenerateFoliage()
     {
         // For each edge (clockwise)
         surfaceFoliage = new List<SpriteRenderer>();
@@ -106,7 +107,7 @@ public class WorldBiomeGenerator : Generator
         }
     }
 
-    private void _GenerateStones()
+    private void Step_GenerateStones()
     {
         for (int i = 0; i < world.surfaceEdges.Count; i++)
         {
@@ -142,7 +143,7 @@ public class WorldBiomeGenerator : Generator
             }
 
             // Generate the mesh and rotate
-            GeneratorController stone = stoneObj.GetComponent<GeneratorController>();
+            IGeneratorController stone = stoneObj.GetComponent<IGeneratorController>();
             surfaceStones.Add(stone);
             stone.Generate();
             stone.transform.eulerAngles = new Vector3(0.0f, 0.0f, UnityEngine.Random.value * 360.0f);
@@ -155,7 +156,7 @@ public class WorldBiomeGenerator : Generator
         }
     }
 
-    public void _SetColors()
+    public void Step_SetColors()
     {
         // Update colors of the grass
         for (int i = 0; i < surfaceFoliage.Count; i++)
@@ -180,4 +181,9 @@ public class WorldBiomeGenerator : Generator
 
         world.mesh.colors = meshColors;
     }
+
+
+    public bool GetIsGenerated() => isGenerated;
+    
+    public string GetName() => gameObject.name;    
 }

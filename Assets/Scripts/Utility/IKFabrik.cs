@@ -185,6 +185,13 @@ public class IKFabrik : MonoBehaviour
     }
 
 
+    private Vector2 TransformPosition_WorldToRS(Vector2 worldPos) => Quaternion.Inverse(boneRoot.rotation) * (worldPos - (Vector2)boneRoot.position);
+    private Quaternion TransformRotation_WorldToRS(Quaternion worldRot) => Quaternion.Inverse(worldRot) * boneRoot.rotation;
+
+    private Vector3 TransformPosition_RSToWorld(Vector2 position) => boneRoot.rotation * position + boneRoot.position;
+    private Quaternion TransformRotation_RSToWorld(Quaternion rotation) => boneRoot.rotation * rotation;
+
+
     public void OnDrawGizmos()
     {
         #if UNITY_EDITOR
@@ -206,11 +213,4 @@ public class IKFabrik : MonoBehaviour
         }
         #endif
     }
-
-
-    private Vector2 TransformPosition_WorldToRS(Vector2 worldPos) => Quaternion.Inverse(boneRoot.rotation) * (worldPos - (Vector2)boneRoot.position);
-    private Quaternion TransformRotation_WorldToRS(Quaternion worldRot) => Quaternion.Inverse(worldRot) * boneRoot.rotation;
-
-    private Vector3 TransformPosition_RSToWorld(Vector2 position) => boneRoot.rotation * position + boneRoot.position;
-    private Quaternion TransformRotation_RSToWorld(Quaternion rotation) => boneRoot.rotation * rotation;
 }

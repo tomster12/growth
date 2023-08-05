@@ -8,12 +8,10 @@ public class AddMaterials : MonoBehaviour
 
     private Material[] localMaterials;
 
-
     private void Awake()
     {
         Add();    
     }
-
 
     [ContextMenu("Add Materials")]
     public void Add()

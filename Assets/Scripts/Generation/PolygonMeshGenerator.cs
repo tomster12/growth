@@ -1,10 +1,8 @@
 
 using UnityEngine;
-using UnityEngine.Rendering;
 
-public class PolygonMeshGenerator : Generator
+public class PolygonMeshGenerator : MonoBehaviour, IGenerator
 {
-    // --- Parameters ---
     [Header("Parameters")]
     [SerializeField] private MeshFilter mf;
     [SerializeField] private PolygonCollider2D polygon;
@@ -12,13 +10,22 @@ public class PolygonMeshGenerator : Generator
     [SerializeField] private Color[] colorRange = new Color[] { new Color(0, 0, 0), new Color(1, 1, 1) };
     [SerializeField] private NoiseData colorNoise = new NoiseData(new float[] { 0, 1 });
     
-    // --- Internal ---
+    public bool isGenerated { get; private set; } = false;
+
     private Mesh mesh;
 
 
-    [ContextMenu("Generate Mesh")]
-    public override void Generate()
+    public void Clear()
     {
+        mesh = null;
+        mf.mesh = null;
+        isGenerated = false;
+    }
+
+    public void Generate()
+    {
+        Clear();
+
         // Generate source mesh
         Mesh sourceMesh = polygon.CreateMesh(false, false);
         sourceMesh.RecalculateBounds();
@@ -67,5 +74,12 @@ public class PolygonMeshGenerator : Generator
         mesh.triangles = triangles;
         mesh.colors = colors;
         mf.mesh = mesh;
+
+        isGenerated = true;
     }
+
+
+    public bool GetIsGenerated() => isGenerated;
+    
+    public string GetName() => gameObject.name;    
 }

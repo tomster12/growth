@@ -7,7 +7,7 @@ using static VoronoiMeshGenerator;
 
 
 [ExecuteInEditMode]
-public class World : Generator
+public class World : MonoBehaviour, IGenerator
 {
     public static List<World> worlds = new List<World>();
     
@@ -77,7 +77,7 @@ public class World : Generator
     [SerializeField] private int pipelineMaxTries = 5;
     [SerializeField] private bool doNotGenerateShape;
     [Header("Stage: Planet Polygon", order = 1)]
-    [SerializeField] private PlanetPolygonGenerator.PlanetShapeInfo planetShapeInfo;
+    [SerializeField] private PlanetShapeInfo planetShapeInfo;
     [Header("Stage: Voronoi Mesh", order = 1)]
     [SerializeField] private Material meshMaterial;
     [SerializeField] private int seedCount = 300;
@@ -88,13 +88,12 @@ public class World : Generator
     [SerializeField] private float atmosphereSizeMax = 200.0f;
     [SerializeField] private float gravityForce = 10.0f;
     
-    // --- Main ---
     public Mesh mesh { get; private set; }
     public List<WorldSite> worldSites { get; private set; }
     public List<MeshSiteEdge> surfaceEdges { get; private set; }
     public ColorMode currentColorMode { get; private set; } = ColorMode.NONE;
     public Transform worldTransform => outsidePolygon.transform;
-
+    public bool isGenerated { get; private set; } = false;
     public Transform featureContainer => _featureContainer;
     public Transform backgroundContainer => _backgroundContainer;
     public Transform foregroundContainer => _foregroundContainer;
@@ -110,7 +109,58 @@ public class World : Generator
     }
 
 
-    #region Generation Pipeline
+    public void Clear()
+    {
+        ClearContainers();
+        ClearOutput();
+        isGenerated = false;
+    }
+
+    private void ClearContainers()
+    {
+        for (int i = featureContainer.childCount - 1; i >= 0; i--)
+        {
+            GameObject child = featureContainer.GetChild(i).gameObject;
+            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
+        }
+        for (int i = backgroundContainer.childCount - 1; i >= 0; i--)
+        {
+            GameObject child = backgroundContainer.GetChild(i).gameObject;
+            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
+        }
+        for (int i = foregroundContainer.childCount - 1; i >= 0; i--)
+        {
+            GameObject child = foregroundContainer.GetChild(i).gameObject;
+            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
+        }
+        for (int i = terrainContainer.childCount - 1; i >= 0; i--)
+        {
+            GameObject child = terrainContainer.GetChild(i).gameObject;
+            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
+        }
+        for (int i = foliageContainer.childCount - 1; i >= 0; i--)
+        {
+            GameObject child = foliageContainer.GetChild(i).gameObject;
+            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
+        }
+    }
+
+    [ContextMenu("Stage/- Clear")]
+    public void ClearOutput()
+    {
+        // Reset main variables
+        if (mesh != null) mesh.Clear();
+        worldBiomeManager.Clear();
+        mesh = null;
+        worldSites = null;
+        surfaceEdges = null;
+        currentColorMode = ColorMode.NONE;
+        if (atmosphere == null) atmosphere = worldTransform.Find("Atmosphere")?.GetComponent<SpriteRenderer>();
+        if (atmosphere != null) DestroyImmediate(atmosphere.gameObject);
+
+        // Cleanup afterwards
+        ClearContainers();
+    }
 
     [ContextMenu("Stage/- Safe Generate")]
     public void SafeGenerate()
@@ -140,63 +190,22 @@ public class World : Generator
     }
 
     [ContextMenu("Stage/- Generate")]
-    public override void Generate()
+    public void Generate()
     {
+        Clear();
+
         // Clear then run stages
-        ClearOutput();
-        _GenerateMesh();
-        _ProcessSites();
-        _InitializeComponents();
-        _GenerateBiome();
-    }
+        Step_GenerateMesh();
+        Step_ProcessSites();
+        Step_InitializeComponents();
+        Step_GenerateBiome();
 
-    [ContextMenu("Stage/- Clear")]
-    public override void ClearOutput()
-    {
-        // Reset main variables
-        if (mesh != null) mesh.Clear();
-        worldBiomeManager.ClearOutput();
-        mesh = null;
-        worldSites = null;
-        surfaceEdges = null;
-        currentColorMode = ColorMode.NONE;
-        if (atmosphere == null) atmosphere = worldTransform.Find("Atmosphere")?.GetComponent<SpriteRenderer>();
-        if (atmosphere != null) DestroyImmediate(atmosphere.gameObject);
-        _ClearContainers();
-    }
-
-    private void _ClearContainers()
-    {
-        for (int i = featureContainer.childCount - 1; i >= 0; i--)
-        {
-            GameObject child = featureContainer.GetChild(i).gameObject;
-            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
-        }
-        for (int i = backgroundContainer.childCount - 1; i >= 0; i--)
-        {
-            GameObject child = backgroundContainer.GetChild(i).gameObject;
-            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
-        }
-        for (int i = foregroundContainer.childCount - 1; i >= 0; i--)
-        {
-            GameObject child = foregroundContainer.GetChild(i).gameObject;
-            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
-        }
-        for (int i = terrainContainer.childCount - 1; i >= 0; i--)
-        {
-            GameObject child = terrainContainer.GetChild(i).gameObject;
-            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
-        }
-        for (int i = foliageContainer.childCount - 1; i >= 0; i--)
-        {
-            GameObject child = foliageContainer.GetChild(i).gameObject;
-            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
-        }
+        isGenerated = true;
     }
 
 
     [ContextMenu("Stage/1. Generate Mesh")]
-    private void _GenerateMesh()
+    private void Step_GenerateMesh()
     {
         // Generate polygon
         if (!doNotGenerateShape) planetPolygonGenerator.Generate(outsidePolygon, planetShapeInfo);
@@ -216,7 +225,7 @@ public class World : Generator
     }
 
     [ContextMenu("Stage/2. Process Sites")]
-    private void _ProcessSites()
+    private void Step_ProcessSites()
     {
         // Calculate external edges
         HashSet<MeshSiteEdge> surfaceEdgesUnordered = new HashSet<MeshSiteEdge>();
@@ -303,7 +312,7 @@ public class World : Generator
     }
 
     [ContextMenu("Stage/3. Initialize Components")]
-    private void _InitializeComponents()
+    private void Step_InitializeComponents()
     {
         // Create atmosphere object
         GameObject atmosphereGO = Instantiate(atmospherePfb);
@@ -334,12 +343,10 @@ public class World : Generator
     }
     
     [ContextMenu("Stage/4. Generate Biome")]
-    private void _GenerateBiome()
+    private void Step_GenerateBiome()
     {
         worldBiomeManager.Generate();
     }
-
-    #endregion
 
 
     public Vector3 GetClosestOverallPoint(Vector2 pos) => rb.ClosestPoint(pos);
@@ -356,4 +363,8 @@ public class World : Generator
         }
         return new float[] { min, max };
     }
+
+    public bool GetIsGenerated() => isGenerated;
+    
+    public string GetName() => gameObject.name;    
 }

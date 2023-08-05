@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:Label text="Generator Controller" display-tooltip-when-elided="true" name="Title" style="display: flex; opacity: 1; -unity-text-align: middle-center; font-size: 14px; -unity-font-style: bold; margin-top: 6px; margin-bottom: 6px;" />
+    <ui:Button text="Find Generators" display-tooltip-when-elided="true" binding-path="OnButtonFindGenerators" name="ButtonFindGenerators" style="margin-left: 15px; margin-right: 15px; margin-top: 2px; margin-bottom: 2px; padding-top: 2px; padding-bottom: 3px; padding-right: 0; padding-left: 0;" />
+    <ui:ListView focusable="true" binding-path="wrappers" name="wrappers" show-border="true" show-foldout-header="false" show-bound-collection-size="false" horizontal-scrolling="false" reorderable="true" show-add-remove-footer="false" virtualization-method="DynamicHeight" style="margin-left: 15px; margin-right: 15px; margin-top: 5px; margin-bottom: 5px; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0;" />
+    <ui:Button text="Generate" display-tooltip-when-elided="true" binding-path="OnButtonGenerate" name="ButtonGenerate" style="margin-left: 15px; margin-right: 15px; margin-top: 2px; margin-bottom: 2px; padding-left: 0; padding-right: 0; padding-top: 2px; padding-bottom: 2px;" />
+</ui:UXML>

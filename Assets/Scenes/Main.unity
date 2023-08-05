@@ -2209,11 +2209,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: -21982662
-  randomizeSeed: 0
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 111983111}
+  wrappers: []
 --- !u!114 &111983111
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2226,18 +2222,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf4952902844c7545ac7b7b431f0b876, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outsidePolygon: {fileID: 111983114}
-  planetPolygonGenerator: {fileID: 111983113}
-  voronoiMeshGenerator: {fileID: 111983112}
-  colorRange:
-  - {r: 0.5943396, g: 0.5943396, b: 0.5943396, a: 1}
-  - {r: 0.9245283, g: 0.9245283, b: 0.9245283, a: 1}
-  colorNoise:
-    valueRange:
-    - 0
-    - 1
-    noiseScale: 0.5
-  disablePolygon: 0
 --- !u!114 &111983112
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4074,11 +4058,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -4096,12 +4080,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136899790
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 189048291}
-  - {fileID: 189048290}
+  wrappers: []
 --- !u!114 &189048290
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5271,11 +5250,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -5293,12 +5272,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136964802
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 218107262}
-  - {fileID: 218107261}
+  wrappers: []
 --- !u!114 &218107261
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6164,11 +6138,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: -13510131
-  randomizeSeed: 0
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 246717164}
+  wrappers: []
 --- !u!114 &246717164
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6181,18 +6151,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf4952902844c7545ac7b7b431f0b876, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outsidePolygon: {fileID: 246717167}
-  planetPolygonGenerator: {fileID: 246717166}
-  voronoiMeshGenerator: {fileID: 246717165}
-  colorRange:
-  - {r: 0.3773585, g: 0.3773585, b: 0.3773585, a: 1}
-  - {r: 0.6320754, g: 0.6320754, b: 0.6320754, a: 1}
-  colorNoise:
-    valueRange:
-    - 0
-    - 1
-    noiseScale: 0.5
-  disablePolygon: 1
 --- !u!114 &246717165
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8316,11 +8274,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -8338,12 +8296,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 137029818
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 348191385}
-  - {fileID: 348191384}
+  wrappers: []
 --- !u!114 &348191384
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9453,11 +9406,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -9475,12 +9428,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: -1177343271
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 385025478}
-  - {fileID: 385025477}
+  wrappers: []
 --- !u!114 &385025477
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11884,11 +11832,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -11906,12 +11854,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136909792
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 460514904}
-  - {fileID: 460514903}
+  wrappers: []
 --- !u!114 &460514903
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13408,11 +13351,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -13430,12 +13373,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136869786
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 514800468}
-  - {fileID: 514800467}
+  wrappers: []
 --- !u!114 &514800467
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14099,11 +14037,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -14121,12 +14059,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: -1177368277
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 544428117}
-  - {fileID: 544428116}
+  wrappers: []
 --- !u!114 &544428116
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15326,11 +15259,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -15348,12 +15281,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 137034814
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 604756785}
-  - {fileID: 604756784}
+  wrappers: []
 --- !u!114 &604756784
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15980,11 +15908,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -16002,12 +15930,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136979805
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 632387537}
-  - {fileID: 632387536}
+  wrappers: []
 --- !u!114 &632387536
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16369,11 +16292,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: -21982662
-  randomizeSeed: 0
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 648526154}
+  wrappers: []
 --- !u!114 &648526154
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16386,18 +16305,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf4952902844c7545ac7b7b431f0b876, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outsidePolygon: {fileID: 648526157}
-  planetPolygonGenerator: {fileID: 648526156}
-  voronoiMeshGenerator: {fileID: 648526155}
-  colorRange:
-  - {r: 0.5943396, g: 0.5943396, b: 0.5943396, a: 1}
-  - {r: 0.9245283, g: 0.9245283, b: 0.9245283, a: 1}
-  colorNoise:
-    valueRange:
-    - 0
-    - 1
-    noiseScale: 0.5
-  disablePolygon: 0
 --- !u!114 &648526155
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17084,11 +16991,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: -21982662
-  randomizeSeed: 0
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 671812382}
+  wrappers: []
 --- !u!114 &671812382
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17101,18 +17004,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf4952902844c7545ac7b7b431f0b876, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outsidePolygon: {fileID: 671812385}
-  planetPolygonGenerator: {fileID: 671812384}
-  voronoiMeshGenerator: {fileID: 671812383}
-  colorRange:
-  - {r: 0.5943396, g: 0.5943396, b: 0.5943396, a: 1}
-  - {r: 0.9245283, g: 0.9245283, b: 0.9245283, a: 1}
-  colorNoise:
-    valueRange:
-    - 0
-    - 1
-    noiseScale: 0.5
-  disablePolygon: 0
 --- !u!114 &671812383
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17601,11 +17492,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -17623,12 +17514,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136959801
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 684729177}
-  - {fileID: 684729176}
+  wrappers: []
 --- !u!114 &684729176
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17923,11 +17809,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -17945,12 +17831,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136954800
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 686559693}
-  - {fileID: 686559692}
+  wrappers: []
 --- !u!114 &686559692
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18245,11 +18126,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -18267,12 +18148,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136989806
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 696248778}
-  - {fileID: 696248777}
+  wrappers: []
 --- !u!114 &696248777
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18767,11 +18643,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -18789,12 +18665,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136969803
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 721138521}
-  - {fileID: 721138520}
+  wrappers: []
 --- !u!114 &721138520
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19643,11 +19514,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -19665,12 +19536,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136889788
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 749986751}
-  - {fileID: 749986750}
+  wrappers: []
 --- !u!114 &749986750
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20293,11 +20159,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -20315,12 +20181,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136989806
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 769461808}
-  - {fileID: 769461807}
+  wrappers: []
 --- !u!114 &769461807
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20880,11 +20741,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -20902,12 +20763,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136984807
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 792861879}
-  - {fileID: 792861878}
+  wrappers: []
 --- !u!114 &792861878
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -22206,11 +22062,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -22228,12 +22084,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136904791
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 828620667}
-  - {fileID: 828620666}
+  wrappers: []
 --- !u!114 &828620666
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24044,11 +23895,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -24066,12 +23917,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136894789
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 894131431}
-  - {fileID: 894131430}
+  wrappers: []
 --- !u!114 &894131430
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24265,11 +24111,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: -21982662
-  randomizeSeed: 0
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 895079009}
+  wrappers: []
 --- !u!114 &895079009
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24282,18 +24124,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf4952902844c7545ac7b7b431f0b876, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outsidePolygon: {fileID: 895079012}
-  planetPolygonGenerator: {fileID: 895079011}
-  voronoiMeshGenerator: {fileID: 895079010}
-  colorRange:
-  - {r: 0.5943396, g: 0.5943396, b: 0.5943396, a: 1}
-  - {r: 0.9245283, g: 0.9245283, b: 0.9245283, a: 1}
-  colorNoise:
-    valueRange:
-    - 0
-    - 1
-    noiseScale: 0.5
-  disablePolygon: 0
 --- !u!114 &895079010
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25577,11 +25407,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -25599,12 +25429,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 137049817
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 940265798}
-  - {fileID: 940265797}
+  wrappers: []
 --- !u!114 &940265797
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25815,11 +25640,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -25837,12 +25662,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136889788
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 941217402}
-  - {fileID: 941217401}
+  wrappers: []
 --- !u!114 &941217401
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26469,11 +26289,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -26491,12 +26311,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: -1177363263
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 976079224}
-  - {fileID: 976079223}
+  wrappers: []
 --- !u!114 &976079223
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26875,11 +26690,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -26897,12 +26712,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136894789
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 981230057}
-  - {fileID: 981230056}
+  wrappers: []
 --- !u!114 &981230056
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -29289,11 +29099,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -29311,12 +29121,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: -1177363263
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1073431762}
-  - {fileID: 1073431761}
+  wrappers: []
 --- !u!114 &1073431761
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -29943,11 +29748,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -29965,12 +29770,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136884788
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1094337879}
-  - {fileID: 1094337878}
+  wrappers: []
 --- !u!114 &1094337878
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -30181,11 +29981,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -30203,12 +30003,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136994807
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1097829279}
-  - {fileID: 1097829278}
+  wrappers: []
 --- !u!114 &1097829278
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -31331,11 +31126,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -31353,12 +31148,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136999808
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1130677200}
-  - {fileID: 1130677199}
+  wrappers: []
 --- !u!114 &1130677199
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -31981,11 +31771,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -32003,12 +31793,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 137004809
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1134331276}
-  - {fileID: 1134331275}
+  wrappers: []
 --- !u!114 &1134331275
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33241,11 +33026,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -33263,12 +33048,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136984807
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1178173047}
-  - {fileID: 1178173046}
+  wrappers: []
 --- !u!114 &1178173046
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -34434,11 +34214,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -34456,12 +34236,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136884788
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1219240952}
-  - {fileID: 1219240951}
+  wrappers: []
 --- !u!114 &1219240951
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -35088,11 +34863,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -35110,12 +34885,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136999808
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1233900558}
-  - {fileID: 1233900557}
+  wrappers: []
 --- !u!114 &1233900557
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -36987,11 +36757,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: -21982662
-  randomizeSeed: 0
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1315060443}
+  wrappers: []
 --- !u!114 &1315060443
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -37004,18 +36770,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf4952902844c7545ac7b7b431f0b876, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outsidePolygon: {fileID: 1315060446}
-  planetPolygonGenerator: {fileID: 1315060445}
-  voronoiMeshGenerator: {fileID: 1315060444}
-  colorRange:
-  - {r: 0.5943396, g: 0.5943396, b: 0.5943396, a: 1}
-  - {r: 0.9245283, g: 0.9245283, b: 0.9245283, a: 1}
-  colorNoise:
-    valueRange:
-    - 0
-    - 1
-    noiseScale: 0.5
-  disablePolygon: 0
 --- !u!114 &1315060444
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -37307,11 +37061,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -37329,12 +37083,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136904791
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1324338252}
-  - {fileID: 1324338251}
+  wrappers: []
 --- !u!114 &1324338251
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -37870,11 +37619,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -37892,12 +37641,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 137024812
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1343644949}
-  - {fileID: 1343644948}
+  wrappers: []
 --- !u!114 &1343644948
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -39349,11 +39093,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: -21982662
-  randomizeSeed: 0
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1409782643}
+  wrappers: []
 --- !u!114 &1409782643
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -39366,18 +39106,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf4952902844c7545ac7b7b431f0b876, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outsidePolygon: {fileID: 1409782646}
-  planetPolygonGenerator: {fileID: 1409782645}
-  voronoiMeshGenerator: {fileID: 1409782644}
-  colorRange:
-  - {r: 0.5943396, g: 0.5943396, b: 0.5943396, a: 1}
-  - {r: 0.9245283, g: 0.9245283, b: 0.9245283, a: 1}
-  colorNoise:
-    valueRange:
-    - 0
-    - 1
-    noiseScale: 0.5
-  disablePolygon: 0
 --- !u!114 &1409782644
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -39585,11 +39313,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -39607,12 +39335,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136974803
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1415254736}
-  - {fileID: 1415254735}
+  wrappers: []
 --- !u!114 &1415254735
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -40246,11 +39969,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -40268,12 +39991,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136919800
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1442659601}
-  - {fileID: 1442659600}
+  wrappers: []
 --- !u!114 &1442659600
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -41461,11 +41179,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -41483,12 +41201,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 137029818
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1489979875}
-  - {fileID: 1489979874}
+  wrappers: []
 --- !u!114 &1489979874
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -43036,11 +42749,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -43058,12 +42771,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136994807
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1528521728}
-  - {fileID: 1528521727}
+  wrappers: []
 --- !u!114 &1528521727
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -44061,11 +43769,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -44083,12 +43791,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136999808
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1579205237}
-  - {fileID: 1579205236}
+  wrappers: []
 --- !u!114 &1579205236
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -44586,11 +44289,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: -330106162
-  randomizeSeed: 0
-  resetSeed: 1
-  toUpdate: 0
-  generators:
-  - {fileID: 1599342175}
+  wrappers: []
 --- !u!114 &1599342175
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -44649,27 +44348,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f03a8aa44cb86554db87de13c9f7f31a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  world: {fileID: 1599342175}
-  materialDirt: {fileID: 0}
-  materialStone: {fileID: 0}
-  pebblePfb: {fileID: 3338917768004317453, guid: 0bfe27a21aa41e942b02087c7c49f160, type: 3}
-  boulderTerrainPfb: {fileID: 2022025293066536358, guid: 46b5024162834b34d847fd4dc278df89, type: 3}
-  boulderFeaturePfb: {fileID: 6099407925653884417, guid: f81494f42fc45274f98cc9bd8c13ae95, type: 3}
-  stoneChance: 0.2
-  stoneChances:
-  - 0.92
-  - 0.04
-  - 0.04
-  energyMaxNoise:
-    valueRange:
-    - 40
-    - 200
-    noiseScale: 1
-  energyPctNoise:
-    valueRange:
-    - 0
-    - 1
-    noiseScale: 1
 --- !u!114 &1599342177
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -45343,11 +45021,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -45365,12 +45043,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136974803
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1617197927}
-  - {fileID: 1617197926}
+  wrappers: []
 --- !u!114 &1617197926
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -46913,11 +46586,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -46935,12 +46608,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136984807
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1670370112}
-  - {fileID: 1670370111}
+  wrappers: []
 --- !u!114 &1670370111
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -47766,11 +47434,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -47788,12 +47456,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136899790
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1712729908}
-  - {fileID: 1712729907}
+  wrappers: []
 --- !u!114 &1712729907
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -48256,11 +47919,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -48278,12 +47941,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136914793
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1734861890}
-  - {fileID: 1734861889}
+  wrappers: []
 --- !u!114 &1734861889
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -48816,11 +48474,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: -1179323276
-  randomizeSeed: 1
-  resetSeed: 1
-  toUpdate: 0
-  generators:
-  - {fileID: 1750227369}
+  wrappers: []
 --- !u!114 &1750227369
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -48876,7 +48530,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1750227366}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f03a8aa44cb86554db87de13c9f7f31a, type: 3}
+  m_Script: {fileID: 11500000, guid: 1a04b3155b69636499859fa108fb7b33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   world: {fileID: 1750227369}
@@ -49239,11 +48893,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -49261,12 +48915,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 137024812
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1759895398}
-  - {fileID: 1759895397}
+  wrappers: []
 --- !u!114 &1759895397
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -50048,11 +49697,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -50070,12 +49719,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 137014810
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1799850265}
-  - {fileID: 1799850264}
+  wrappers: []
 --- !u!114 &1799850264
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -50570,11 +50214,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -50592,12 +50236,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136909792
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1819158790}
-  - {fileID: 1819158789}
+  wrappers: []
 --- !u!114 &1819158789
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -51312,11 +50951,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -51334,12 +50973,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136954800
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1840498567}
-  - {fileID: 1840498566}
+  wrappers: []
 --- !u!114 &1840498566
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -52298,11 +51932,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -52320,12 +51954,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136899790
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 1861629971}
-  - {fileID: 1861629970}
+  wrappers: []
 --- !u!114 &1861629970
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54475,11 +54104,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: -13510131
-  randomizeSeed: 0
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 2002950187}
+  wrappers: []
 --- !u!114 &2002950187
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54492,18 +54117,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf4952902844c7545ac7b7b431f0b876, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outsidePolygon: {fileID: 2002950190}
-  planetPolygonGenerator: {fileID: 2002950189}
-  voronoiMeshGenerator: {fileID: 2002950188}
-  colorRange:
-  - {r: 0.3773585, g: 0.3773585, b: 0.3773585, a: 1}
-  - {r: 0.6320754, g: 0.6320754, b: 0.6320754, a: 1}
-  colorNoise:
-    valueRange:
-    - 0
-    - 1
-    noiseScale: 0.5
-  disablePolygon: 1
 --- !u!114 &2002950188
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54993,11 +54606,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -55015,12 +54628,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: -1177343271
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 2030873111}
-  - {fileID: 2030873110}
+  wrappers: []
 --- !u!114 &2030873110
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -55466,11 +55074,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: -13510131
-  randomizeSeed: 0
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 2048749693}
+  wrappers: []
 --- !u!114 &2048749693
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -55483,18 +55087,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf4952902844c7545ac7b7b431f0b876, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outsidePolygon: {fileID: 2048749696}
-  planetPolygonGenerator: {fileID: 2048749695}
-  voronoiMeshGenerator: {fileID: 2048749694}
-  colorRange:
-  - {r: 0.3773585, g: 0.3773585, b: 0.3773585, a: 1}
-  - {r: 0.6320754, g: 0.6320754, b: 0.6320754, a: 1}
-  colorNoise:
-    valueRange:
-    - 0
-    - 1
-    noiseScale: 0.5
-  disablePolygon: 1
 --- !u!114 &2048749694
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -56638,11 +56230,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
@@ -56660,12 +56252,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 136914793
-  randomizeSeed: 1
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 2106978385}
-  - {fileID: 2106978384}
+  wrappers: []
 --- !u!114 &2106978384
 MonoBehaviour:
   m_ObjectHideFlags: 0

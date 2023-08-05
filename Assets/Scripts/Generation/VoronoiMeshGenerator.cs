@@ -7,7 +7,7 @@ using UnityEngine;
 using static GK.VoronoiClipper;
 
 
-public class VoronoiMeshGenerator : Generator
+public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
 {
     [Serializable]
     public class MeshSiteVertex
@@ -35,7 +35,6 @@ public class VoronoiMeshGenerator : Generator
 
         public MeshSiteEdge(int siteIndex, int siteFromVertexI, int siteToVertexI)
         {
-            // Initialize variables
             this.siteIndex = siteIndex;
             this.siteFromVertexI = siteFromVertexI;
             this.siteToVertexI = siteToVertexI;
@@ -56,7 +55,6 @@ public class VoronoiMeshGenerator : Generator
     }
 
 
-    // --- Editor ---
     [Header("Gizmos")]
     [SerializeField] private bool showGizmoSeedCentroids = false;
     [SerializeField] private bool showGizmoDelauneyMain = false;
@@ -65,7 +63,6 @@ public class VoronoiMeshGenerator : Generator
     [SerializeField] private bool showGizmoClipped = false;
     [SerializeField] private bool showGizmoMesh = false;
 
-    // --- Parameters ---
     [Header("Parameters")]
     [SerializeField] private MeshFilter meshFilter;
     [SerializeField] private PolygonCollider2D outsidePolygon;
@@ -75,19 +72,40 @@ public class VoronoiMeshGenerator : Generator
     [SerializeField] private int seedMaxTries = 50;
     [SerializeField] private bool clearInternal = true;
 
-    // --- Internal ---
+    public MeshSite[] meshSites { get; private set; }
+    public Mesh mesh { get; private set; }
+    public bool isGenerated { get; private set; } = false;
+
     private Vector2[] _voronoiSeedSites;
     private VoronoiCalculator _voronoiCalculator;
     private VoronoiDiagram _voronoiDiagram;
     private List<Vector2> _clipperPolygon;
     private VoronoiClipper _voronoiClipper;
 
-    // --- Output ---
-    public MeshSite[] meshSites { get; private set; }
-    public Mesh mesh { get; private set; }
 
+    public void Clear()
+    {
+        ClearInternal();
+        isGenerated = false;
+        ClearOutput();
+    }
 
-    #region Generation Pipeline
+    public void ClearInternal()
+    {
+        // Clear internal variables
+        _voronoiSeedSites = null;
+        _voronoiCalculator = null;
+        _voronoiDiagram = null;
+        _clipperPolygon = null;
+        _voronoiClipper = null;
+    }
+
+    public void ClearOutput()
+    {
+        // Clear external variables
+        meshSites = null;
+        mesh = null;
+    }
 
     public void SafeGenerate(MeshFilter meshFilter, PolygonCollider2D outsidePolygon, int seedCount, float seedMinDistance)
     {
@@ -124,43 +142,19 @@ public class VoronoiMeshGenerator : Generator
         Generate();
     }
 
-    [ContextMenu("Generate Mesh")]
-    public override void Generate()
+    public void Generate()
     {
-        // Clear and cache
-        ClearInternal();
-        ClearOutput();
-
-        // Run parameters
-        _GenerateSeeds();
-        _GenerateVoronoi();
-        _ClipSites();
-        _GenerateMeshAndSites();
-        _ProcessSites();
-
-        // Clear internal afterwards
+        Clear();
+        Step_GenerateSeeds();
+        Step_GenerateVoronoi();
+        Step_ClipSites();
+        Step_GenerateMeshAndSites();
+        Step_ProcessSites();
         if (clearInternal) ClearInternal();
+        isGenerated = true;
     }
 
-    public override void ClearInternal()
-    {
-        // Clear internal variables
-        _voronoiSeedSites = null;
-        _voronoiCalculator = null;
-        _voronoiDiagram = null;
-        _clipperPolygon = null;
-        _voronoiClipper = null;
-    }
-
-    public override void ClearOutput()
-    {
-        // Clear external variables
-        meshSites = null;
-        mesh = null;
-    }
-
-
-    private void _GenerateSeeds()
+    private void Step_GenerateSeeds()
     {
         // Generate a set number of seeds
         List<Vector2> voronoiSeedSiteList = new List<Vector2>();
@@ -196,7 +190,7 @@ public class VoronoiMeshGenerator : Generator
         _voronoiSeedSites = voronoiSeedSiteList.ToArray();
     }
 
-    private void _GenerateVoronoi()
+    private void Step_GenerateVoronoi()
     {
         // Perform voronoi calculation
         _voronoiCalculator = new VoronoiCalculator();
@@ -214,7 +208,7 @@ public class VoronoiMeshGenerator : Generator
         }
     }
 
-    private void _ClipSites()
+    private void Step_ClipSites()
     {
         // Initialize variables
         _clipperPolygon = outsidePolygon.points.ToList();
@@ -233,7 +227,7 @@ public class VoronoiMeshGenerator : Generator
         }
     }
 
-    private void _GenerateMeshAndSites()
+    private void Step_GenerateMeshAndSites()
     {
         // Setup all mesh data variables
         mesh = new Mesh();
@@ -299,7 +293,7 @@ public class VoronoiMeshGenerator : Generator
         meshFilter.mesh = mesh;
     }
 
-    private void _ProcessSites()
+    private void Step_ProcessSites()
     {
         // Add neighbours using delauney
         Func<int, int, bool> addNeighbours = (s0, s1) =>
@@ -383,7 +377,10 @@ public class VoronoiMeshGenerator : Generator
         }
     }
 
-    #endregion
+
+    public bool GetIsGenerated() => isGenerated;
+
+    public string GetName() => gameObject.name;    
 
 
     private void OnDrawGizmos()

@@ -1,11 +1,9 @@
 
-using System;
 using UnityEngine;
 using static VoronoiMeshGenerator;
 
-public class RockGenerator : Generator
+public class RockGenerator : MonoBehaviour, IGenerator
 {
-    // -- Parameters --
     [Header("Parameters")]
     [SerializeField] PolygonCollider2D outsidePolygon;
     [SerializeField] private PlanetPolygonGenerator planetPolygonGenerator;
@@ -14,29 +12,26 @@ public class RockGenerator : Generator
     [SerializeField] private NoiseData colorNoise = new NoiseData(new float[] { 0, 1 });
     [SerializeField] private bool disablePolygon;
 
+    public bool isGenerated { get; private set; } = false;
 
-    public override void Generate()
+
+    public void Clear()
     {
-        ClearOutput();
+        isGenerated = false;
+    }
 
-        // Run Generators
+    public void Generate()
+    {
+        Clear();
         outsidePolygon.enabled = true;
         planetPolygonGenerator.Generate();
         voronoiMeshGenerator.Generate();
         outsidePolygon.enabled = !disablePolygon;
-
-        // Color mesh
-        _ColorMesh();
+        Step_ColorMesh();
+        isGenerated = true;
     }
 
-    public override void ClearOutput()
-    {
-        planetPolygonGenerator.ClearOutput();
-        voronoiMeshGenerator.ClearOutput();
-    }
-
-
-    private void _ColorMesh()
+    private void Step_ColorMesh()
     {
         // Get mesh and mesh sites
         Mesh mesh = voronoiMeshGenerator.mesh;
@@ -58,4 +53,9 @@ public class RockGenerator : Generator
         // Update mesh colours
         mesh.colors = colors;
     }
+
+
+    public bool GetIsGenerated() => isGenerated;
+    
+    public string GetName() => gameObject.name;    
 }

@@ -13,54 +13,28 @@ public class WorldObject : MonoBehaviour
     [SerializeField] protected float idleDrag = 0.5f;
     [SerializeField] protected float density = 1.0f;
     
-    // Dynamic components
     public OutlineController highlightOutline { get; protected set; } = null;
     public Rigidbody2D physicalRB { get; protected set; } = null;
+    [HideInInspector] public Vector2 controlPosition = Vector2.zero;
+    [HideInInspector] public float controlForce = 0.0f;
+    public bool isHovered { get; private set; } = false;
+    public bool isControlled { get; private set; } = false;
+    public bool canControl { get; private set; } = false;
 
     protected List<Interaction> interactions = new List<Interaction>();
     protected GravityObject physicalGR = null;
-
     [SerializeField] private bool _hasComponentHighlight = false;
     [SerializeField] private bool _hasComponentPhysical = false;
     [SerializeField] private bool _hasComponentControl  = false;
     [SerializeField] public bool hasComponentHighlight => _hasComponentHighlight;
     [SerializeField] public bool hasComponentPhysical => _hasComponentPhysical;
     [SerializeField] public bool hasComponentControl => _hasComponentControl;
-    public bool isHovered { get; private set; } = false;
-    public bool isControlled { get; private set; } = false;
-    public bool canControl { get; private set; } = false;
-
-    [HideInInspector] public Vector2 controlPosition = Vector2.zero;
-    [HideInInspector] public float controlForce = 0.0f;
 
 
     private void Awake()
     {
         DetectComponents();
     }
-
-    #region Components
-
-    [ContextMenu("Detect Components")]
-    private void DetectComponents()
-    {
-        highlightOutline = gameObject.GetComponent<OutlineController>();
-        physicalRB = gameObject.GetComponent<Rigidbody2D>();
-        physicalGR = gameObject.GetComponent<GravityObject>();
-        if (highlightOutline) _hasComponentHighlight = true;
-        if (physicalRB && physicalGR) _hasComponentPhysical = true;
-    }
-
-
-    [ContextMenu("Clear Components")]
-    private void ClearComponents()
-    {
-        DetectComponents();
-        if (hasComponentHighlight) ClearComponentHighlight();
-        if (hasComponentPhysical) ClearComponentPhysical();
-        if (hasComponentControl) ClearComponentControl();
-    }
-    
 
     [ContextMenu("Init Highlight")]
     protected void InitComponentHighlight()
@@ -93,7 +67,25 @@ public class WorldObject : MonoBehaviour
         _hasComponentControl = true;
     }
 
+    [ContextMenu("Detect Components")]
+    private void DetectComponents()
+    {
+        highlightOutline = gameObject.GetComponent<OutlineController>();
+        physicalRB = gameObject.GetComponent<Rigidbody2D>();
+        physicalGR = gameObject.GetComponent<GravityObject>();
+        if (highlightOutline) _hasComponentHighlight = true;
+        if (physicalRB && physicalGR) _hasComponentPhysical = true;
+    }
 
+    [ContextMenu("Clear Components")]
+    private void ClearComponents()
+    {
+        DetectComponents();
+        if (hasComponentHighlight) ClearComponentHighlight();
+        if (hasComponentPhysical) ClearComponentPhysical();
+        if (hasComponentControl) ClearComponentControl();
+    }
+    
     protected void ClearComponentHighlight()
     {
         if (highlightOutline != null) DestroyImmediate(highlightOutline);
@@ -112,8 +104,6 @@ public class WorldObject : MonoBehaviour
         if (isControlled) SetControlled(false);
         _hasComponentControl = false;
     }
-
-    #endregion
 
 
     protected void FixedUpdate()
@@ -135,12 +125,6 @@ public class WorldObject : MonoBehaviour
     public Bounds GetHoverBounds() => cl.bounds;
 
     public List<Interaction> GetInteractions() => interactions;
-
-
-    public void OnControl() => SetControlled(true);
-
-    public void OnDrop() => SetControlled(false);
-
 
     public void SetHovered(bool isHovered)
     {
@@ -172,4 +156,9 @@ public class WorldObject : MonoBehaviour
         physicalGR.isEnabled = !isControlled;
         return true;
     }
+
+
+    public void OnControl() => SetControlled(true);
+
+    public void OnDrop() => SetControlled(false);
 }

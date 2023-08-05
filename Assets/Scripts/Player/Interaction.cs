@@ -6,7 +6,7 @@ using UnityEngine;
 public abstract class InteractionInput
 {
     public static InteractionInput LMB = new InteractionMouseInput(0);
-    public static InteractionInput RMB = new InteractionMouseInput(0);
+    public static InteractionInput RMB = new InteractionMouseInput(1);
 
     public String name;
 

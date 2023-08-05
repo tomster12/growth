@@ -114,6 +114,5 @@ public class LineHelper : MonoBehaviour
         }
     }
 
-
     public void SetActive(bool isActive) => lineRenderer.enabled = isActive;
 }

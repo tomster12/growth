@@ -8,7 +8,6 @@ public class IKFabrik_Transform : IKFabrik
     [SerializeField] private Transform target;
     [SerializeField] private Transform pole;
 
-
     private void Update()
     {
         // Update IK variables

@@ -3,25 +3,28 @@ using System;
 using UnityEngine;
 
 
-public class PlanetPolygonGenerator : Generator
+[Serializable]
+public class PlanetShapeInfo
 {
+    public int vertexCount;
+    public NoiseData[] noiseData;
+}
 
-    [Serializable]
-    public class PlanetShapeInfo
-    {
-        public int vertexCount;
-        public NoiseData[] noiseData;
-    }
-
-
-    // --- Parameters ---
+public class PlanetPolygonGenerator : MonoBehaviour, IGenerator
+{
     [Header("Parameters")]
     [SerializeField] public PolygonCollider2D outsidePolygon;
     [SerializeField] public PlanetShapeInfo shapeInfo;
 
-    // --- Output ---
     public Vector2[] points { get; private set; }
+    public bool isGenerated { get; private set; } = false;
 
+
+    public void Clear()
+    {
+        points = null;
+        isGenerated = false;
+    }
 
     public void Generate(PolygonCollider2D outsidePolygon, PlanetShapeInfo shapeInfo)
     {
@@ -30,11 +33,9 @@ public class PlanetPolygonGenerator : Generator
         Generate();
     }
 
-    [ContextMenu("Generate Polygon")]
-    public override void Generate()
+    public void Generate()
     {
-        // Clear output
-        ClearOutput();
+        Clear();
 
         // Generate points in a circle
         points = new Vector2[shapeInfo.vertexCount];
@@ -52,12 +53,12 @@ public class PlanetPolygonGenerator : Generator
 
         // Assign points to the polygon
         outsidePolygon.SetPath(0, points);
+
+        isGenerated = true;
     }
 
 
-    public override void ClearOutput()
-    {
-        // Clear output variables
-        points = null;
-    }
+    public bool GetIsGenerated() => isGenerated;
+
+    public string GetName() => gameObject.name;    
 }

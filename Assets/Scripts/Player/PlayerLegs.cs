@@ -28,18 +28,9 @@ public class PlayerLegs : MonoBehaviour
     public Vector2 pointingPos;
 
     private bool legCurrentInit;
-    private Vector2[] legTargets;
-    private Vector2[] legCurrent;
-    private bool[] haveStepped;
-
-
-    private void Awake()
-    {
-        // Initialize leg variables
-        legTargets = new Vector2[4];
-        legCurrent = new Vector2[4];
-        haveStepped = new bool[4];
-    }
+    private Vector2[] legTargets = new Vector2[4];
+    private Vector2[] legCurrent = new Vector2[4];
+    private bool[] haveStepped = new bool[4];
 
 
     private void Update()

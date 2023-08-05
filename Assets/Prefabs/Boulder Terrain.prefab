@@ -33,6 +33,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: -0.37549645, w: 0.92682385}
   m_LocalPosition: {x: -31.6, y: 73.47, z: 0.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -56,6 +57,7 @@ MeshRenderer:
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -184,21 +186,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 2022025293066536358}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf4952902844c7545ac7b7b431f0b876, type: 3}
+  m_Script: {fileID: 11500000, guid: c68b36e5e6f141b4fa8d1cd83375b4b9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outsidePolygon: {fileID: 2022025293066536361}
-  planetPolygonGenerator: {fileID: 8590085244700913471}
-  voronoiMeshGenerator: {fileID: 2022025293066536359}
-  colorRange:
-  - {r: 0.5943396, g: 0.5943396, b: 0.5943396, a: 1}
-  - {r: 0.9245283, g: 0.9245283, b: 0.9245283, a: 1}
-  colorNoise:
-    valueRange:
-    - 0
-    - 1
-    noiseScale: 0.5
-  disablePolygon: 0
 --- !u!114 &2022025293066536377
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -212,8 +202,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: -21982662
-  randomizeSeed: 0
-  resetSeed: 0
-  toUpdate: 0
-  generators:
-  - {fileID: 2022025293066536352}

@@ -60,7 +60,6 @@ public class PlayerCamera : MonoBehaviour
         }
     }
 
-
     private void FixedUpdate()
     {
         if (mode == CameraMode.FREE) FixedUpdateMovementFree();

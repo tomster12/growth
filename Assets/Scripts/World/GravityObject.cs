@@ -9,10 +9,9 @@ public class GravityObject : MonoBehaviour
 
     [Header("References")]
     [SerializeField] public Rigidbody2D rb;
-    public Vector2 centre => rb.transform.position;
-    
-    public bool isEnabled = true;
 
+    public Vector2 centre => rb.transform.position;
+    public bool isEnabled = true;
 
     private void Start()
     {

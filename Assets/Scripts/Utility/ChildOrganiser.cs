@@ -11,7 +11,6 @@ public class ChildOrganiser : MonoBehaviour
 
     private List<IOrganiserChild> children = new List<IOrganiserChild>();
 
-
     private void Update() => UpdateChildren();
 
     public void UpdateChildren()
@@ -26,7 +25,6 @@ public class ChildOrganiser : MonoBehaviour
         }
     }
 
-
     public void Clear()
     {
         foreach (Transform child in transform) DestroyImmediate(child.gameObject);
@@ -39,7 +37,6 @@ public class ChildOrganiser : MonoBehaviour
         newChild.GetTransform().parent = transform;
     }
 }
-
 
 public interface IOrganiserChild
 {

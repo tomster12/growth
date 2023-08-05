@@ -81,7 +81,6 @@ public class PlayerController : MonoBehaviour, IFollowable
         inputJump = Input.GetKey(KeyCode.Space);
     }
 
-
     private void FixedUpdate()
     {
         // Calculate closest world and ground position

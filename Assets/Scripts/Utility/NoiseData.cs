@@ -31,13 +31,15 @@ public class NoiseData
     }
 
 
+    public void RandomizeOffset() => currentOffset = -100000 + UnityEngine.Random.value * 200000;
+
+
     public float GetNoise(Vector2 pos) => GetNoise(pos.x, pos.y);
 
     public float GetNoise(float x, float y)
     {
         return valueRange[0] + Mathf.PerlinNoise(x * noiseScale + currentOffset, y * noiseScale + currentOffset) * (valueRange[1] - valueRange[0]);
     }
-
 
     public float GetCyclicNoise(float pct)
     {
@@ -47,7 +49,4 @@ public class NoiseData
         float y = 0.5f + 0.5f * Mathf.Sin(a);
         return GetNoise(x, y);
     }
-
-
-    public void RandomizeOffset() => currentOffset = -100000 + UnityEngine.Random.value * 200000;
 }
