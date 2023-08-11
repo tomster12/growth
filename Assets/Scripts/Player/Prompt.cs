@@ -9,7 +9,21 @@ public class Prompt : MonoBehaviour, IOrganiserChild
     [SerializeField] private SpriteRenderer spriteRendererIcon;
 
     private Interaction interaction;
+
     public bool isSet => interaction != null;
+
+
+    public bool GetVisible() => isSet && interaction.isEnabled;
+
+    public Transform GetTransform() => transform;
+
+    public float GetHeight() => spriteRendererInput.size.y;
+
+    public void SetInteraction(Interaction interaction)
+    {
+        this.interaction = interaction;
+        UpdateElements();
+    }
 
 
     private void Update()
@@ -33,19 +47,4 @@ public class Prompt : MonoBehaviour, IOrganiserChild
             spriteRendererIcon.enabled = false;
         }
     }
-
-
-    public bool GetVisible() => isSet && interaction.isEnabled;
-
-    public Transform GetTransform() => transform;
-
-    public float GetHeight() => spriteRendererInput.size.y;
-
-
-    public void SetInteraction(Interaction interaction)
-    {
-        this.interaction = interaction;
-        UpdateElements();
-    }
-
 }

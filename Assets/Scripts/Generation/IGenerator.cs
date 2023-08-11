@@ -3,6 +3,6 @@ public interface IGenerator
 {
     void Clear();
     void Generate();
-    bool GetIsGenerated();
+    bool IsGenerated();
     string GetName();
 }

@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * CAVEAT: This file has been significantly changed compared to other version.
+ * NOTICE: This file has been significantly changed compared to the original.
  */
 
 

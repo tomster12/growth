@@ -35,7 +35,6 @@ public class OutlineController : MonoBehaviour
 
     private void OnDestroy() => DeinitializeController();
 
-
     [ContextMenu("Initialize Controller")]
     private void InitializeController()
     {
@@ -88,7 +87,6 @@ public class OutlineController : MonoBehaviour
         DestroyImmediate(outlineFill);
         isInitialized = false;
     }
-
 
     [ContextMenu("Update Materials")]
     private void UpdateMaterials()

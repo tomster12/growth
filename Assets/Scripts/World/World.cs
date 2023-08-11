@@ -9,6 +9,22 @@ using static VoronoiMeshGenerator;
 [ExecuteInEditMode]
 public class World : MonoBehaviour, IGenerator
 {
+    public enum ColorMode { NONE, STANDARD, RANDOM, DEPTH };
+
+    public class WorldSite
+    {
+        public MeshSite meshSite;
+        public int outsideDistance = -1;
+        public float maxEnergy = 0, energy = 0;
+        public GroundMaterial groundMaterial;
+
+        public WorldSite(MeshSite meshSite)
+        {
+            this.meshSite = meshSite;
+        }
+    }
+
+
     public static List<World> worlds = new List<World>();
     
     public static World GetClosestWorld(Vector2 pos, out Vector2 groundPosition)
@@ -31,23 +47,7 @@ public class World : MonoBehaviour, IGenerator
         return closestWorld;
     }
 
-    public enum ColorMode { NONE, STANDARD, RANDOM, DEPTH };
 
-    public class WorldSite
-    {
-        public MeshSite meshSite;
-        public int outsideDistance = -1;
-        public float maxEnergy = 0, energy = 0;
-        public GroundMaterial groundMaterial;
-
-        public WorldSite(MeshSite meshSite)
-        {
-            this.meshSite = meshSite;
-        }
-    }
-
-
-    // --- Editor ---
     [Header("====== References ======", order = 0)]
     [Header("Generators", order = 1)]
     [SerializeField] private PlanetPolygonGenerator planetPolygonGenerator;
@@ -99,6 +99,8 @@ public class World : MonoBehaviour, IGenerator
     public Transform foregroundContainer => _foregroundContainer;
     public Transform terrainContainer => _terrainContainer;
     public Transform foliageContainer => _foliageContainer;
+    public bool IsGenerated() => isGenerated;
+    public string GetName() => gameObject.name;
 
     private SpriteRenderer atmosphere;
 
@@ -114,35 +116,6 @@ public class World : MonoBehaviour, IGenerator
         ClearContainers();
         ClearOutput();
         isGenerated = false;
-    }
-
-    private void ClearContainers()
-    {
-        for (int i = featureContainer.childCount - 1; i >= 0; i--)
-        {
-            GameObject child = featureContainer.GetChild(i).gameObject;
-            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
-        }
-        for (int i = backgroundContainer.childCount - 1; i >= 0; i--)
-        {
-            GameObject child = backgroundContainer.GetChild(i).gameObject;
-            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
-        }
-        for (int i = foregroundContainer.childCount - 1; i >= 0; i--)
-        {
-            GameObject child = foregroundContainer.GetChild(i).gameObject;
-            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
-        }
-        for (int i = terrainContainer.childCount - 1; i >= 0; i--)
-        {
-            GameObject child = terrainContainer.GetChild(i).gameObject;
-            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
-        }
-        for (int i = foliageContainer.childCount - 1; i >= 0; i--)
-        {
-            GameObject child = foliageContainer.GetChild(i).gameObject;
-            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
-        }
     }
 
     [ContextMenu("Stage/- Clear")]
@@ -203,6 +176,50 @@ public class World : MonoBehaviour, IGenerator
         isGenerated = true;
     }
 
+    public Vector3 GetClosestOverallPoint(Vector2 pos) => rb.ClosestPoint(pos);
+
+    public Vector3 GetClosestSurfacePoint(Vector2 pos) => outsidePolygon.ClosestPoint(pos);
+
+    public float[] GetSurfaceRange()
+    {
+        float min = 0, max = 0;
+        foreach (NoiseData noiseData in planetShapeInfo.noiseData)
+        {
+            min += noiseData.valueRange[0];
+            max += noiseData.valueRange[1];
+        }
+        return new float[] { min, max };
+    }
+
+
+    private void ClearContainers()
+    {
+        for (int i = featureContainer.childCount - 1; i >= 0; i--)
+        {
+            GameObject child = featureContainer.GetChild(i).gameObject;
+            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
+        }
+        for (int i = backgroundContainer.childCount - 1; i >= 0; i--)
+        {
+            GameObject child = backgroundContainer.GetChild(i).gameObject;
+            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
+        }
+        for (int i = foregroundContainer.childCount - 1; i >= 0; i--)
+        {
+            GameObject child = foregroundContainer.GetChild(i).gameObject;
+            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
+        }
+        for (int i = terrainContainer.childCount - 1; i >= 0; i--)
+        {
+            GameObject child = terrainContainer.GetChild(i).gameObject;
+            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
+        }
+        for (int i = foliageContainer.childCount - 1; i >= 0; i--)
+        {
+            GameObject child = foliageContainer.GetChild(i).gameObject;
+            if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
+        }
+    }
 
     [ContextMenu("Stage/1. Generate Mesh")]
     private void Step_GenerateMesh()
@@ -347,24 +364,4 @@ public class World : MonoBehaviour, IGenerator
     {
         worldBiomeManager.Generate();
     }
-
-
-    public Vector3 GetClosestOverallPoint(Vector2 pos) => rb.ClosestPoint(pos);
-
-    public Vector3 GetClosestSurfacePoint(Vector2 pos) => outsidePolygon.ClosestPoint(pos);
-
-    public float[] GetSurfaceRange()
-    {
-        float min = 0, max = 0;
-        foreach (NoiseData noiseData in planetShapeInfo.noiseData)
-        {
-            min += noiseData.valueRange[0];
-            max += noiseData.valueRange[1];
-        }
-        return new float[] { min, max };
-    }
-
-    public bool GetIsGenerated() => isGenerated;
-    
-    public string GetName() => gameObject.name;    
 }

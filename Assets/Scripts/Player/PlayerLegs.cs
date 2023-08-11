@@ -92,7 +92,6 @@ public class PlayerLegs : MonoBehaviour
         legCurrentInit = true;
     }
 
-
     private void GetLegEndRaycast(int legIndex, int walkDir, out Vector2 pos, out bool isTouching)
     {
         float horizontalMult = (legIndex <= 1) ? (-2 + legIndex) : (-1 + legIndex);
@@ -132,7 +131,7 @@ public class PlayerLegs : MonoBehaviour
     }
 
     [ContextMenu("Set Leg Lengths")]
-    private void Editor_SetLegLengths()
+    private void SetLegLengths()
     {
         // Init bones
         for (int i = 0; i < 4; i++)
@@ -171,7 +170,6 @@ public class PlayerLegs : MonoBehaviour
             legIK[i].bones[1].GetChild(1).localScale = new Vector3(legWidth, (bone2Pos - bone1Pos).magnitude, 1.0f);
         }
     }
-
 
     private void OnDrawGizmos()
     {

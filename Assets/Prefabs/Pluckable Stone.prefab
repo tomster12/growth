@@ -191,11 +191,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 3338917768004317453}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bc0596213c87f914182714abc7574819, type: 3}
+  m_Script: {fileID: 11500000, guid: e4f62e596a563874e8cbe44e7ec8d954, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 0
-  wrappers: []
+  wrappers:
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!114 &3132586360992694577
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -212,11 +214,11 @@ MonoBehaviour:
   controlDrag: 20
   idleDrag: 0.5
   density: 2
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   _hasComponentHighlight: 1
   _hasComponentPhysical: 0
   _hasComponentControl: 1
+  controlPosition: {x: 0, y: 0}
+  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}

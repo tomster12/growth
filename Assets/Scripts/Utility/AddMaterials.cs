@@ -7,11 +7,13 @@ public class AddMaterials : MonoBehaviour
     [SerializeField] private Material[] materials;
 
     private Material[] localMaterials;
+  
 
     private void Awake()
     {
         Add();    
     }
+
 
     [ContextMenu("Add Materials")]
     public void Add()

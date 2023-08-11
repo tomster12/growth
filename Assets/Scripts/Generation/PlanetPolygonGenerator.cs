@@ -18,6 +18,8 @@ public class PlanetPolygonGenerator : MonoBehaviour, IGenerator
 
     public Vector2[] points { get; private set; }
     public bool isGenerated { get; private set; } = false;
+    public bool IsGenerated() => isGenerated;
+    public string GetName() => gameObject.name;    
 
 
     public void Clear()
@@ -56,9 +58,4 @@ public class PlanetPolygonGenerator : MonoBehaviour, IGenerator
 
         isGenerated = true;
     }
-
-
-    public bool GetIsGenerated() => isGenerated;
-
-    public string GetName() => gameObject.name;    
 }

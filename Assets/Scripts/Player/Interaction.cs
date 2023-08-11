@@ -8,7 +8,9 @@ public abstract class InteractionInput
     public static InteractionInput LMB = new InteractionMouseInput(0);
     public static InteractionInput RMB = new InteractionMouseInput(1);
 
+
     public String name;
+
 
     public abstract bool CheckInput();
     public abstract bool CheckInputDown();
@@ -20,11 +22,13 @@ public class InteractionKeyInput : InteractionInput
 {
     public KeyCode code;
 
+
     public InteractionKeyInput(KeyCode code)
     {
         name = code.ToString();
         this.code = code;
     }
+
 
     public override bool CheckInput() => Input.GetKey(code);
     public override bool CheckInputDown() => Input.GetKeyDown(code);
@@ -36,11 +40,13 @@ public class InteractionMouseInput : InteractionInput
 {
     public int button;
 
+
     public InteractionMouseInput(int button)
     {
         name = button == 0 ? "lmb" : button == 1 ? "rmb" : button.ToString();
         this.button = button;
     }
+
 
     public override bool CheckInput() => Input.GetMouseButton(button);
     public override bool CheckInputDown() => Input.GetMouseButtonDown(button);
@@ -88,17 +94,16 @@ public class Interaction
     }
 
 
-    public bool TryInteract(IInteractor interactorI)
+    public bool TryInteract(IInteractor IInteractor)
     {
         if (!isEnabled) return false;
-        else if (input.CheckInputDown()) OnInputDown(interactorI);
-        else if (input.CheckInput()) OnHold(interactorI);
-        else if (input.CheckInputUp()) OnInputUp(interactorI);
+        else if (input.CheckInputDown()) OnInputDown(IInteractor);
+        else if (input.CheckInput()) OnHold(IInteractor);
+        else if (input.CheckInputUp()) OnInputUp(IInteractor);
         else return false;
         return true;
     }
 
-    
     public Sprite GetCurrentSpriteInput()
     {
         if (isBlocked) return blockedSprite;
@@ -114,19 +119,19 @@ public class Interaction
     }
 
 
-    protected virtual void OnHold(IInteractor interactorI) { }
+    protected virtual void OnHold(IInteractor IInteractor) { }
 
-    protected virtual void OnInputDown(IInteractor interactorI) { }
+    protected virtual void OnInputDown(IInteractor IInteractor) { }
 
-    protected virtual void OnInputUp(IInteractor interactorI) { }
+    protected virtual void OnInputUp(IInteractor IInteractor) { }
 }
 
 
 public interface IInteractor
 {
-    public void Interaction_SetSqueezeAmount(float squeezeAmount);
+    public void SetSqueezeAmount(float squeezeAmount);
 
-    public void Interaction_SetInteracting(bool isInteracting);
+    public void SetInteracting(bool isInteracting);
 
-    public void Interaction_SetControlled(bool toControl);
+    public void SetControlled(bool toControl);
 }

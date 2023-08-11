@@ -11,6 +11,8 @@ public class PolygonMeshGenerator : MonoBehaviour, IGenerator
     [SerializeField] private NoiseData colorNoise = new NoiseData(new float[] { 0, 1 });
     
     public bool isGenerated { get; private set; } = false;
+    public bool IsGenerated() => isGenerated;
+    public string GetName() => gameObject.name;    
 
     private Mesh mesh;
 
@@ -77,9 +79,4 @@ public class PolygonMeshGenerator : MonoBehaviour, IGenerator
 
         isGenerated = true;
     }
-
-
-    public bool GetIsGenerated() => isGenerated;
-    
-    public string GetName() => gameObject.name;    
 }

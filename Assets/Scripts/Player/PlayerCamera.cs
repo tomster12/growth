@@ -44,6 +44,26 @@ public class PlayerCamera : MonoBehaviour
     }
 
 
+    public void SetModeFollow(IFollowable follow, bool set=false)
+    {
+        mode = CameraMode.FOLLOW;
+        this.follow = follow;
+
+        // Set values
+        if (set)
+        {
+            Vector2 pos = follow.GetFollowTransform().position;
+            controlledTransform.position = new Vector3(pos.x, pos.y, controlledTransform.position.z);
+            controlledTransform.up = follow.GetFollowUpwards();
+        }
+    }
+
+    public void SetModeFree()
+    {
+        mode = CameraMode.FREE;
+    }
+
+
     private void Update()
     {
         HandleInput();
@@ -96,25 +116,5 @@ public class PlayerCamera : MonoBehaviour
         // Set the zoom using zoom level
         pixelPerfectCamera.refResolutionX = 2 * Mathf.FloorToInt(0.5f * Screen.width / zoomLevel);
         pixelPerfectCamera.refResolutionY = 2 * Mathf.FloorToInt(0.5f * Screen.height / zoomLevel);
-    }
-
-
-    public void SetModeFollow(IFollowable follow, bool set=false)
-    {
-        mode = CameraMode.FOLLOW;
-        this.follow = follow;
-
-        // Set values
-        if (set)
-        {
-            Vector2 pos = follow.GetFollowTransform().position;
-            controlledTransform.position = new Vector3(pos.x, pos.y, controlledTransform.position.z);
-            controlledTransform.up = follow.GetFollowUpwards();
-        }
-    }
-
-    public void SetModeFree()
-    {
-        mode = CameraMode.FREE;
     }
 }

@@ -35,28 +35,46 @@ public class PlayerController : MonoBehaviour, IFollowable
     [Space(10)]
     [SerializeField] private bool drawGizmos = false;
 
+    public Vector2 rightDir => new Vector2(upDir.y, -upDir.x);
+    public Rigidbody2D rb => characterRB;
+    public new Transform transform => characterRB.transform;
     public Vector2 groundPosition { get; private set; }
     public Vector2 groundDir { get; private set; }
     public Vector2 upDir { get; private set; }
     public Vector2 targetPosition { get; private set; }
     public bool isGrounded { get; private set; }
-
-    public Vector2 rightDir => new Vector2(upDir.y, -upDir.x);
-    public Rigidbody2D rb => characterRB;
-    public new Transform transform => characterRB.transform;
-
     public Vector2 inputDir { get; private set; }
+    public float movementSlowdown = 0.0f;
+
     private bool inputJump;
     private float inputVerticalLean;
     private float jumpTimer = 0.0f;
-
-    public float movementSlowdown = 0.0f;
 
 
     private void Start()
     {
         // Set camera to follow
         playerCamera.SetModeFollow(this, true);
+    }
+
+
+    public Transform GetFollowTransform() => characterRB.transform;
+
+    public Vector2 GetFollowPosition() => characterRB.position;
+
+    public Vector2 GetFollowUpwards() => upDir;
+
+    public Vector2 GetJumpDir()
+    {
+        Vector2 jumpDir = upDir;
+
+        if (characterRB.velocity.magnitude > verticalJumpThreshold)
+        {
+            float rightComponent = Vector2.Dot(characterRB.velocity.normalized, rightDir);
+            jumpDir += rightDir * Mathf.Sign(rightComponent);
+        }
+
+        return jumpDir.normalized;
     }
 
 
@@ -149,27 +167,6 @@ public class PlayerController : MonoBehaviour, IFollowable
         // Force with input
         characterRB.AddForce(inputDir.normalized * airMovementSpeed, ForceMode2D.Impulse);
     }
-
-
-    public Transform GetFollowTransform() => characterRB.transform;
-
-    public Vector2 GetFollowPosition() => characterRB.position;
-
-    public Vector2 GetFollowUpwards() => upDir;
-
-    public Vector2  GetJumpDir()
-    {
-        Vector2 jumpDir = upDir;
-
-        if (characterRB.velocity.magnitude > verticalJumpThreshold)
-        {
-            float rightComponent = Vector2.Dot(characterRB.velocity.normalized, rightDir);
-            jumpDir += rightDir * Mathf.Sign(rightComponent);
-        }
-
-        return jumpDir.normalized;
-    }
-
 
     private void OnDrawGizmos()
     {

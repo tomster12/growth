@@ -44,21 +44,19 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
     [SerializeField] private Color legDirInteractColor = new Color(1.0f, 1.0f, 1.0f, 0.25f);
     [SerializeField] private float promptOffset = 1.0f;
 
-    // Dynamic components
+    public float squeezeAmount { get; private set; }
+
+
     private LineHelper controlLimitLH;
     private LineHelper targetDirLH;
-
     private Vector2 hoverPos;
     private float hoverDistance;
-
     private WorldObject targetWO;
     private List<Interaction> targetInteractions;
     private int targetInteractionsEnabled => targetInteractions == null ? 0 : targetInteractions.Where(i => i.isEnabled).Count();
     private float targetDistance;
-
     private bool isControlling;
     private bool isInteracting;
-    public float squeezeAmount { get; private set; }
 
 
     private void Awake()
@@ -313,7 +311,6 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         UnityEngine.Cursor.visible = false;
     }
 
-
     private void SetTargetInteractions(List<Interaction> targetInteractions)
     {
         // Update variables
@@ -364,14 +361,9 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         return false;
     }
 
+    public void SetSqueezeAmount(float squeezeAmount) => this.squeezeAmount = squeezeAmount;
 
-    #region IInteractor
-
-    public void Interaction_SetSqueezeAmount(float squeezeAmount) => this.squeezeAmount = squeezeAmount;
-
-    public void Interaction_SetInteracting(bool isInteracting) => this.isInteracting = isInteracting;
+    public void SetInteracting(bool isInteracting) => this.isInteracting = isInteracting;
     
-    public void Interaction_SetControlled(bool toControl) => SetTargetControlled(toControl);
-
-    #endregion
+    public void SetControlled(bool toControl) => SetTargetControlled(toControl);
 }

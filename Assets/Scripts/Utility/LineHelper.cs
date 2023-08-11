@@ -4,22 +4,22 @@ using UnityEngine;
 
 public class LineHelper : MonoBehaviour
 {
-    private static int circleVertexCount = 25;
-
     public enum LineMode { NONE, LINE, CIRCLE }
     public enum LineFill { NONE, SOLID, DOTTED }
+
+
+    private static int circleVertexCount = 25;
 
     [SerializeField] private Material materialDottedPfb;
     [SerializeField] private Material materialSolidPfb;
 
     public LineMode lineMode { get; private set; } = LineMode.NONE;
     public LineFill lineFill { get; private set; } = LineFill.NONE;
+    public float repeatMult = 0.8f;
 
     private Material materialDotted;
     private Material materialSolid;
     private LineRenderer lineRenderer;
-
-    public float repeatMult = 0.8f;
 
 
     private void Start()
@@ -76,6 +76,8 @@ public class LineHelper : MonoBehaviour
             materialDotted.SetFloat("_Rep", length * repeatMult);
         }
     }
+    
+    public void SetActive(bool isActive) => lineRenderer.enabled = isActive;
 
 
     private void SetMode(LineMode lineMode, float width=0.1f)
@@ -113,6 +115,4 @@ public class LineHelper : MonoBehaviour
             lineRenderer.material = materialDotted;
         }
     }
-
-    public void SetActive(bool isActive) => lineRenderer.enabled = isActive;
 }

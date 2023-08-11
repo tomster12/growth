@@ -33,7 +33,6 @@ public class NoiseData
 
     public void RandomizeOffset() => currentOffset = -100000 + UnityEngine.Random.value * 200000;
 
-
     public float GetNoise(Vector2 pos) => GetNoise(pos.x, pos.y);
 
     public float GetNoise(float x, float y)

@@ -75,6 +75,8 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
     public MeshSite[] meshSites { get; private set; }
     public Mesh mesh { get; private set; }
     public bool isGenerated { get; private set; } = false;
+    public bool IsGenerated() => isGenerated;
+    public string GetName() => gameObject.name;    
 
     private Vector2[] _voronoiSeedSites;
     private VoronoiCalculator _voronoiCalculator;
@@ -153,6 +155,7 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
         if (clearInternal) ClearInternal();
         isGenerated = true;
     }
+
 
     private void Step_GenerateSeeds()
     {
@@ -376,12 +379,6 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
             }
         }
     }
-
-
-    public bool GetIsGenerated() => isGenerated;
-
-    public string GetName() => gameObject.name;    
-
 
     private void OnDrawGizmos()
     {

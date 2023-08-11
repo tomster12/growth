@@ -18,6 +18,10 @@ public class GravityAttractor : MonoBehaviour
     [SerializeField] public float minimumDistance = 3.0f;
     [SerializeField] public bool rigidbodySurface = true;
 
+
+    public Vector2 ClosestPoint(Vector2 pos) => rigidbodySurface ? rb.ClosestPoint(pos) : polygonCollider.ClosestPoint(pos);
+
+
     private void FixedUpdate()
     {
         // Attract all objects
@@ -37,6 +41,4 @@ public class GravityAttractor : MonoBehaviour
             }
         }
     }
-
-    public Vector2 ClosestPoint(Vector2 pos) => rigidbodySurface ? rb.ClosestPoint(pos) : polygonCollider.ClosestPoint(pos);
 }

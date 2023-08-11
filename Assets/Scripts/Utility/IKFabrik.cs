@@ -18,8 +18,6 @@ public class IKFabrik : MonoBehaviour
     public Quaternion targetRot;
     public Vector2 polePos;
     public Quaternion poleRot;
-
-    // --- Internal ---
     public int boneCount { get; private set; }
     public Transform[] bones { get; private set; }
     public float[] boneLengths { get; private set; }
@@ -95,7 +93,6 @@ public class IKFabrik : MonoBehaviour
             }
         }
     }
-
 
     public void LateUpdate() => ResolveIK();
 
@@ -184,14 +181,6 @@ public class IKFabrik : MonoBehaviour
         }
     }
 
-
-    private Vector2 TransformPosition_WorldToRS(Vector2 worldPos) => Quaternion.Inverse(boneRoot.rotation) * (worldPos - (Vector2)boneRoot.position);
-    private Quaternion TransformRotation_WorldToRS(Quaternion worldRot) => Quaternion.Inverse(worldRot) * boneRoot.rotation;
-
-    private Vector3 TransformPosition_RSToWorld(Vector2 position) => boneRoot.rotation * position + boneRoot.position;
-    private Quaternion TransformRotation_RSToWorld(Quaternion rotation) => boneRoot.rotation * rotation;
-
-
     public void OnDrawGizmos()
     {
         #if UNITY_EDITOR
@@ -213,4 +202,12 @@ public class IKFabrik : MonoBehaviour
         }
         #endif
     }
+
+
+    private Vector2 TransformPosition_WorldToRS(Vector2 worldPos) => Quaternion.Inverse(boneRoot.rotation) * (worldPos - (Vector2)boneRoot.position);
+    private Quaternion TransformRotation_WorldToRS(Quaternion worldRot) => Quaternion.Inverse(worldRot) * boneRoot.rotation;
+
+    private Vector3 TransformPosition_RSToWorld(Vector2 position) => boneRoot.rotation * position + boneRoot.position;
+    private Quaternion TransformRotation_RSToWorld(Quaternion rotation) => boneRoot.rotation * rotation;
+
 }

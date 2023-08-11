@@ -14,7 +14,6 @@ public static class Utility
         return Mathf.Abs(Vector3.Cross(A - B, A - C).z) * 0.5f;
     }
 
-
     public static Vector2 RandomInTriangle(Vector2 A, Vector2 B, Vector2 C)
     {
         // Return a random point in a triangle
@@ -25,7 +24,6 @@ public static class Utility
         float m3 = r2 * r1;
         return (m1 * A) + (m2 * B) + (m3 * C);
     }
-
 
     private static int[] RandomInPolygon_tris;
     private static Vector3[] RandomInPolygon_verts;
@@ -77,14 +75,12 @@ public static class Utility
         );
     }
 
-
     public static Vector2 GetAveragePoint(List<Vector2> points)
     {
         Vector2 sum = Vector2.zero;
         points.ForEach(p => sum += p);
         return sum / points.Count;
     }
-
 
     public static bool PointInside(Vector2 p, List<Vector2> points)
     {
@@ -101,7 +97,6 @@ public static class Utility
         return inside;
     }
     
-
     public static float DistanceToPoints(Vector2 p, Vector2[] points)
     {
         float minDist = float.MaxValue;

@@ -6,11 +6,11 @@ using UnityEngine;
 [Serializable]
 class InteractionPluck : Interaction
 {
+    public bool isPlucked { get; private set; }
+
     private Action onPluck;
     private float pluckTimerMax;
-
-    public bool isPlucked { get; private set; }
-    private IInteractor interactorI;
+    private IInteractor IInteractor;
     private float pluckTimer;
 
 
@@ -31,35 +31,35 @@ class InteractionPluck : Interaction
         if (isActive)
         {
             pluckTimer = Mathf.Min(pluckTimer + Time.deltaTime, pluckTimerMax);
-            interactorI.Interaction_SetSqueezeAmount(0.8f * pluckTimer / pluckTimerMax);
+            IInteractor.SetSqueezeAmount(0.8f * pluckTimer / pluckTimerMax);
             if (pluckTimer >= pluckTimerMax) OnPluck();
         }
         else pluckTimer = 0.0f;
     }
 
 
-    protected override void OnInputDown(IInteractor interactorI)
+    protected override void OnInputDown(IInteractor IInteractor)
     {
         // Begin timer decreasing and update variables
         if (isPlucked) return;
         isActive = true;
         pluckTimer = 0.0f;
-        this.interactorI = interactorI;
-        this.interactorI.Interaction_SetInteracting(true);
+        this.IInteractor = IInteractor;
+        this.IInteractor.SetInteracting(true);
     }
 
-    protected override void OnInputUp(IInteractor interactorI)
+    protected override void OnInputUp(IInteractor IInteractor)
     {
         // Stop timer decreasing and reset variables
         if (isPlucked) return;
         isActive = false;
         pluckTimer = 0.0f;
-        if (this.interactorI != null)
+        if (this.IInteractor != null)
         {
             isActive = false;
-            this.interactorI.Interaction_SetSqueezeAmount(0.0f);
-            this.interactorI.Interaction_SetInteracting(false);
-            this.interactorI = null;
+            this.IInteractor.SetSqueezeAmount(0.0f);
+            this.IInteractor.SetInteracting(false);
+            this.IInteractor = null;
         }
     }
 
@@ -73,9 +73,9 @@ class InteractionPluck : Interaction
         isEnabled = false;
 
         pluckTimer = 0.0f;
-        interactorI.Interaction_SetSqueezeAmount(0.0f);
-        interactorI.Interaction_SetInteracting(false);
-        interactorI = null;
+        IInteractor.SetSqueezeAmount(0.0f);
+        IInteractor.SetInteracting(false);
+        IInteractor = null;
 
         // Tell stone to pluck
         onPluck();

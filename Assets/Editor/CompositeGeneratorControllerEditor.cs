@@ -6,16 +6,16 @@ using UnityEditor;
 using UnityEngine.UIElements;
 
 
-[CustomEditor(typeof(IGeneratorController))]
-public class IGeneratorControllerEditor : Editor
+[CustomEditor(typeof(CompositeGeneratorController))]
+public class CompositeGeneratorControllerEditor : Editor
 {
     [SerializeField] private VisualTreeAsset xuml;
-    private IGeneratorController controller => (IGeneratorController)target;
+    private CompositeGeneratorController controller => (CompositeGeneratorController)target;
 
 
     public override VisualElement CreateInspectorGUI()
     {
-        Debug.Log("IGeneratorControllerInspector::CreateInspectorGUI() Start");
+        Debug.Log("CompositeGeneratorControllerInspector::CreateInspectorGUI() Start");
         VisualElement inspector = new VisualElement();
         xuml.CloneTree(inspector);
 
@@ -27,8 +27,20 @@ public class IGeneratorControllerEditor : Editor
         return inspector;
     }
 
-
     public void OnButtonFindGenerators() => controller.FindGenerators();
 
     public void OnButtonGenerate() => controller.Generate();
+
+
+    private VisualElement GenerateGeneratorView(IGenerator IGenerator)
+    {
+        VisualElement top = new VisualElement();
+
+        Button button = new Button();
+        Label buttonLabel = new Label(IGenerator.GetName());
+        button.Add(buttonLabel);
+        top.Add(button);
+
+        return top;
+    }
 }

@@ -13,6 +13,8 @@ public class RockGenerator : MonoBehaviour, IGenerator
     [SerializeField] private bool disablePolygon;
 
     public bool isGenerated { get; private set; } = false;
+    public bool IsGenerated() => isGenerated;
+    public string GetName() => gameObject.name;    
 
 
     public void Clear()
@@ -53,9 +55,4 @@ public class RockGenerator : MonoBehaviour, IGenerator
         // Update mesh colours
         mesh.colors = colors;
     }
-
-
-    public bool GetIsGenerated() => isGenerated;
-    
-    public string GetName() => gameObject.name;    
 }

@@ -7,7 +7,6 @@ using static World;
 
 public class WorldBiomeGenerator : MonoBehaviour, IGenerator
 {
-    // --- Editor ---
     [Header("References")]
     [SerializeField] private World world;
     [SerializeField] private GroundMaterial materialDirt;
@@ -23,8 +22,10 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
     [SerializeField] private NoiseData energyPctNoise = new NoiseData();
 
     public List<SpriteRenderer> surfaceFoliage { get; private set; } = new List<SpriteRenderer>();
-    public List<IGeneratorController> surfaceStones { get; private set; } = new List<IGeneratorController>();
+    public List<CompositeGeneratorController> surfaceStones { get; private set; } = new List<CompositeGeneratorController>();
     public bool isGenerated { get; private set; } = false;
+    public bool IsGenerated() => isGenerated;
+    public string GetName() => gameObject.name;    
     
 
     public void Clear()
@@ -44,6 +45,9 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
         Step_SetColors();
         isGenerated = true;
     }
+
+    public void UpdateColours() => Step_SetColors();
+
 
     private void Step_GenerateMaterial()
     {
@@ -143,7 +147,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
             }
 
             // Generate the mesh and rotate
-            IGeneratorController stone = stoneObj.GetComponent<IGeneratorController>();
+            CompositeGeneratorController stone = stoneObj.GetComponent<CompositeGeneratorController>();
             surfaceStones.Add(stone);
             stone.Generate();
             stone.transform.eulerAngles = new Vector3(0.0f, 0.0f, UnityEngine.Random.value * 360.0f);
@@ -156,7 +160,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
         }
     }
 
-    public void Step_SetColors()
+    private void Step_SetColors()
     {
         // Update colors of the grass
         for (int i = 0; i < surfaceFoliage.Count; i++)
@@ -181,9 +185,4 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
 
         world.mesh.colors = meshColors;
     }
-
-
-    public bool GetIsGenerated() => isGenerated;
-    
-    public string GetName() => gameObject.name;    
 }

@@ -32,7 +32,6 @@ public class PluckableStone : WorldObject
         interactionPluck.Update();
     }
 
-
     private void OnPluck()
     {
         // Become physical and controllable

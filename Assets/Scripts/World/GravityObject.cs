@@ -13,6 +13,7 @@ public class GravityObject : MonoBehaviour
     public Vector2 centre => rb.transform.position;
     public bool isEnabled = true;
 
+
     private void Start()
     {
         // Add to global world

@@ -19,7 +19,6 @@ public class SpriteSet : MonoBehaviour
         instance = this;
     }
 
-
     private void Initialize()
     {
         foreach (Sprite sprite in spriteList) sprites[sprite.name] = sprite;
