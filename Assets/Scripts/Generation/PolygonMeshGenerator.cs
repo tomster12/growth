@@ -12,7 +12,6 @@ public class PolygonMeshGenerator : MonoBehaviour, IGenerator
     
     public bool isGenerated { get; private set; } = false;
     public bool IsGenerated() => isGenerated;
-    public string GetName() => gameObject.name;    
 
     private Mesh mesh;
 
@@ -79,4 +78,6 @@ public class PolygonMeshGenerator : MonoBehaviour, IGenerator
 
         isGenerated = true;
     }
+
+    public string GetName() => "Poly. Mesh";
 }

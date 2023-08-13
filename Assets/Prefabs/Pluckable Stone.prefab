@@ -194,10 +194,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4f62e596a563874e8cbe44e7ec8d954, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  controllerXuml: {fileID: 9197481963319205126, guid: 9c27a1f3f056e594c9280ea6557b64ea, type: 3}
+  generatorXuml: {fileID: 9197481963319205126, guid: 750ae89a99cdad64c86a1cd79e3779d2, type: 3}
   seed: 0
-  wrappers:
-  - {fileID: 0}
-  - {fileID: 0}
+  proxies: []
 --- !u!114 &3132586360992694577
 MonoBehaviour:
   m_ObjectHideFlags: 0

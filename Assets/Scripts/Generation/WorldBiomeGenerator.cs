@@ -22,10 +22,9 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
     [SerializeField] private NoiseData energyPctNoise = new NoiseData();
 
     public List<SpriteRenderer> surfaceFoliage { get; private set; } = new List<SpriteRenderer>();
-    public List<CompositeGeneratorController> surfaceStones { get; private set; } = new List<CompositeGeneratorController>();
+    public List<GeneratorController> surfaceStones { get; private set; } = new List<GeneratorController>();
     public bool isGenerated { get; private set; } = false;
     public bool IsGenerated() => isGenerated;
-    public string GetName() => gameObject.name;    
     
 
     public void Clear()
@@ -45,6 +44,8 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
         Step_SetColors();
         isGenerated = true;
     }
+
+    public string GetName() => "World Biome";
 
     public void UpdateColours() => Step_SetColors();
 
@@ -147,7 +148,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
             }
 
             // Generate the mesh and rotate
-            CompositeGeneratorController stone = stoneObj.GetComponent<CompositeGeneratorController>();
+            GeneratorController stone = stoneObj.GetComponent<GeneratorController>();
             surfaceStones.Add(stone);
             stone.Generate();
             stone.transform.eulerAngles = new Vector3(0.0f, 0.0f, UnityEngine.Random.value * 360.0f);

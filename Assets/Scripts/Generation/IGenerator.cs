@@ -5,4 +5,6 @@ public interface IGenerator
     void Generate();
     bool IsGenerated();
     string GetName();
+    bool IsComposite() => false;
+    IGenerator[] GetCompositeIGenerators() => new IGenerator[0];
 }

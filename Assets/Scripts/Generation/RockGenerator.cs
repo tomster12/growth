@@ -14,7 +14,6 @@ public class RockGenerator : MonoBehaviour, IGenerator
 
     public bool isGenerated { get; private set; } = false;
     public bool IsGenerated() => isGenerated;
-    public string GetName() => gameObject.name;    
 
 
     public void Clear()
@@ -55,4 +54,6 @@ public class RockGenerator : MonoBehaviour, IGenerator
         // Update mesh colours
         mesh.colors = colors;
     }
+
+    public string GetName() => "Rock Composite";
 }
