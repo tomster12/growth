@@ -6,7 +6,8 @@ using System;
 [Serializable]
 public class EdgeRule
 {
-    [SerializeField] public float chance;
+    [SerializeField] public bool isGuaranteed;
+    [SerializeField] public float averagePer100;
     [SerializeField] public float minDistance;
     [SerializeField] public GameObject feature;
 };

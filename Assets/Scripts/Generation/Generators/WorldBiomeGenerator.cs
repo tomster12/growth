@@ -56,6 +56,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
     [SerializeField] private BiomeRequirement[] biomeRequirements;
     [SerializeField] private UndergroundBiome undergroundBiome;
     [SerializeField] private int maxBiomeCount = 4;
+    [SerializeField] private bool debugLog = true;
 
     public bool isGenerated { get; private set; } = false;
     public bool IsGenerated() => isGenerated;
@@ -93,7 +94,6 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
         // Calculate useful variables
         int totalEdges = worldGenerator.surfaceEdges.Count;
         float totalLength = worldGenerator.surfaceEdges.Aggregate(0.0f, (acc, edge) => acc + edge.length);
-        int targetBiomeCount = UnityEngine.Random.Range(requiredBiomeCount, maxBiomeCount + 1);
         BiomeGenEdge[] edgeInfos = new BiomeGenEdge[totalEdges];
         for (int i = 0; i < totalEdges; i++) edgeInfos[i] = new BiomeGenEdge(i, worldGenerator.surfaceEdges[i].length, totalLength);
         
@@ -112,8 +112,10 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
         {
             return (index + edgeInfos.Length + change) % edgeInfos.Length;
         };
+
         Func<BiomeRequirement, int, bool> PlaceBiome = (BiomeRequirement req,  int startIndex) =>
         {
+            if (debugLog) Debug.Log("PlaceBiome(" + startIndex + ", " + req.minimumSize + ")");
             float lengthLeft = req.minimumSize;
             int index = startIndex;
             List<BiomeGenEdge> biomeEdges = new();
@@ -132,10 +134,11 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
                 edge.biomeTotalLength = biomeLength;
                 edge.biomeEndNextIndex = index;
             }
-            for (int o = startIndex; !edgeInfos[o].IsAssigned;)
+            for (int o = startIndex;;)
             {
-                edgeInfos[o].lengthToBiomeStart = edgeInfos[modAdd(o, 1)].lengthToBiomeStart + edgeInfos[o].length;
                 o = modAdd(o, -1);
+                if (edgeInfos[o].IsAssigned) break;
+                edgeInfos[o].lengthToBiomeStart = edgeInfos[modAdd(o, 1)].lengthToBiomeStart + edgeInfos[o].length;
             }
             totalLengthLeft -= biomeLength;
             requiredLengthLeft -= req.minimumSize;
@@ -145,6 +148,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
 
         bool MakeSpace(int index, int capIndex, float length)
         {
+            if (debugLog) Debug.Log("MakeSpace(" + index + ", " + capIndex + ", " + length + ")");
             float lengthLeft = length;
             while (lengthLeft > 0.0f && !edgeInfos[index].IsAssigned)
             {
@@ -154,35 +158,40 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
             if (lengthLeft < 0.0f) return true;
             if (edgeInfos[index].IsAssigned)
             {
+                if (debugLog) Debug.Log("Biome at " + index + " needs to be moved by " + lengthLeft);
                 float previousLength = edgeInfos[index].biomeTotalLength;
                 BiomeRequirement previousReq = edgeInfos[index].req;
-                float choppedAmount = 0.0f;
-                int newStartIndex = index; 
-                for (; choppedAmount < lengthLeft; newStartIndex = modAdd(newStartIndex, 1))
+                float pushBackLength = 0.0f;
+                int newStartIndex = index;
+                for (; pushBackLength < lengthLeft; newStartIndex = modAdd(newStartIndex, 1))
                 {
-                    choppedAmount += edgeInfos[newStartIndex].length;
+                    pushBackLength += edgeInfos[newStartIndex].length;
                 }
+                if (debugLog) Debug.Log("Pushed back " + pushBackLength + " to new start " + newStartIndex);
                 float movedAmount = 0.0f;
                 int newEndIndex = edgeInfos[index].biomeEndNextIndex;
-                for (; movedAmount < choppedAmount; newEndIndex = modAdd(newEndIndex, 1))
+                for (; movedAmount < pushBackLength; newEndIndex = modAdd(newEndIndex, 1))
                 {
                     if (newEndIndex == capIndex)
                     {
-                        Debug.Log("Cannot move biome into cap at index " + newEndIndex + ", " + (choppedAmount - movedAmount) + " left to move.");
+                        if (debugLog) Debug.Log("Cannot move biome into cap at index " + newEndIndex + ", " + (pushBackLength - movedAmount) + " left to move.");
                         return false;
                     }
                     if (edgeInfos[newEndIndex].IsAssigned)
                     {
-                        Debug.Log(newEndIndex + " is another biome so recursing down to move by " + (choppedAmount - movedAmount));
-                        bool moveNext = MakeSpace(newEndIndex, capIndex, choppedAmount - movedAmount);
+                        if (debugLog) Debug.Log(newEndIndex + " is another biome so recursing down to move by " + (pushBackLength - movedAmount));
+                        bool moveNext = MakeSpace(newEndIndex, capIndex, pushBackLength - movedAmount);
                         if (!moveNext) return false;
+                        if (debugLog) Debug.Log("Successfully moved next biome");
                     }
                     movedAmount += edgeInfos[newEndIndex].length;
                 }
-                float newBiomeLength = previousLength - choppedAmount + movedAmount;
-                for (int i = index; i != newEndIndex; i = modAdd(i, 1))
+                if (debugLog) Debug.Log("Moved " + movedAmount + " / pushed back " + pushBackLength + " / required " + lengthLeft  + " to new end " + newEndIndex);
+                float newBiomeLength = previousLength - pushBackLength + movedAmount;
+                for (int i = index, old = 0; i != newEndIndex; i = modAdd(i, 1))
                 {
-                    if (i < newStartIndex)
+                    if (i == newStartIndex) old = 1;
+                    if (old == 0)
                     {
                         edgeInfos[i].req = null;
                         edgeInfos[i].biomeTotalLength = 0.0f;
@@ -196,10 +205,11 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
                     }
                     edgeInfos[i].lengthToBiomeStart = 0.0f;
                 }
-                for (int o = newStartIndex; !edgeInfos[o].IsAssigned;)
+                for (int o = newStartIndex;;)
                 {
-                    edgeInfos[o].lengthToBiomeStart = edgeInfos[modAdd(o, 1)].lengthToBiomeStart + edgeInfos[o].length;
                     o = modAdd(o, -1);
+                    if (edgeInfos[o].IsAssigned) break;
+                    edgeInfos[o].lengthToBiomeStart = edgeInfos[modAdd(o, 1)].lengthToBiomeStart + edgeInfos[o].length;
                 }
             }
             return true;
@@ -207,15 +217,30 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
 
         bool PushAndPlace(BiomeRequirement req, int index, float lengthRequired)
         {
+            if (debugLog) Debug.Log("PushAndPlace(" + index + ", " + lengthRequired + ")");
             BiomeGenEdge edge = edgeInfos[index];
             if (!MakeSpace(index, index, lengthRequired)) return false;
             PlaceBiome(req, index);
             return true;
         };
 
-        // Begin main biome assignment
-        while (assignedBiomeCount < targetBiomeCount)
+        void PrintInfo()
         {
+            // Debug log info about biome placement
+            Debug.Log("Length Left: " + totalLengthLeft + " / " + totalLength + " (" + requiredLengthLeft + " required left)");
+            Debug.Log("Assigned " + assignedBiomeCount + " biomes.");
+            string output = "\n";
+            for (int i = 0; i < edgeInfos.Length; i++) output += edgeInfos[i].IsAssigned ? "O" : " ";
+            output += "\n";
+            for (int i = 0; i < edgeInfos.Length; i++) output += "-";
+            Debug.Log(output);
+        }
+
+        // Begin main biome assignment
+        while (assignedBiomeCount < maxBiomeCount)
+        {
+            if (debugLog) PrintInfo();
+
             // Pick next / random biome and ensure theres space
             BiomeRequirement req = null;
             while (req == null)
@@ -253,20 +278,22 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
             }
 
             // BREAK: placed all biomes
-            if (assignedBiomeCount >= targetBiomeCount) break;
+            if (assignedBiomeCount >= maxBiomeCount) break;
         }
+        if (debugLog) PrintInfo();
 
-        // Temporary half and half
-        for (int i = 0; i < worldGenerator.surfaceEdges.Count; i++)
+        // Apply biomes and fill in the gaps
+        int fillStart = -1;
+        BiomeRequirement prevReq = null;
+        for (int i = 0; i < edgeInfos.Length && i != fillStart; i++)
         {
-            if (i < worldGenerator.surfaceEdges.Count / 2.0f)
+            if (edgeInfos[i].IsAssigned)
             {
-                worldGenerator.surfaceEdges[i].worldSite.biome = biomeRequirements[0].biome;
+                if (fillStart == -1) fillStart = i;
+                prevReq = edgeInfos[i].req;
+                worldGenerator.surfaceEdges[i].worldSite.biome = edgeInfos[i].req.biome;
             }
-            else
-            {
-                worldGenerator.surfaceEdges[i].worldSite.biome = biomeRequirements[1].biome;
-            }
+            else if (prevReq != null) worldGenerator.surfaceEdges[i].worldSite.biome = prevReq.biome;
         }
         
         // Flood fill biomes down
@@ -297,7 +324,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
             else site.biome = undergroundBiome;
         }
     }
-     
+
     private void Step_GenerateEnergy()
     {
         // Generate site energy with biome
@@ -378,24 +405,12 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
         worldGenerator.mesh.colors = meshColors;
     }
 
-    private EdgeRule PickRule(EdgeRule[] rules, float r)
-    {
-        EdgeRule rule = null;
-        float sum = 0.0f;
-        for (int i = 0; i < rules.Length; i++)
-        {
-            rule = rules[i];
-            sum += rule.chance;
-            if (r < sum) break;
-        }
-        return r > sum ? null : rule;
-    }
 
     private GameObject SpawnFeature(WorldSurfaceEdge edge, EdgeRule[] rules, Vector3 a, Vector3 b, float edgePct)
     {
         // Pick rule
         float r = UnityEngine.Random.value;
-        EdgeRule rule = PickRule(rules, r);
+        EdgeRule rule = PickRule(rules, edge, r);
         if (rule == null) return null;
 
         // Ensure distance
@@ -416,5 +431,18 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
         IFeature?.Spawn(edge, edge.a, edge.b, edgePct);
         ruleInstances.Add(new RuleInstance(rule, IFeature));
         return feature;
+    }
+
+    private EdgeRule PickRule(EdgeRule[] rules, WorldSurfaceEdge edge, float r)
+    {
+        float length = edge.length;
+        List<EdgeRule> hitRules = new();
+        for (int i = 0; i < rules.Length; i++)
+        {
+            if (rules[i].isGuaranteed) hitRules.Add(rules[i]);
+            else if (r < (rules[i].averagePer100 * (length / 100.0f))) hitRules.Add(rules[i]);
+        }
+        if (hitRules.Count > 0) return hitRules[UnityEngine.Random.Range(0, hitRules.Count)];
+        else return null;
     }
 }
