@@ -5,7 +5,7 @@ using System.Linq;
 
 
 [Serializable]
-public class IGeneratorProxy : IGenerator
+public class IGeneratorProxy
 {
     [SerializeField] private Component _IGenerator;
     [SerializeField] public string name;
@@ -51,5 +51,6 @@ public class IGeneratorProxy : IGenerator
 
     public bool IsComposite() => isComposite;
 
-    public IGenerator[] GetCompositeIGenerators() => compositeIGeneratorProxies;
+
+    public IGenerator[] GetCompositeIGenerators() => compositeIGeneratorProxies.Select(p => p.IGenerator).ToArray();
 }

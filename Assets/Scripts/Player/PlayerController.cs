@@ -7,7 +7,7 @@ public class PlayerController : MonoBehaviour, IFollowable
     [Header("References")]
     [SerializeField] private PlayerCamera playerCamera;
     [SerializeField] private PlayerInteractor playerInteractor;
-    [SerializeField] private World world;
+    [SerializeField] private WorldGenerator world;
     [SerializeField] private GravityObject characterGravity;
     [SerializeField] private Rigidbody2D characterRB;
 
@@ -150,7 +150,6 @@ public class PlayerController : MonoBehaviour, IFollowable
             // Update jump timer
             jumpTimer = Mathf.Max(jumpTimer - Time.deltaTime, 0.0f);
         }
-
 
         // - While in the air
         else

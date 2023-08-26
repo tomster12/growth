@@ -32,29 +32,19 @@ public class GeneratorController : MonoBehaviour
         allIGeneratorProxies.AddRange(compositeIGeneratorProxies);
         allIGeneratorProxies.AddRange(otherIGeneratorProxies);
         proxies = allIGeneratorProxies.ToArray();
-
-        Debug.Log("Found " + compositeIGeneratorProxies.Count + " composite IGenerators");
-        foreach (IGeneratorProxy proxy in compositeIGeneratorProxies)
-        {
-            Debug.Log(proxy.GetName());
-        }
-        Debug.Log("Found " + otherIGeneratorProxies.Count + " other IGenerators");
-        foreach (IGeneratorProxy proxy in otherIGeneratorProxies)
-        {
-            Debug.Log(proxy.GetName());
-        }
-        Debug.Log("Found " + proxies.Length + " total IGeneratorProxies");
-    }
-
-    public void Generate()
-    {
-        if (randomizeSeed) seed = (int)DateTime.Now.Ticks;
-        if (setSeed) UnityEngine.Random.InitState(seed);
-        foreach(IGeneratorProxy proxy in proxies) proxy.Generate();
     }
 
     public void Clear()
     {
         foreach (IGeneratorProxy proxy in proxies) proxy.Clear();
     }
+
+    public void Generate(bool setSeed=false, bool randomizeSeed=false)
+    {
+        if (this.randomizeSeed || randomizeSeed) RandomizeSeed();
+        if (this.setSeed || setSeed) UnityEngine.Random.InitState(seed);
+        foreach(IGeneratorProxy proxy in proxies) proxy.Generate();
+    }
+
+    public void RandomizeSeed() => seed = (int)DateTime.Now.Ticks;
 }

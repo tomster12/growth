@@ -118,4 +118,11 @@ public static class Utility
         }
         return minDist;
     }
+
+    public static void SetLayer(Transform t, int layer)
+    {
+        // Recursive transform layer update
+        t.gameObject.layer = layer;
+        foreach (Transform c in t) SetLayer(c, layer);
+    }
 }

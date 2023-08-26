@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c0db50292402394d98c567e945b105f, type: 3}
+  m_Name: SurfaceBiomeBlue
+  m_EditorClassIdentifier: 
+  colorRange:
+  - {r: 0.2990388, g: 0.42079368, b: 0.6037736, a: 1}
+  - {r: 0.3972944, g: 0.5993374, b: 0.9056604, a: 1}
+  energyMaxNoise:
+    valueRange:
+    - 40
+    - 200
+    noiseScale: 1
+  energyPctNoise:
+    valueRange:
+    - 0
+    - 1
+    noiseScale: 1
+  deadspotChance: 0.02
+  deadspotPct: 0.15
+  frontDecorRules: []
+  terrainRules: []
+  foregroundRules: []
+  backgroundRules: []
+  backDecorRules: []

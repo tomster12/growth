@@ -22,6 +22,7 @@ public class GeneratorControllerEditor : Editor
         inspector.Q<Button>("ButtonFindGenerators").clicked += () => controller.FindGenerators();
         inspector.Q<Button>("ButtonGenerate").clicked += () => controller.Generate();
         inspector.Q<Button>("ButtonClear").clicked += () => controller.Clear();
+        inspector.Q<Button>("ButtonRandomize").clicked += () => controller.RandomizeSeed();
 
         return inspector;
     }
