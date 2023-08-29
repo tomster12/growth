@@ -66,6 +66,7 @@ public class PlayerCamera : MonoBehaviour
 
     private void Update()
     {
+        if (GameManager.isPaused) return;
         HandleInput();
     }
 
@@ -82,6 +83,7 @@ public class PlayerCamera : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (GameManager.isPaused) return;
         if (mode == CameraMode.FREE) FixedUpdateMovementFree();
         else if (mode == CameraMode.FOLLOW) FixedUpdateMovementFollow();
         FixedUpdateInputZoom();

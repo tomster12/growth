@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class WorldObject : MonoBehaviour
+public class WorldObject : MonoBehaviour, IInteractable
 {
     [Header("References")]
     [SerializeField] protected Collider2D cl;
@@ -18,22 +18,39 @@ public class WorldObject : MonoBehaviour
     
     public OutlineController highlightOutline { get; protected set; } = null;
     public Rigidbody2D physicalRB { get; protected set; } = null;
-    [HideInInspector] public Vector2 controlPosition = Vector2.zero;
-    [HideInInspector] public float controlForce = 0.0f;
     public bool isHovered { get; private set; } = false;
     public bool isControlled { get; private set; } = false;
     public bool canControl { get; private set; } = false;
-    [SerializeField] public bool hasComponentHighlight => _hasComponentHighlight;
-    [SerializeField] public bool hasComponentPhysical => _hasComponentPhysical;
-    [SerializeField] public bool hasComponentControl => _hasComponentControl;
+    public bool hasComponentHighlight => _hasComponentHighlight;
+    public bool hasComponentPhysical => _hasComponentPhysical;
+    public bool hasComponentControl => _hasComponentControl;
+
+    public bool CanControl => canControl;
 
     protected List<Interaction> interactions = new List<Interaction>();
     protected GravityObject physicalGR = null;
+    protected Vector2 controlPosition = Vector2.zero;
+    protected float controlForce = 0.0f;
+    protected float controlAngle = 0.0f;
+
+
+    private void Awake()
+    {
+        DetectComponents();
+    }
 
 
     public List<Interaction> GetInteractions() => interactions;
 
     public Bounds GetHoverBounds() => cl.bounds;
+
+    public Vector2 GetPosition() => transform.position;
+
+    public void SetControlPosition(Vector3 pos, float force)
+    {
+        controlPosition = pos;
+        controlForce = force;
+    }
 
     public void SetHovered(bool isHovered)
     {
@@ -53,6 +70,8 @@ public class WorldObject : MonoBehaviour
         this.canControl = canControl;
     }
 
+    public void SetControlAngle(float controlAngle) => this.controlAngle = controlAngle;
+
     public bool SetControlled(bool isControlled)
     {
         if (!hasComponentControl) return false;
@@ -71,9 +90,14 @@ public class WorldObject : MonoBehaviour
     public void OnDrop() => SetControlled(false);
 
 
-    private void Awake()
+    [ContextMenu("Detect Components")]
+    private void DetectComponents()
     {
-        DetectComponents();
+        highlightOutline = gameObject.GetComponent<OutlineController>();
+        physicalRB = gameObject.GetComponent<Rigidbody2D>();
+        physicalGR = gameObject.GetComponent<GravityObject>();
+        if (highlightOutline) _hasComponentHighlight = true;
+        if (physicalRB && physicalGR) _hasComponentPhysical = true;
     }
 
     [ContextMenu("Init Highlight")]
@@ -105,16 +129,6 @@ public class WorldObject : MonoBehaviour
     protected void InitComponentControl()
     {
         _hasComponentControl = true;
-    }
-
-    [ContextMenu("Detect Components")]
-    private void DetectComponents()
-    {
-        highlightOutline = gameObject.GetComponent<OutlineController>();
-        physicalRB = gameObject.GetComponent<Rigidbody2D>();
-        physicalGR = gameObject.GetComponent<GravityObject>();
-        if (highlightOutline) _hasComponentHighlight = true;
-        if (physicalRB && physicalGR) _hasComponentPhysical = true;
     }
 
     [ContextMenu("Clear Components")]
@@ -152,11 +166,14 @@ public class WorldObject : MonoBehaviour
     
     private void FixedUpdateControl()
     {
-        // If controlled move towards target
         if (isControlled)
         {
+            // Move towards target
             Vector2 dir = controlPosition - (Vector2)physicalRB.transform.position;
             physicalRB.AddForce(dir * controlForce);
+
+            // Angle towards desired
+            physicalRB.AddTorque((physicalRB.transform.eulerAngles.y - controlAngle) * controlForce);
         }
     }
 }

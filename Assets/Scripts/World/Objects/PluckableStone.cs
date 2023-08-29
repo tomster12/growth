@@ -30,6 +30,10 @@ public class PluckableStone : WorldObject
     private void Update()
     {
         interactionPluck.Update();
+
+        float angle = 270.0f + (-45.0f + Mathf.Sin((Time.time / (2.0f * Mathf.PI)) * 0.5f) * 90.0f);
+        Debug.Log(angle);
+        SetControlAngle(angle);
     }
 
     private void OnPluck()

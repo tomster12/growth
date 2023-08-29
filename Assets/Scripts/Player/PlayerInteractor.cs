@@ -46,12 +46,11 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
 
     public float squeezeAmount { get; private set; }
 
-
     private LineHelper controlLimitLH;
     private LineHelper targetDirLH;
     private Vector2 hoverPos;
     private float hoverDistance;
-    private WorldObject targetWO;
+    private IInteractable targetIInteractable;
     private List<Interaction> targetInteractions;
     private int targetInteractionsEnabled => targetInteractions == null ? 0 : targetInteractions.Where(i => i.isEnabled).Count();
     private float targetDistance;
@@ -74,19 +73,28 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
 
     private void Start()
     {
-        Focus();
-
         // Move cursor to mouse pos immediately
         hoverPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         cursorContainer.position = new Vector2(hoverPos.x, hoverPos.y);
 
         // Hide centre indicator
         centreIndicator.gameObject.SetActive(false);
+
+        // Subscribe pause event
+        GameManager.instance.SubscribeOnIsPausedChange(OnGameManagerIsPausedChange);
     }
+
+
+    public void SetSqueezeAmount(float squeezeAmount) => this.squeezeAmount = squeezeAmount;
+
+    public void SetInteracting(bool isInteracting) => this.isInteracting = isInteracting;
+    
+    public void SetControlled(bool toControl) => SetTargetControlled(toControl);
 
 
     private void Update()
     {
+        if (GameManager.isPaused) return;
         HandleInput();
         UpdateHover();
         UpdateControlled();
@@ -98,9 +106,6 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         // Update cursor pos
         hoverPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         hoverDistance = (hoverPos - (Vector2)playerController.transform.position).magnitude;
-
-        // Focus on click window
-        if (Input.GetMouseButtonDown(0)) Focus();
     }
 
     private void UpdateHover()
@@ -108,7 +113,7 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         // Only retarget if not controlling or interacting
         if (!isControlling && !isInteracting)
         {
-            WorldObject newHoveredWO = null;
+            IInteractable hoveredIInteractable = null;
 
             // - Mouse close enough to hover new
             if (hoverDistance < maxHoverDistance)
@@ -117,18 +122,18 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
                 RaycastHit2D[] hits = Physics2D.RaycastAll(hoverPos, Vector2.zero);
                 foreach (RaycastHit2D hit in hits)
                 {
-                    WorldObject hitWO = hit.transform.GetComponent<WorldObject>();
-                    if (hitWO != null) { newHoveredWO = hitWO; break; }
+                    IInteractable hitIInteractable = hit.transform.GetComponent<IInteractable>();
+                    if (hitIInteractable != null) { hoveredIInteractable = hitIInteractable; break; }
                 }
             }
 
             // - Overwrite current hover
-            if (newHoveredWO != targetWO)
+            if (hoveredIInteractable != targetIInteractable)
             {
-                if (targetWO != null) targetWO.SetHovered(false);
-                targetWO = newHoveredWO;
-                if (targetWO != null) targetWO.SetHovered(true);
-                SetTargetInteractions(targetWO == null ? null : targetWO.GetInteractions());
+                if (targetIInteractable != null) targetIInteractable.SetHovered(false);
+                targetIInteractable = hoveredIInteractable;
+                if (targetIInteractable != null) targetIInteractable.SetHovered(true);
+                SetTargetInteractions(targetIInteractable == null ? null : targetIInteractable.GetInteractions());
             }
         }
     }
@@ -138,14 +143,13 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         // Currently controlling
         if (isControlling)
         {
-            targetDistance = (targetWO.physicalRB.position - (Vector2)playerController.transform.position).magnitude;
+            targetDistance = (targetIInteractable.GetPosition() - (Vector2)playerController.transform.position).magnitude;
             
             // - Set control position
             Vector2 hoverDir = hoverPos - (Vector2)playerController.transform.position;
             Vector2 limitedHoverDir = Vector2.ClampMagnitude(hoverDir, maxControlDistance);
             Vector2 limitedHoverPos = (Vector2)playerController.transform.position + limitedHoverDir;
-            targetWO.controlPosition = limitedHoverPos;
-            targetWO.controlForce = controlForce;
+            targetIInteractable.SetControlPosition(limitedHoverPos, controlForce);
 
             // - Mouse outside control length so show circle
             float outsidePct = Mathf.Min(1.0f - (maxControlDistance - hoverDir.magnitude) / controlWarningDistance, 1.0f);
@@ -173,7 +177,7 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
             controlLimitLH.SetActive(false);
 
             // - Not interacting, hovering and clicked so pickup object
-            if (!isInteracting && targetWO != null && targetWO.canControl && Input.GetMouseButtonDown(0)) SetTargetControlled(true);
+            if (!isInteracting && targetIInteractable != null && targetIInteractable.CanControl && Input.GetMouseButtonDown(0)) SetTargetControlled(true);
         }
     }
 
@@ -185,12 +189,12 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
             // - lUpdate leg variables
             playerLegs.isPointing = true;
             playerLegs.pointingLeg = 2;
-            playerLegs.pointingPos = targetWO.transform.position;
+            playerLegs.pointingPos = targetIInteractable.GetPosition();
 
             // - Draw line
             targetDirLH.SetActive(true);
             Vector2 pathStart = playerLegs.GetLegEnd(playerLegs.pointingLeg);
-            Vector2 pathEnd = targetWO.transform.position;
+            Vector2 pathEnd = targetIInteractable.GetPosition();
             Vector3 pathStartFixed = new Vector3(pathStart.x, pathStart.y, playerController.transform.position.z + 0.1f);
             Vector3 pathEndFixed = new Vector3(pathEnd.x, pathEnd.y, playerController.transform.position.z + 0.1f);
             Color col = isInteracting ? legDirInteractColor : legDirControlColor;
@@ -217,11 +221,13 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
     
     private void FixedUpdate()
     {
+        if (GameManager.isPaused) return;
         FixedUpdateCursor();
     }
 
     private void LateUpdate()
     {
+        if (GameManager.isPaused) return;
         LateUpdateCursor();
     }
 
@@ -231,7 +237,7 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         centreIndicator.gameObject.SetActive(isControlling);
 
         // Hovering / controlling so surround
-        if (targetWO != null)
+        if (targetIInteractable != null)
         {
             // - Controlling so set centre
             if (isControlling)
@@ -254,10 +260,10 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
     private void LateUpdateCursor()
     {
         // Hovering / controlling so surround
-        if (targetWO != null)
+        if (targetIInteractable != null)
         {
             // Calculate targets
-            Bounds b = targetWO.GetHoverBounds();
+            Bounds b = targetIInteractable.GetHoverBounds();
             Vector2 targetPos = b.center;
             float gap = isControlling ? cursorControlGap : (cursorHoverGap * (1.0f - squeezeAmount));
             Vector2 targetTLPos = new Vector2(b.center.x - b.extents.x - gap, b.center.y + b.extents.y + gap);
@@ -293,7 +299,7 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
             : (targetInteractionsEnabled > 0) ? cursorColorInteractable
             : (isControlling) ? cursorColorControl
             : (hoverDistance > maxHoverDistance) ? cursorColorFar
-            : (targetWO != null) ? cursorColoHover
+            : (targetIInteractable != null) ? cursorColoHover
             : cursorColorIdle;
 
         // Lerp colours
@@ -304,11 +310,6 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
 
         // Move prompt organiser
         promptOrganiser.transform.localPosition = Vector3.right * promptOffset;
-    }
-
-    private void Focus()
-    {
-        UnityEngine.Cursor.visible = false;
     }
 
     private void SetTargetInteractions(List<Interaction> targetInteractions)
@@ -333,16 +334,15 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
 
     private bool SetTargetControlled(bool toControl)
     {
-        if (targetWO == null || toControl == isControlling) return false;
+        if (targetIInteractable == null || toControl == isControlling) return false;
 
         // Try begin controlling (pickup)
         if (toControl)
         {
-            if (targetWO.SetControlled(true))
+            if (targetIInteractable.SetControlled(true))
             {
                 isControlling = true;
-                targetWO.controlPosition = targetWO.physicalRB.transform.position;
-                targetWO.controlForce = controlForce;
+                targetIInteractable.SetControlPosition(targetIInteractable.GetPosition(), controlForce);
                 return true;
             }
         }
@@ -350,7 +350,7 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         // Try stop controlling (drop)
         else
         {
-            if (targetWO.SetControlled(false))
+            if (targetIInteractable.SetControlled(false))
             {
                 isControlling = false;
                 return true;
@@ -361,9 +361,13 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         return false;
     }
 
-    public void SetSqueezeAmount(float squeezeAmount) => this.squeezeAmount = squeezeAmount;
-
-    public void SetInteracting(bool isInteracting) => this.isInteracting = isInteracting;
-    
-    public void SetControlled(bool toControl) => SetTargetControlled(toControl);
+    private void OnGameManagerIsPausedChange(bool isPaused)
+    {
+        cursorContainer.gameObject.SetActive(!isPaused);
+        if (!isPaused)
+        {
+            FixedUpdateCursor();
+            LateUpdateCursor();
+        }
+    }
 }

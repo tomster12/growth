@@ -80,6 +80,7 @@ public class PlayerController : MonoBehaviour, IFollowable
 
     private void Update()
     {
+        if (GameManager.isPaused) return;
         HandleInput();
     }
 
@@ -101,6 +102,8 @@ public class PlayerController : MonoBehaviour, IFollowable
 
     private void FixedUpdate()
     {
+        if (GameManager.isPaused) return;
+        
         // Calculate closest world and ground position
         World.GetClosestWorld(characterRB.transform.position, out Vector2 closestGroundPosition);
         groundPosition = closestGroundPosition;
