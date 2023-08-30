@@ -5,6 +5,7 @@ using UnityEngine;
 public class LineHelper : MonoBehaviour
 {
     public enum LineMode { NONE, LINE, CIRCLE }
+    
     public enum LineFill { NONE, SOLID, DOTTED }
 
 
@@ -13,22 +14,14 @@ public class LineHelper : MonoBehaviour
     [SerializeField] private Material materialDottedPfb;
     [SerializeField] private Material materialSolidPfb;
 
-    public LineMode lineMode { get; private set; } = LineMode.NONE;
-    public LineFill lineFill { get; private set; } = LineFill.NONE;
+    public LineMode CurrentLineMode { get; private set; } = LineMode.NONE;
+    public LineFill CurrentLineFill { get; private set; } = LineFill.NONE;
     public float repeatMult = 0.8f;
 
     private Material materialDotted;
     private Material materialSolid;
     private LineRenderer lineRenderer;
 
-
-    private void Start()
-    {
-        // Initialize variables
-        materialDotted = Instantiate(materialDottedPfb);
-        materialSolid = Instantiate(materialSolidPfb);
-        lineRenderer = gameObject.AddComponent<LineRenderer>();
-    }
 
 
     public void DrawCircle(Vector3 centre, float radius, Color color, LineFill lineFill = LineFill.SOLID)
@@ -49,7 +42,7 @@ public class LineHelper : MonoBehaviour
         }
 
         // Set repeats
-        if (this.lineFill == LineFill.DOTTED)
+        if (this.CurrentLineFill == LineFill.DOTTED)
         {
             float length = 2 * radius * Mathf.PI;
             materialDotted.SetFloat("_Rep", length * repeatMult);
@@ -70,7 +63,7 @@ public class LineHelper : MonoBehaviour
         lineRenderer.SetPosition(1, to);
 
         // Set repeats
-        if (this.lineFill == LineFill.DOTTED)
+        if (this.CurrentLineFill == LineFill.DOTTED)
         {
             float length = (to - from).magnitude;
             materialDotted.SetFloat("_Rep", length * repeatMult);
@@ -80,17 +73,25 @@ public class LineHelper : MonoBehaviour
     public void SetActive(bool isActive) => lineRenderer.enabled = isActive;
 
 
+    private void Start()
+    {
+        // Initialize variables
+        materialDotted = Instantiate(materialDottedPfb);
+        materialSolid = Instantiate(materialSolidPfb);
+        lineRenderer = gameObject.AddComponent<LineRenderer>();
+    }
+
     private void SetMode(LineMode lineMode, float width=0.1f)
     {
-        if (this.lineMode == lineMode) return;
-        this.lineMode = lineMode;
+        if (this.CurrentLineMode == lineMode) return;
+        this.CurrentLineMode = lineMode;
 
         // Mode specific initialization
-        if (this.lineMode == LineMode.CIRCLE)
+        if (this.CurrentLineMode == LineMode.CIRCLE)
         {
             lineRenderer.positionCount = circleVertexCount + 1;
         }
-        else if (this.lineMode == LineMode.LINE)
+        else if (this.CurrentLineMode == LineMode.LINE)
         {
             lineRenderer.positionCount = 2;
         }
@@ -102,15 +103,15 @@ public class LineHelper : MonoBehaviour
 
     private void SetFill(LineFill lineFill)
     {
-        if (this.lineFill == lineFill) return;
-        this.lineFill = lineFill;
+        if (this.CurrentLineFill == lineFill) return;
+        this.CurrentLineFill = lineFill;
 
         // Mode specific initialization
-        if (this.lineFill == LineFill.SOLID)
+        if (this.CurrentLineFill == LineFill.SOLID)
         {
             lineRenderer.material = materialSolid;
         }
-        else if (this.lineFill == LineFill.DOTTED)
+        else if (this.CurrentLineFill == LineFill.DOTTED)
         {
             lineRenderer.material = materialDotted;
         }

@@ -71,10 +71,10 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
     [SerializeField] private int seedMaxTries = 50;
     [SerializeField] private bool clearInternal = true;
 
-    public MeshSite[] meshSites { get; private set; }
-    public Mesh mesh { get; private set; }
-    public bool isGenerated { get; private set; } = false;
-    public bool IsGenerated() => isGenerated;
+    public MeshSite[] MeshSites { get; private set; }
+    public bool IsGenerated { get; private set; } = false;
+    public string Name => "Voronoi Mesh";
+    public Mesh Mesh { get; private set; }
 
     private Vector2[] _voronoiSeedSites;
     private VoronoiCalculator _voronoiCalculator;
@@ -87,7 +87,7 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
     {
         ClearInternal();
         ClearOutput();
-        isGenerated = false;
+        IsGenerated = false;
     }
 
     public void ClearInternal()
@@ -103,9 +103,9 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
     public void ClearOutput()
     {
         // Clear external variables
-        if (mesh != null) mesh.Clear();
-        meshSites = null;
-        mesh = null;
+        Mesh?.Clear();
+        MeshSites = null;
+        Mesh = null;
     }
 
     public void SafeGenerate(MeshFilter meshFilter, PolygonCollider2D outsidePolygon, int seedCount, float seedMinDistance)
@@ -152,10 +152,8 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
         Step_GenerateMeshAndSites();
         Step_ProcessSites();
         if (clearInternal) ClearInternal();
-        isGenerated = true;
+        IsGenerated = true;
     }
-
-    public string GetName() => "Voronoi Mesh";
 
 
     private void Step_GenerateSeeds()
@@ -234,8 +232,7 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
     private void Step_GenerateMeshAndSites()
     {
         // Setup all mesh data variables
-        mesh = new Mesh();
-        meshSites = new MeshSite[_voronoiClipper.clippedSites.Count];
+        MeshSites = new MeshSite[_voronoiClipper.clippedSites.Count];
         List<Vector3> vertices = new List<Vector3>();
         List<Vector3> normals = new List<Vector3>();
         List<Vector2> uvs = new List<Vector2>();
@@ -255,14 +252,16 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
             uvs.Add(new Vector3(Utility.DistanceToPoints(centroidLocal, polygonPoints), centroidAngle, 0));
 
             // Generate MeshSite
-            MeshSite meshSite = new MeshSite();
-            meshSite.siteIndex = i;
-            meshSite.vertices = new MeshSiteVertex[clippedSite.clippedVertices.Count];
-            meshSite.edges = new MeshSiteEdge[clippedSite.clippedVertices.Count];
-            meshSite.meshVerticesI = new int[clippedSite.clippedVertices.Count];
-            meshSite.meshCentroidI = centroidVertexI;
-            meshSite.neighbouringSites = new HashSet<int>();
-            meshSites[i] = meshSite;
+            MeshSite meshSite = new MeshSite
+            {
+                siteIndex = i,
+                vertices = new MeshSiteVertex[clippedSite.clippedVertices.Count],
+                edges = new MeshSiteEdge[clippedSite.clippedVertices.Count],
+                meshVerticesI = new int[clippedSite.clippedVertices.Count],
+                meshCentroidI = centroidVertexI,
+                neighbouringSites = new HashSet<int>()
+            };
+            MeshSites[i] = meshSite;
 
             // Add vertices vertex / uv / normal / color
             for (int o = 0; o < clippedSite.clippedVertices.Count; o++)
@@ -290,28 +289,31 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
         }
 
         // Assign mesh variables
-        mesh.vertices = vertices.ToArray();
-        mesh.normals = normals.ToArray();
-        mesh.uv = uvs.ToArray();
-        mesh.triangles = triangles.ToArray();
-        meshFilter.mesh = mesh;
+        Mesh = new Mesh
+        {
+            vertices = vertices.ToArray(),
+            normals = normals.ToArray(),
+            uv = uvs.ToArray(),
+            triangles = triangles.ToArray()
+        };
+        meshFilter.mesh = Mesh;
     }
 
     private void Step_ProcessSites()
     {
         // Add neighbours using delauney
-        Func<int, int, bool> addNeighbours = (s0, s1) =>
+        bool addNeighbours(int s0, int s1)
         {
-            meshSites[s0].neighbouringSites.Add(s1);
-            meshSites[s1].neighbouringSites.Add(s0);
+            MeshSites[s0].neighbouringSites.Add(s1);
+            MeshSites[s1].neighbouringSites.Add(s0);
             return true;
-        };
-        var tris = _voronoiDiagram.Triangulation.Triangles;
+        }
+        List<int> tris = _voronoiDiagram.Triangulation.Triangles;
         for (int ti = 0; ti < tris.Count; ti += 3)
         {
-            var v0 = tris[ti];
-            var v1 = tris[ti + 1];
-            var v2 = tris[ti + 2];
+            int v0 = tris[ti];
+            int v1 = tris[ti + 1];
+            int v2 = tris[ti + 2];
             addNeighbours(v0, v1);
             addNeighbours(v1, v2);
             addNeighbours(v2, v0);
@@ -319,7 +321,7 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
 
         // Populate each sites edge infos
         HashSet<MeshSiteEdge> surfaceEdges = new HashSet<MeshSiteEdge>();
-        foreach (MeshSite meshSite in meshSites)
+        foreach (MeshSite meshSite in MeshSites)
         {
             for (int i = 0; i < meshSite.vertices.Length; i++)
             {
@@ -343,7 +345,7 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
                 if (!edge.isOutside)
                 {
                     // - Loop over each other sites edges
-                    foreach (MeshSite oMeshSite in meshSites)
+                    foreach (MeshSite oMeshSite in MeshSites)
                     {
                         if (meshSite == oMeshSite) continue;
                         bool hasFound = false;
@@ -441,7 +443,7 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
                 Gizmos.DrawSphere(siteWorld, 0.05f);
 
                 // Find first / last edge of site
-                int firstEdge = firstEdge = _voronoiDiagram.FirstEdgeBySite[i];
+                int firstEdge = _voronoiDiagram.FirstEdgeBySite[i];
                 int lastEdge;
                 if (i == _voronoiDiagram.Sites.Count - 1) lastEdge = _voronoiDiagram.Edges.Count - 1;
                 else lastEdge = _voronoiDiagram.FirstEdgeBySite[i + 1] - 1;
@@ -500,11 +502,11 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
         }
     
         // Draw mesh sites
-        if (showGizmoMesh && meshSites != null)
+        if (showGizmoMesh && MeshSites != null)
         {
-            foreach (MeshSite meshSite in meshSites)
+            foreach (MeshSite meshSite in MeshSites)
             {
-                Vector2 centroidWorld = transform.TransformPoint(mesh.vertices[meshSite.meshCentroidI]);
+                Vector2 centroidWorld = transform.TransformPoint(Mesh.vertices[meshSite.meshCentroidI]);
                 Gizmos.color = Color.red;
                 Gizmos.DrawSphere(centroidWorld, 0.1f);
 
@@ -513,8 +515,8 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
                 {
                     if (edge.isOutside)
                     {
-                        Vector2 edge0World = transform.TransformPoint(mesh.vertices[meshSites[edge.siteIndex].meshVerticesI[edge.siteFromVertexI]]);
-                        Vector2 edge1World = transform.TransformPoint(mesh.vertices[meshSites[edge.siteIndex].meshVerticesI[edge.siteToVertexI]]);
+                        Vector2 edge0World = transform.TransformPoint(Mesh.vertices[MeshSites[edge.siteIndex].meshVerticesI[edge.siteFromVertexI]]);
+                        Vector2 edge1World = transform.TransformPoint(Mesh.vertices[MeshSites[edge.siteIndex].meshVerticesI[edge.siteToVertexI]]);
                         Gizmos.DrawCube((edge0World + edge1World) / 2, Vector3.one * 0.1f);
                     }
                 }

@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Runtime.InteropServices;
+
 
 public class PlayerInteractor : MonoBehaviour, IInteractor
 {
@@ -44,18 +44,25 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
     [SerializeField] private Color legDirInteractColor = new Color(1.0f, 1.0f, 1.0f, 0.25f);
     [SerializeField] private float promptOffset = 1.0f;
 
-    public float squeezeAmount { get; private set; }
+    public float SqueezeAmount { get; private set; }
+    private int AreTargetInteractionsEnabled => targetInteractions == null ? 0 : targetInteractions.Where(i => i.IsEnabled).Count();
 
     private LineHelper controlLimitLH;
     private LineHelper targetDirLH;
     private Vector2 hoverPos;
     private float hoverDistance;
-    private IInteractable targetIInteractable;
+    private IRichObject targetIInteractable;
     private List<Interaction> targetInteractions;
-    private int targetInteractionsEnabled => targetInteractions == null ? 0 : targetInteractions.Where(i => i.isEnabled).Count();
     private float targetDistance;
     private bool isControlling;
     private bool isInteracting;
+
+
+    public void SetSqueezeAmount(float squeezeAmount) => this.SqueezeAmount = squeezeAmount;
+
+    public void SetInteracting(bool isInteracting) => this.isInteracting = isInteracting;
+    
+    public void SetControlled(bool toControl) => SetTargetControlled(toControl);
 
 
     private void Awake()
@@ -81,20 +88,12 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         centreIndicator.gameObject.SetActive(false);
 
         // Subscribe pause event
-        GameManager.instance.SubscribeOnIsPausedChange(OnGameManagerIsPausedChange);
+        GameManager.Instance.SubscribeOnIsPausedChange(OnGameManagerIsPausedChange);
     }
-
-
-    public void SetSqueezeAmount(float squeezeAmount) => this.squeezeAmount = squeezeAmount;
-
-    public void SetInteracting(bool isInteracting) => this.isInteracting = isInteracting;
-    
-    public void SetControlled(bool toControl) => SetTargetControlled(toControl);
-
 
     private void Update()
     {
-        if (GameManager.isPaused) return;
+        if (GameManager.IsPaused) return;
         HandleInput();
         UpdateHover();
         UpdateControlled();
@@ -105,7 +104,7 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
     {
         // Update cursor pos
         hoverPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        hoverDistance = (hoverPos - (Vector2)playerController.transform.position).magnitude;
+        hoverDistance = (hoverPos - (Vector2)playerController.Transform.position).magnitude;
     }
 
     private void UpdateHover()
@@ -113,7 +112,7 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         // Only retarget if not controlling or interacting
         if (!isControlling && !isInteracting)
         {
-            IInteractable hoveredIInteractable = null;
+            IRichObject hoveredIInteractable = null;
 
             // - Mouse close enough to hover new
             if (hoverDistance < maxHoverDistance)
@@ -122,7 +121,7 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
                 RaycastHit2D[] hits = Physics2D.RaycastAll(hoverPos, Vector2.zero);
                 foreach (RaycastHit2D hit in hits)
                 {
-                    IInteractable hitIInteractable = hit.transform.GetComponent<IInteractable>();
+                    IRichObject hitIInteractable = hit.transform.GetComponent<IRichObject>();
                     if (hitIInteractable != null) { hoveredIInteractable = hitIInteractable; break; }
                 }
             }
@@ -130,10 +129,10 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
             // - Overwrite current hover
             if (hoveredIInteractable != targetIInteractable)
             {
-                if (targetIInteractable != null) targetIInteractable.SetHovered(false);
+                targetIInteractable?.SetHovered(false);
                 targetIInteractable = hoveredIInteractable;
-                if (targetIInteractable != null) targetIInteractable.SetHovered(true);
-                SetTargetInteractions(targetIInteractable == null ? null : targetIInteractable.GetInteractions());
+                targetIInteractable?.SetHovered(true);
+                SetTargetInteractions(targetIInteractable?.GetInteractions());
             }
         }
     }
@@ -143,12 +142,12 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         // Currently controlling
         if (isControlling)
         {
-            targetDistance = (targetIInteractable.GetPosition() - (Vector2)playerController.transform.position).magnitude;
+            targetDistance = (targetIInteractable.GetPosition() - (Vector2)playerController.Transform.position).magnitude;
             
             // - Set control position
-            Vector2 hoverDir = hoverPos - (Vector2)playerController.transform.position;
+            Vector2 hoverDir = hoverPos - (Vector2)playerController.Transform.position;
             Vector2 limitedHoverDir = Vector2.ClampMagnitude(hoverDir, maxControlDistance);
-            Vector2 limitedHoverPos = (Vector2)playerController.transform.position + limitedHoverDir;
+            Vector2 limitedHoverPos = (Vector2)playerController.Transform.position + limitedHoverDir;
             targetIInteractable.SetControlPosition(limitedHoverPos, controlForce);
 
             // - Mouse outside control length so show circle
@@ -159,7 +158,7 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
                 Color lerpColor;
                 if (outsidePct < 1.0f) lerpColor = new Color(controlWarningColor.r, controlWarningColor.g, controlWarningColor.b, controlWarningColor.a * outsidePct);
                 else lerpColor = controlOutsideColor;
-                controlLimitLH.DrawCircle(playerController.transform.position, maxControlDistance, lerpColor, LineHelper.LineFill.DOTTED);
+                controlLimitLH.DrawCircle(playerController.Transform.position, maxControlDistance, lerpColor, LineHelper.LineFill.DOTTED);
             }
             else
             {
@@ -187,16 +186,16 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         if (isInteracting || isControlling)
         {
             // - lUpdate leg variables
-            playerLegs.isPointing = true;
-            playerLegs.pointingLeg = 2;
-            playerLegs.pointingPos = targetIInteractable.GetPosition();
+            playerLegs.IsPointing = true;
+            playerLegs.PointingLeg = 2;
+            playerLegs.PointingPos = targetIInteractable.GetPosition();
 
             // - Draw line
             targetDirLH.SetActive(true);
-            Vector2 pathStart = playerLegs.GetLegEnd(playerLegs.pointingLeg);
+            Vector2 pathStart = playerLegs.GetLegEnd(playerLegs.PointingLeg);
             Vector2 pathEnd = targetIInteractable.GetPosition();
-            Vector3 pathStartFixed = new Vector3(pathStart.x, pathStart.y, playerController.transform.position.z + 0.1f);
-            Vector3 pathEndFixed = new Vector3(pathEnd.x, pathEnd.y, playerController.transform.position.z + 0.1f);
+            Vector3 pathStartFixed = new Vector3(pathStart.x, pathStart.y, playerController.Transform.position.z + 0.1f);
+            Vector3 pathEndFixed = new Vector3(pathEnd.x, pathEnd.y, playerController.Transform.position.z + 0.1f);
             Color col = isInteracting ? legDirInteractColor : legDirControlColor;
             if (isControlling) col.a *= 0.1f + 0.9f * Mathf.Max(1.0f - targetDistance / maxControlDistance, 0.0f);
             targetDirLH.DrawLine(pathStartFixed, pathEndFixed, col, LineHelper.LineFill.SOLID);
@@ -205,12 +204,12 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         // Do not point legs
         else
         {
-            playerLegs.isPointing = false;
+            playerLegs.IsPointing = false;
             targetDirLH.SetActive(false);
         }
 
         // Update slowdown
-        playerController.movementSlowdown = isInteracting ? interactSlowdown : isControlling ? controlSlowdown : 0.0f;
+        playerController.MovementSlowdown = isInteracting ? interactSlowdown : isControlling ? controlSlowdown : 0.0f;
 
         // Update interactions
         if (targetInteractions != null)
@@ -221,13 +220,13 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
     
     private void FixedUpdate()
     {
-        if (GameManager.isPaused) return;
+        if (GameManager.IsPaused) return;
         FixedUpdateCursor();
     }
 
     private void LateUpdate()
     {
-        if (GameManager.isPaused) return;
+        if (GameManager.IsPaused) return;
         LateUpdateCursor();
     }
 
@@ -265,7 +264,7 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
             // Calculate targets
             Bounds b = targetIInteractable.GetHoverBounds();
             Vector2 targetPos = b.center;
-            float gap = isControlling ? cursorControlGap : (cursorHoverGap * (1.0f - squeezeAmount));
+            float gap = isControlling ? cursorControlGap : (cursorHoverGap * (1.0f - SqueezeAmount));
             Vector2 targetTLPos = new Vector2(b.center.x - b.extents.x - gap, b.center.y + b.extents.y + gap);
             Vector2 targetTRPos = new Vector2(b.center.x + b.extents.x + gap, b.center.y + b.extents.y + gap);
             Vector2 targetBLPos = new Vector2(b.center.x - b.extents.x - gap, b.center.y - b.extents.y - gap);
@@ -296,7 +295,7 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         // Calculate correct color
         Color cursorColor =
             (isInteracting) ? cursorColorInteracting
-            : (targetInteractionsEnabled > 0) ? cursorColorInteractable
+            : (AreTargetInteractionsEnabled > 0) ? cursorColorInteractable
             : (isControlling) ? cursorColorControl
             : (hoverDistance > maxHoverDistance) ? cursorColorFar
             : (targetIInteractable != null) ? cursorColoHover

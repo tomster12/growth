@@ -74,18 +74,18 @@ public class WorldGenerator : MonoBehaviour, IGenerator
     [SerializeField] private float atmosphereSizeMax = 200.0f;
     [SerializeField] private float gravityForce = 10.0f;
     
-    public Mesh mesh { get; private set; }
-    public List<WorldSite> sites { get; private set; }
-    public List<WorldSurfaceEdge> surfaceEdges { get; private set; }
-    public Transform worldTransform => outsidePolygon.transform;
-    public bool isGenerated { get; private set; } = false;
-    public Transform backDecorContainer => _backDecorContainer;
-    public Transform backgroundContainer => _backgroundContainer;
-    public Transform foregroundContainer => _foregroundContainer;
-    public Transform terrainContainer => _terrainContainer;
-    public Transform frontDecorContainer => _frontDecorContainer;
-    public bool IsGenerated() => isGenerated;
-    public bool IsComposite() => true;
+    public Mesh Mesh { get; private set; }
+    public List<WorldSite> Sites { get; private set; }
+    public List<WorldSurfaceEdge> SurfaceEdges { get; private set; }
+    public Transform WorldTransform => outsidePolygon.transform;
+    public Transform BackDecorContainer => _backDecorContainer;
+    public Transform BackgroundContainer => _backgroundContainer;
+    public Transform ForegroundContainer => _foregroundContainer;
+    public Transform TerrainContainer => _terrainContainer;
+    public Transform FrontDecorContainer => _frontDecorContainer;
+    public bool IsGenerated { get; private set; } = false;
+    public bool IsComposite => true;
+    public string Name => "World Composite";
 
     private SpriteRenderer atmosphere;
 
@@ -94,7 +94,7 @@ public class WorldGenerator : MonoBehaviour, IGenerator
     {
         ClearContainers();
         ClearOutput();
-        isGenerated = false;
+        IsGenerated = false;
     }
 
     public void SafeGenerate()
@@ -134,39 +134,37 @@ public class WorldGenerator : MonoBehaviour, IGenerator
         Step_InitializeComponents();
         Step_GenerateBiome();
 
-        isGenerated = true;
+        IsGenerated = true;
     }
-
-    public string GetName() => "World Composite";
 
     public IGenerator[] GetCompositeIGenerators() => new IGenerator[] { planetPolygonGenerator, meshGenerator, biomeGenerator };
 
 
     private void ClearContainers()
     {
-        for (int i = backDecorContainer.childCount - 1; i >= 0; i--)
+        for (int i = BackDecorContainer.childCount - 1; i >= 0; i--)
         {
-            GameObject child = backDecorContainer.GetChild(i).gameObject;
+            GameObject child = BackDecorContainer.GetChild(i).gameObject;
             if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
         }
-        for (int i = backgroundContainer.childCount - 1; i >= 0; i--)
+        for (int i = BackgroundContainer.childCount - 1; i >= 0; i--)
         {
-            GameObject child = backgroundContainer.GetChild(i).gameObject;
+            GameObject child = BackgroundContainer.GetChild(i).gameObject;
             if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
         }
-        for (int i = foregroundContainer.childCount - 1; i >= 0; i--)
+        for (int i = ForegroundContainer.childCount - 1; i >= 0; i--)
         {
-            GameObject child = foregroundContainer.GetChild(i).gameObject;
+            GameObject child = ForegroundContainer.GetChild(i).gameObject;
             if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
         }
-        for (int i = terrainContainer.childCount - 1; i >= 0; i--)
+        for (int i = TerrainContainer.childCount - 1; i >= 0; i--)
         {
-            GameObject child = terrainContainer.GetChild(i).gameObject;
+            GameObject child = TerrainContainer.GetChild(i).gameObject;
             if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
         }
-        for (int i = frontDecorContainer.childCount - 1; i >= 0; i--)
+        for (int i = FrontDecorContainer.childCount - 1; i >= 0; i--)
         {
-            GameObject child = frontDecorContainer.GetChild(i).gameObject;
+            GameObject child = FrontDecorContainer.GetChild(i).gameObject;
             if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
         }
     }
@@ -179,10 +177,10 @@ public class WorldGenerator : MonoBehaviour, IGenerator
         biomeGenerator.Clear();
 
         // Reset main variables
-        mesh = null;
-        sites = null;
-        surfaceEdges = null;
-        if (atmosphere == null) atmosphere = worldTransform.Find("Atmosphere")?.GetComponent<SpriteRenderer>();
+        Mesh = null;
+        Sites = null;
+        SurfaceEdges = null;
+        if (atmosphere == null) atmosphere = WorldTransform.Find("Atmosphere")?.GetComponent<SpriteRenderer>();
         if (atmosphere != null) DestroyImmediate(atmosphere.gameObject);
 
         // Cleanup afterwards
@@ -191,16 +189,16 @@ public class WorldGenerator : MonoBehaviour, IGenerator
 
     private void Step_SetContainers()
     {
-        Assert.AreEqual(backDecorContainer.transform.childCount, 0);
-        Assert.AreEqual(backgroundContainer.transform.childCount, 0);
-        Assert.AreEqual(foregroundContainer.transform.childCount, 0);
-        Assert.AreEqual(terrainContainer.transform.childCount, 0);
-        Assert.AreEqual(frontDecorContainer.transform.childCount, 0);
-        Layers.SetLayer(backDecorContainer, Layer.BACK_DECOR);
-        Layers.SetLayer(backgroundContainer, Layer.BACKGROUND);
-        Layers.SetLayer(foregroundContainer, Layer.FOREGROUND);
-        Layers.SetLayer(terrainContainer, Layer.TERRAIN);
-        Layers.SetLayer(frontDecorContainer, Layer.FRONT_DECOR);
+        Assert.AreEqual(BackDecorContainer.transform.childCount, 0);
+        Assert.AreEqual(BackgroundContainer.transform.childCount, 0);
+        Assert.AreEqual(ForegroundContainer.transform.childCount, 0);
+        Assert.AreEqual(TerrainContainer.transform.childCount, 0);
+        Assert.AreEqual(FrontDecorContainer.transform.childCount, 0);
+        Layers.SetLayer(BackDecorContainer, Layer.BACK_DECOR);
+        Layers.SetLayer(BackgroundContainer, Layer.BACKGROUND);
+        Layers.SetLayer(ForegroundContainer, Layer.FOREGROUND);
+        Layers.SetLayer(TerrainContainer, Layer.TERRAIN);
+        Layers.SetLayer(FrontDecorContainer, Layer.FRONT_DECOR);
     }
 
     private void Step_GenerateMesh()
@@ -210,7 +208,7 @@ public class WorldGenerator : MonoBehaviour, IGenerator
 
         // Generate mesh
         meshGenerator.Generate();
-        mesh = meshGenerator.mesh;
+        Mesh = meshGenerator.Mesh;
 
         // Instantiate ground material
         float noiseScale = planetPolygonGenerator.GetSurfaceRange()[0] / 30.0f;
@@ -219,15 +217,15 @@ public class WorldGenerator : MonoBehaviour, IGenerator
         meshRenderer.sharedMaterial.SetFloat("_NoiseScale", noiseScale);
         
         // Generate world sites
-        sites = new List<WorldSite>();
-        foreach (MeshSite meshSite in meshGenerator.meshSites) sites.Add(new WorldSite(world, meshSite));
+        Sites = new List<WorldSite>();
+        foreach (MeshSite meshSite in meshGenerator.MeshSites) Sites.Add(new WorldSite(world, meshSite));
     }
 
     private void Step_CalculateOutsideEdges()
     {
         // Calculate external edges
         HashSet<WorldSurfaceEdge> surfaceEdgesUnordered = new HashSet<WorldSurfaceEdge>();
-        foreach (WorldSite worldSite in sites)
+        foreach (WorldSite worldSite in Sites)
         {
             if (worldSite.meshSite.isOutside)
             {
@@ -235,9 +233,11 @@ public class WorldGenerator : MonoBehaviour, IGenerator
                 {
                     if (edge.isOutside)
                     {
-                        WorldSurfaceEdge WorldSurfaceEdge = new WorldSurfaceEdge(worldSite, edge);
-                        WorldSurfaceEdge.a = transform.TransformPoint(mesh.vertices[worldSite.meshSite.meshVerticesI[edge.siteToVertexI]]);
-                        WorldSurfaceEdge.b = transform.TransformPoint(mesh.vertices[worldSite.meshSite.meshVerticesI[edge.siteFromVertexI]]);
+                        WorldSurfaceEdge WorldSurfaceEdge = new WorldSurfaceEdge(worldSite, edge)
+                        {
+                            a = transform.TransformPoint(Mesh.vertices[worldSite.meshSite.meshVerticesI[edge.siteToVertexI]]),
+                            b = transform.TransformPoint(Mesh.vertices[worldSite.meshSite.meshVerticesI[edge.siteFromVertexI]])
+                        };
                         WorldSurfaceEdge.length = Vector3.Distance(WorldSurfaceEdge.a, WorldSurfaceEdge.b);
                         surfaceEdgesUnordered.Add(WorldSurfaceEdge);
                     }
@@ -246,33 +246,33 @@ public class WorldGenerator : MonoBehaviour, IGenerator
         }
 
         // - Grab random first edge from unordered
-        surfaceEdges = new List<WorldSurfaceEdge>();
+        SurfaceEdges = new List<WorldSurfaceEdge>();
         WorldSurfaceEdge first = surfaceEdgesUnordered.First();
-        surfaceEdges.Add(first);
+        SurfaceEdges.Add(first);
         surfaceEdgesUnordered.Remove(first);
 
         // - While sites left unordered
         while (surfaceEdgesUnordered.Count > 0)
         {
-            WorldSurfaceEdge current = surfaceEdges.Last();
-            MeshSite currentSite = sites[current.meshSiteEdge.siteIndex].meshSite;
+            WorldSurfaceEdge current = SurfaceEdges.Last();
+            MeshSite currentSite = Sites[current.meshSiteEdge.siteIndex].meshSite;
             WorldSurfaceEdge picked = null;
             
             // - Find first edge that matches in either direction
             foreach (WorldSurfaceEdge checkEdge in surfaceEdgesUnordered)
             {
-                MeshSite checkSite = sites[checkEdge.meshSiteEdge.siteIndex].meshSite;
+                MeshSite checkSite = Sites[checkEdge.meshSiteEdge.siteIndex].meshSite;
                 MeshSiteVertex toVertex = currentSite.vertices[current.meshSiteEdge.siteToVertexI];
                 MeshSiteVertex fromVertex = checkSite.vertices[checkEdge.meshSiteEdge.siteFromVertexI];
                 if (toVertex.vertexUID == fromVertex.vertexUID) { picked = checkEdge; break; }
             }
             if (picked == null)
             {
-                throw new Exception("Could not find next edge for site " + current.meshSiteEdge.siteIndex + " vertex " + current.meshSiteEdge.siteFromVertexI + " to " + current.meshSiteEdge.siteToVertexI + ", " + surfaceEdges.Count + " edges left");
+                throw new Exception("Could not find next edge for site " + current.meshSiteEdge.siteIndex + " vertex " + current.meshSiteEdge.siteFromVertexI + " to " + current.meshSiteEdge.siteToVertexI + ", " + SurfaceEdges.Count + " edges left");
             }
 
             // - Add to ordered
-            surfaceEdges.Add(picked);
+            SurfaceEdges.Add(picked);
             surfaceEdgesUnordered.Remove(picked);
         }
     }
@@ -284,7 +284,7 @@ public class WorldGenerator : MonoBehaviour, IGenerator
         Stack<int> openSet = new Stack<int>();
 
         // - Set edge site to distance 0 and add to open
-        foreach (WorldSite worldSite in sites)
+        foreach (WorldSite worldSite in Sites)
         {
             if (worldSite.meshSite.isOutside)
             {
@@ -297,13 +297,13 @@ public class WorldGenerator : MonoBehaviour, IGenerator
         while (openSet.Count > 0)
         {
             int currentSiteIndex = openSet.Pop();
-            var currentSite = sites[currentSiteIndex];
+            var currentSite = Sites[currentSiteIndex];
             if (closedSet.Contains(currentSiteIndex)) continue;
 
             // - Check each valid neighbour
             foreach (var neighbourSiteIndex in currentSite.meshSite.neighbouringSites)
             {
-                var neighbourSite = sites[neighbourSiteIndex];
+                var neighbourSite = Sites[neighbourSiteIndex];
                 if (!closedSet.Contains(neighbourSiteIndex))
                 {
                     // - If this is better parent then update and add to open
@@ -324,16 +324,16 @@ public class WorldGenerator : MonoBehaviour, IGenerator
         GameObject atmosphereGO = Instantiate(atmospherePfb);
         atmosphere = atmosphereGO.GetComponent<SpriteRenderer>();
         atmosphere.gameObject.name = "Atmosphere";
-        atmosphere.transform.parent = worldTransform;
+        atmosphere.transform.parent = WorldTransform;
         atmosphere.transform.localPosition = Vector3.zero;
 
         // Set global scale
         float targetScale = atmosphereSizeMax * 2.0f;
         atmosphere.transform.localScale = Vector3.one;
         atmosphere.transform.localScale = new Vector3(
-            targetScale / worldTransform.lossyScale.x,
-            targetScale / worldTransform.lossyScale.y,
-            targetScale / worldTransform.lossyScale.z
+            targetScale / WorldTransform.lossyScale.x,
+            targetScale / WorldTransform.lossyScale.y,
+            targetScale / WorldTransform.lossyScale.z
         );
 
         // Set shader material and shader min and max

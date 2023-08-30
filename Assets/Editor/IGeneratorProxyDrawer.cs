@@ -2,10 +2,9 @@
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.UIElements;
-using System.Reflection;
-using System.Text.RegularExpressions;
 using UnityEditor.UIElements;
 using System.Collections;
+
 
 [CustomPropertyDrawer(typeof(IGeneratorProxy))]
 public class IGeneratorProxyDrawer : PropertyDrawer
@@ -18,10 +17,10 @@ public class IGeneratorProxyDrawer : PropertyDrawer
     {
         VisualElement inspector = new VisualElement();
 
-        IGeneratorProxy proxy = GetIGeneratorProxy(property);
+        IGeneratorProxy proxy = IGeneratorProxy(property);
         if (proxy == null || proxy.IGenerator == null) return inspector;
 
-        if (proxy.IsComposite())
+        if (proxy.CheckIsComposite())
         {
             if (compositeXuml == null) compositeXuml = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/Editor/IGeneratorProxyCompositeDrawerXUML.uxml");
             if (compositeXuml == null) return inspector;
@@ -35,7 +34,7 @@ public class IGeneratorProxyDrawer : PropertyDrawer
         }
 
         Label labelName = inspector.Q<Label>("LabelName");
-        labelName.text = proxy.GetName();
+        labelName.text = proxy.CheckName();
         
         PropertyField indicator = inspector.Q<PropertyField>("Indicator");
         indicator.SetEnabled(false);
@@ -53,7 +52,7 @@ public class IGeneratorProxyDrawer : PropertyDrawer
     }
 
 
-    private IGeneratorProxy GetIGeneratorProxy(SerializedProperty property)
+    private IGeneratorProxy IGeneratorProxy(SerializedProperty property)
     {
         var split = property.propertyPath.Split(".");
         object currentObject = property.serializedObject.targetObject;

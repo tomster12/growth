@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.Assertions;
 
+
 public class WorldBiomeGenerator : MonoBehaviour, IGenerator
 {
     private class BiomeGenEdge
@@ -16,7 +17,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
         public float lengthToBiomeStart;
         public float biomeTotalLength;
         public int biomeEndNextIndex;
-        public bool IsAssigned => req != null;
+        public bool IsAssigned() => req != null;
 
         public BiomeGenEdge(int index, float length, float lengthToBiomeStart)
         {
@@ -36,7 +37,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
         public float minimumSize;
     };
 
-    public class RuleInstance
+    private class RuleInstance
     {
         public EdgeRule rule;
         public IFeature IFeature;
@@ -58,8 +59,8 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
     [SerializeField] private int maxBiomeCount = 4;
     [SerializeField] private bool debugLog = true;
 
-    public bool isGenerated { get; private set; } = false;
-    public bool IsGenerated() => isGenerated;
+    public bool IsGenerated { get; private set; } = false;
+    public string Name => "World Biome";
 
     private List<RuleInstance> ruleInstances = new List<RuleInstance>();
 
@@ -67,7 +68,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
     public void Clear()
     {
         ruleInstances.Clear();
-        isGenerated = false;
+        IsGenerated = false;
     }
 
     public void Generate()
@@ -77,10 +78,8 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
         Step_GenerateEnergy();
         Step_PopulateBiomes();
         Step_SetColors();
-        isGenerated = true;
+        IsGenerated = true;
     }
-
-    public string GetName() => "World Biome";
 
 
     private void Step_AssignBiomes()
@@ -92,10 +91,10 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
         if (maxBiomeCount == 0) return;
 
         // Calculate useful variables
-        int totalEdges = worldGenerator.surfaceEdges.Count;
-        float totalLength = worldGenerator.surfaceEdges.Aggregate(0.0f, (acc, edge) => acc + edge.length);
+        int totalEdges = worldGenerator.SurfaceEdges.Count;
+        float totalLength = worldGenerator.SurfaceEdges.Aggregate(0.0f, (acc, edge) => acc + edge.length);
         BiomeGenEdge[] edgeInfos = new BiomeGenEdge[totalEdges];
-        for (int i = 0; i < totalEdges; i++) edgeInfos[i] = new BiomeGenEdge(i, worldGenerator.surfaceEdges[i].length, totalLength);
+        for (int i = 0; i < totalEdges; i++) edgeInfos[i] = new BiomeGenEdge(i, worldGenerator.SurfaceEdges[i].length, totalLength);
         
         // Check whether is even possible
         float requiredLength = biomeRequirements.Aggregate(0.0f, (acc, req) => req.minimumSize + acc);
@@ -113,7 +112,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
             return (index + edgeInfos.Length + change) % edgeInfos.Length;
         };
 
-        Func<BiomeRequirement, int, bool> PlaceBiome = (BiomeRequirement req,  int startIndex) =>
+        bool PlaceBiome(BiomeRequirement req, int startIndex)
         {
             if (debugLog) Debug.Log("PlaceBiome(" + startIndex + ", " + req.minimumSize + ")");
             float lengthLeft = req.minimumSize;
@@ -121,7 +120,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
             List<BiomeGenEdge> biomeEdges = new();
             while (lengthLeft > 0.0f)
             {
-                if (edgeInfos[index].IsAssigned) throw new Exception ("PlaceBiome tried to place on an edge with a biome! " + lengthLeft + " left to place / " + req.minimumSize + " minimum at index " + index + ".");
+                if (edgeInfos[index].IsAssigned()) throw new Exception("PlaceBiome tried to place on an edge with a biome! " + lengthLeft + " left to place / " + req.minimumSize + " minimum at index " + index + ".");
                 lengthLeft -= edgeInfos[index].length;
                 edgeInfos[index].req = req;
                 biomeEdges.Add(edgeInfos[index]);
@@ -134,29 +133,29 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
                 edge.biomeTotalLength = biomeLength;
                 edge.biomeEndNextIndex = index;
             }
-            for (int o = startIndex;;)
+            for (int o = startIndex; ;)
             {
                 o = modAdd(o, -1);
-                if (edgeInfos[o].IsAssigned) break;
+                if (edgeInfos[o].IsAssigned()) break;
                 edgeInfos[o].lengthToBiomeStart = edgeInfos[modAdd(o, 1)].lengthToBiomeStart + edgeInfos[o].length;
             }
             totalLengthLeft -= biomeLength;
             requiredLengthLeft -= req.minimumSize;
             assignedBiomeCount++;
             return true;
-        };
+        }
 
         bool MakeSpace(int index, int capIndex, float length)
         {
             if (debugLog) Debug.Log("MakeSpace(" + index + ", " + capIndex + ", " + length + ")");
             float lengthLeft = length;
-            while (lengthLeft > 0.0f && !edgeInfos[index].IsAssigned)
+            while (lengthLeft > 0.0f && !edgeInfos[index].IsAssigned())
             {
                 lengthLeft -= edgeInfos[index].length;
                 index = modAdd(index, 1);
             }
             if (lengthLeft < 0.0f) return true;
-            if (edgeInfos[index].IsAssigned)
+            if (edgeInfos[index].IsAssigned())
             {
                 if (debugLog) Debug.Log("Biome at " + index + " needs to be moved by " + lengthLeft);
                 float previousLength = edgeInfos[index].biomeTotalLength;
@@ -177,7 +176,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
                         if (debugLog) Debug.Log("Cannot move biome into cap at index " + newEndIndex + ", " + (pushBackLength - movedAmount) + " left to move.");
                         return false;
                     }
-                    if (edgeInfos[newEndIndex].IsAssigned)
+                    if (edgeInfos[newEndIndex].IsAssigned())
                     {
                         if (debugLog) Debug.Log(newEndIndex + " is another biome so recursing down to move by " + (pushBackLength - movedAmount));
                         bool moveNext = MakeSpace(newEndIndex, capIndex, pushBackLength - movedAmount);
@@ -208,7 +207,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
                 for (int o = newStartIndex;;)
                 {
                     o = modAdd(o, -1);
-                    if (edgeInfos[o].IsAssigned) break;
+                    if (edgeInfos[o].IsAssigned()) break;
                     edgeInfos[o].lengthToBiomeStart = edgeInfos[modAdd(o, 1)].lengthToBiomeStart + edgeInfos[o].length;
                 }
             }
@@ -230,7 +229,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
             Debug.Log("Length Left: " + totalLengthLeft + " / " + totalLength + " (" + requiredLengthLeft + " required left)");
             Debug.Log("Assigned " + assignedBiomeCount + " biomes.");
             string output = "\n";
-            for (int i = 0; i < edgeInfos.Length; i++) output += edgeInfos[i].IsAssigned ? "O" : " ";
+            for (int i = 0; i < edgeInfos.Length; i++) output += edgeInfos[i].IsAssigned() ? "O" : " ";
             output += "\n";
             for (int i = 0; i < edgeInfos.Length; i++) output += "-";
             Debug.Log(output);
@@ -251,7 +250,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
             }
 
             // Find all viable edges and place / push and place
-            int[] openEdgesI = edgeInfos.Select((e, i) => i).Where(i => !edgeInfos[i].IsAssigned).ToArray();
+            int[] openEdgesI = edgeInfos.Select((e, i) => i).Where(i => !edgeInfos[i].IsAssigned()).ToArray();
             int[] viableEdgesI = openEdgesI.Where(i => edgeInfos[i].lengthToBiomeStart > req.minimumSize).ToArray();
             if (viableEdgesI.Length > 0)
             {
@@ -287,24 +286,24 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
         BiomeRequirement prevReq = null;
         for (int i = 0; i < edgeInfos.Length && i != fillStart; i++)
         {
-            if (edgeInfos[i].IsAssigned)
+            if (edgeInfos[i].IsAssigned())
             {
                 if (fillStart == -1) fillStart = i;
                 prevReq = edgeInfos[i].req;
-                worldGenerator.surfaceEdges[i].worldSite.biome = edgeInfos[i].req.biome;
+                worldGenerator.SurfaceEdges[i].worldSite.biome = edgeInfos[i].req.biome;
             }
-            else if (prevReq != null) worldGenerator.surfaceEdges[i].worldSite.biome = prevReq.biome;
+            else if (prevReq != null) worldGenerator.SurfaceEdges[i].worldSite.biome = prevReq.biome;
         }
         
         // Flood fill biomes down
         Queue<WorldSite> floodFillOpenSet = new Queue<WorldSite>();
-        foreach (WorldSurfaceEdge edge in worldGenerator.surfaceEdges) floodFillOpenSet.Enqueue(edge.worldSite);
+        foreach (WorldSurfaceEdge edge in worldGenerator.SurfaceEdges) floodFillOpenSet.Enqueue(edge.worldSite);
         while (floodFillOpenSet.Count > 0)
         {
             WorldSite current = floodFillOpenSet.Dequeue();
             foreach (int siteIndex in current.meshSite.neighbouringSites)
             {
-                WorldSite other = worldGenerator.sites[siteIndex];
+                WorldSite other = worldGenerator.Sites[siteIndex];
                 if (other.biome != null) continue;
                 if (other.outsideDistance >= undergroundBiome.depth) continue;
                 if (floodFillOpenSet.Contains(other)) continue;
@@ -314,7 +313,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
         }
 
         // Overwrite underground
-        foreach (WorldSite site in worldGenerator.sites)
+        foreach (WorldSite site in worldGenerator.Sites)
         {
             if (site.outsideDistance < (undergroundBiome.depth - undergroundBiome.gradientOffset)) continue;
             else if (site.outsideDistance < (undergroundBiome.depth))
@@ -328,9 +327,9 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
     private void Step_GenerateEnergy()
     {
         // Generate site energy with biome
-        foreach (WorldSite site in worldGenerator.sites)
+        foreach (WorldSite site in worldGenerator.Sites)
         {
-            Vector2 centre = worldGenerator.mesh.vertices[site.meshSite.meshCentroidI];
+            Vector2 centre = worldGenerator.Mesh.vertices[site.meshSite.meshCentroidI];
             site.maxEnergy = site.biome.energyMaxNoise.GetNoise(centre);
             float pct = site.biome.energyPctNoise.GetNoise(centre);
             if (UnityEngine.Random.value < site.biome.deadspotChance) pct = site.biome.deadspotPct;
@@ -340,25 +339,25 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
 
     private void Step_PopulateBiomes() 
     {
-        for (int i = 0; i < worldGenerator.surfaceEdges.Count; i++)
+        for (int i = 0; i < worldGenerator.SurfaceEdges.Count; i++)
         {
-            WorldSurfaceEdge edge = worldGenerator.surfaceEdges[i];
-            float pct = (float)i / worldGenerator.surfaceEdges.Count;
+            WorldSurfaceEdge edge = worldGenerator.SurfaceEdges[i];
+            float pct = (float)i / worldGenerator.SurfaceEdges.Count;
 
             // Generate frontDecor feature
             GameObject frontDecor = SpawnFeature(edge, edge.worldSite.biome.frontDecorRules, edge.a, edge.b, pct);
             if (frontDecor != null)
             {
-                frontDecor.transform.parent = worldGenerator.frontDecorContainer;
-                frontDecor.transform.position = new Vector3(frontDecor.transform.position.x, frontDecor.transform.position.y, worldGenerator.frontDecorContainer.position.z);
+                frontDecor.transform.parent = worldGenerator.FrontDecorContainer;
+                frontDecor.transform.position = new Vector3(frontDecor.transform.position.x, frontDecor.transform.position.y, worldGenerator.FrontDecorContainer.position.z);
             }
 
             // Generate terrain feature
             GameObject terrainFeature = SpawnFeature(edge, edge.worldSite.biome.terrainRules, edge.a, edge.b, pct);
             if (terrainFeature != null)
             {
-                terrainFeature.transform.parent = worldGenerator.terrainContainer;
-                terrainFeature.transform.position = new Vector3(terrainFeature.transform.position.x, terrainFeature.transform.position.y, worldGenerator.terrainContainer.position.z);
+                terrainFeature.transform.parent = worldGenerator.TerrainContainer;
+                terrainFeature.transform.position = new Vector3(terrainFeature.transform.position.x, terrainFeature.transform.position.y, worldGenerator.TerrainContainer.position.z);
                 continue;
             }
 
@@ -366,16 +365,16 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
             GameObject backDecor = SpawnFeature(edge, edge.worldSite.biome.backDecorRules, edge.a, edge.b, pct);
             if (backDecor != null)
             {
-                backDecor.transform.parent = worldGenerator.backDecorContainer;
-                backDecor.transform.position = new Vector3(backDecor.transform.position.x, backDecor.transform.position.y, worldGenerator.backDecorContainer.position.z);
+                backDecor.transform.parent = worldGenerator.BackDecorContainer;
+                backDecor.transform.position = new Vector3(backDecor.transform.position.x, backDecor.transform.position.y, worldGenerator.BackDecorContainer.position.z);
             }
 
             // Generate foreground feature
             GameObject foreground = SpawnFeature(edge, edge.worldSite.biome.foregroundRules, edge.a, edge.b, pct);
             if (foreground != null)
             {
-                foreground.transform.parent = worldGenerator.foregroundContainer;
-                foreground.transform.position = new Vector3(foreground.transform.position.x, foreground.transform.position.y, worldGenerator.foregroundContainer.position.z);
+                foreground.transform.parent = worldGenerator.ForegroundContainer;
+                foreground.transform.position = new Vector3(foreground.transform.position.x, foreground.transform.position.y, worldGenerator.ForegroundContainer.position.z);
                 continue;
             }
 
@@ -383,8 +382,8 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
             GameObject background = SpawnFeature(edge, edge.worldSite.biome.backgroundRules, edge.a, edge.b, pct);
             if (background != null)
             {
-                background.transform.parent = worldGenerator.backgroundContainer;
-                background.transform.position = new Vector3(background.transform.position.x, background.transform.position.y, worldGenerator.backgroundContainer.position.z);
+                background.transform.parent = worldGenerator.BackgroundContainer;
+                background.transform.position = new Vector3(background.transform.position.x, background.transform.position.y, worldGenerator.BackgroundContainer.position.z);
                 continue;
             }
         }
@@ -393,8 +392,8 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
     private void Step_SetColors()
     {
         // Update colours of the mesh with energy
-        Color[] meshColors = new Color[worldGenerator.mesh.vertexCount];
-        foreach (WorldSite site in worldGenerator.sites)
+        Color[] meshColors = new Color[worldGenerator.Mesh.vertexCount];
+        foreach (WorldSite site in worldGenerator.Sites)
         {
             float pct = site.energy / site.maxEnergy;
             Color col = Color.Lerp(site.biome.colorRange[0], site.biome.colorRange[1], pct);
@@ -402,9 +401,8 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
             foreach (int v in site.meshSite.meshVerticesI) meshColors[v] = col;
         }
 
-        worldGenerator.mesh.colors = meshColors;
+        worldGenerator.Mesh.colors = meshColors;
     }
-
 
     private GameObject SpawnFeature(WorldSurfaceEdge edge, EdgeRule[] rules, Vector3 a, Vector3 b, float edgePct)
     {

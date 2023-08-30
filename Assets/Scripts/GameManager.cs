@@ -6,21 +6,14 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager instance { get; private set; }
-    public static bool isPaused { get; private set; }
-    public static bool isMouseLocked => UnityEngine.Cursor.visible;
+    public static GameManager Instance { get; private set; }
+    public static bool IsPaused { get; private set; }
+    public static bool IsMouseLocked => UnityEngine.Cursor.visible;
     
     [SerializeField] private PlayerController playerController;    
     [SerializeField] private GameObject menu;
 
     private Action<bool> OnIsPausedChange;
-
-
-    private void Awake()
-    {
-        instance = this;
-        SetPaused(false);
-    }
 
 
     public void ExitGame()
@@ -37,15 +30,21 @@ public class GameManager : MonoBehaviour
     public void UnsubscribeOnIsPausedChange(Action<bool> action) => OnIsPausedChange += action;
 
 
+    private void Awake()
+    {
+        Instance = this;
+        SetPaused(false);
+    }
+
     private void Update()
     {
         // Pause on escape
-        if (Input.GetKeyDown(KeyCode.Escape)) SetPaused(!isPaused);
+        if (Input.GetKeyDown(KeyCode.Escape)) SetPaused(!IsPaused);
     }
 
     private void SetPaused(bool isPaused)
     {
-        GameManager.isPaused = isPaused;
+        GameManager.IsPaused = isPaused;
         Time.timeScale = isPaused ? 0.0f : 1.0f;
         if (isPaused) UnlockMouse();
         else LockMouse();

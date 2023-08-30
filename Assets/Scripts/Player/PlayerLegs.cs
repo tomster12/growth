@@ -1,5 +1,4 @@
 
-using UnityEditor;
 using UnityEngine;
 
 
@@ -23,9 +22,9 @@ public class PlayerLegs : MonoBehaviour
     [SerializeField] private int walkDir = 0;
     [SerializeField] private bool drawGizmos = false;
 
-    public bool isPointing = false;
-    public int pointingLeg = -1;
-    public Vector2 pointingPos;
+    public bool IsPointing { get; set; } = false;
+    public int PointingLeg { get; set; } = -1;
+    public Vector2 PointingPos { get; set; }
 
     private bool legCurrentInit;
     private Vector2[] legTargets = new Vector2[4];
@@ -35,7 +34,7 @@ public class PlayerLegs : MonoBehaviour
 
     private void Update()
     {
-        float walkPct = Vector2.Dot(playerController.rb.velocity, playerController.rightDir.normalized);
+        float walkPct = Vector2.Dot(playerController.RB.velocity, playerController.RightDir.normalized);
         walkDir = (walkPct < -isWalkingThreshold) ? -1 : (walkPct > isWalkingThreshold) ? 1 : 0;
 
         for (int i = 0; i < 4; i++)
@@ -70,23 +69,23 @@ public class PlayerLegs : MonoBehaviour
             // Otherwise free float
             else
             {
-                Vector2 dir = legTargets[i] - (Vector2)playerController.transform.position;
-                dir = Vector2.ClampMagnitude(dir, legIK[i].totalLength);
-                legTargets[i] = (Vector2)playerController.transform.position + dir;
+                Vector2 dir = legTargets[i] - (Vector2)playerController.Transform.position;
+                dir = Vector2.ClampMagnitude(dir, legIK[i].TotalLength);
+                legTargets[i] = (Vector2)playerController.Transform.position + dir;
                 haveStepped[i] = false;
             }
 
             // lerp leg current
             Vector2 target = legTargets[i];
-            if (isPointing && pointingLeg == i) target = pointingPos;
+            if (IsPointing && PointingLeg == i) target = PointingPos;
             if (!legCurrentInit) legCurrent[i] = target;
             else legCurrent[i] = Vector2.Lerp(legCurrent[i], target, Time.deltaTime * walkFootLerp);
 
             // Update IK variables
-            legIK[i].targetPos = legCurrent[i];
-            legIK[i].targetRot = Quaternion.identity;
-            legIK[i].polePos = GetLegPole(i);
-            legIK[i].poleRot = Quaternion.identity;
+            legIK[i].TargetPos = legCurrent[i];
+            legIK[i].TargetRot = Quaternion.identity;
+            legIK[i].PolePos = GetLegPole(i);
+            legIK[i].PoleRot = Quaternion.identity;
         }
 
         legCurrentInit = true;
@@ -98,16 +97,16 @@ public class PlayerLegs : MonoBehaviour
         int terrainMask = 1 << LayerMask.NameToLayer("Terrain");
 
         // Raycast sideways
-        Vector2 sideFrom = playerController.transform.position;
-        Vector2 sideDir = playerController.rightDir.normalized;
+        Vector2 sideFrom = playerController.Transform.position;
+        Vector2 sideDir = playerController.RightDir.normalized;
         float sideDistMax = horizontalMult * legGap + walkDir * stepSize * 0.5f;
         RaycastHit2D sideHit = Physics2D.Raycast(sideFrom, sideDir, sideDistMax, terrainMask);
         float sideDist = (sideHit.collider != null) ? sideHit.distance : sideDistMax;
 
         // Raycast downwards
         Vector2 downFrom = sideFrom + sideDir * sideDist;
-        Vector2 downDir = playerController.groundDir.normalized;
-        float downDistMax = playerController.groundedHeight;
+        Vector2 downDir = playerController.GroundDir.normalized;
+        float downDistMax = playerController.GroundedHeight;
         RaycastHit2D downHit = Physics2D.Raycast(downFrom, downDir, downDistMax, terrainMask);
 
         // Update out variables
@@ -119,15 +118,15 @@ public class PlayerLegs : MonoBehaviour
     private Vector2 GetLegPole(int legIndex)
     {
         float horizontalMult = (legIndex <= 1) ? (-2 + legIndex) : (-1 + legIndex);
-        return (Vector2)playerController.transform.position
-            + (playerController.rightDir.normalized * horizontalMult * legGap)
-            + (playerController.upDir.normalized * kneeHeight * 2);
+        return (Vector2)playerController.Transform.position
+            + (playerController.RightDir.normalized * horizontalMult * legGap)
+            + (playerController.UpDir.normalized * kneeHeight * 2);
     }
 
     public Vector2 GetLegEnd(int legIndex)
     {
         if (legIndex < 0 || legIndex > 3) return Vector2.zero;
-        return legIK[legIndex].bones[legIK[legIndex].boneCount - 1].position;
+        return legIK[legIndex].Bones[legIK[legIndex].BoneCount - 1].position;
     }
 
     [ContextMenu("Set Leg Lengths")]
@@ -139,35 +138,35 @@ public class PlayerLegs : MonoBehaviour
             float horizontalMult = (i <= 1) ? (-2 + i) : (-1 + i);
             legIK[i].InitBones();
 
-            Vector2 bone0Pos = (Vector2)playerController.transform.position
-                + ((Vector2)playerController.transform.right * Mathf.Sign(horizontalMult) * legOffset);
+            Vector2 bone0Pos = (Vector2)playerController.Transform.position
+                + ((Vector2)playerController.Transform.right * Mathf.Sign(horizontalMult) * legOffset);
 
-            Vector2 bone1Pos = (Vector2)playerController.transform.position
-                + ((Vector2)playerController.transform.right * Mathf.Sign(horizontalMult) * legOffset)
-                + ((Vector2)playerController.transform.right * horizontalMult * legGap * 0.5f)
-                + ((Vector2)playerController.transform.up * kneeHeight);
+            Vector2 bone1Pos = (Vector2)playerController.Transform.position
+                + ((Vector2)playerController.Transform.right * Mathf.Sign(horizontalMult) * legOffset)
+                + ((Vector2)playerController.Transform.right * horizontalMult * legGap * 0.5f)
+                + ((Vector2)playerController.Transform.up * kneeHeight);
 
-            Vector2 bone2Pos = (Vector2)playerController.transform.position
-                + ((Vector2)playerController.transform.right * Mathf.Sign(horizontalMult) * legOffset)
-                + ((Vector2)playerController.transform.right * horizontalMult * legGap)
-                - ((Vector2)playerController.transform.up * playerController.groundedHeight);
+            Vector2 bone2Pos = (Vector2)playerController.Transform.position
+                + ((Vector2)playerController.Transform.right * Mathf.Sign(horizontalMult) * legOffset)
+                + ((Vector2)playerController.Transform.right * horizontalMult * legGap)
+                - ((Vector2)playerController.Transform.up * playerController.GroundedHeight);
 
-            legIK[i].bones[0].up = bone1Pos - bone0Pos;
-            legIK[i].bones[1].up = bone2Pos - bone1Pos;
-            legIK[i].bones[2].up = playerController.transform.up;
+            legIK[i].Bones[0].up = bone1Pos - bone0Pos;
+            legIK[i].Bones[1].up = bone2Pos - bone1Pos;
+            legIK[i].Bones[2].up = playerController.Transform.up;
 
-            legIK[i].bones[0].position = bone0Pos;
-            legIK[i].bones[1].position = bone1Pos;
-            legIK[i].bones[2].position = bone2Pos;
+            legIK[i].Bones[0].position = bone0Pos;
+            legIK[i].Bones[1].position = bone1Pos;
+            legIK[i].Bones[2].position = bone2Pos;
 
-            legIK[i].bones[0].localPosition = new Vector3(legIK[i].bones[0].localPosition.x, legIK[i].bones[0].localPosition.y, 0.0f);
-            legIK[i].bones[1].localPosition = new Vector3(legIK[i].bones[1].localPosition.x, legIK[i].bones[1].localPosition.y, 0.0f);
-            legIK[i].bones[2].localPosition = new Vector3(legIK[i].bones[2].localPosition.x, legIK[i].bones[2].localPosition.y, 0.0f);
+            legIK[i].Bones[0].localPosition = new Vector3(legIK[i].Bones[0].localPosition.x, legIK[i].Bones[0].localPosition.y, 0.0f);
+            legIK[i].Bones[1].localPosition = new Vector3(legIK[i].Bones[1].localPosition.x, legIK[i].Bones[1].localPosition.y, 0.0f);
+            legIK[i].Bones[2].localPosition = new Vector3(legIK[i].Bones[2].localPosition.x, legIK[i].Bones[2].localPosition.y, 0.0f);
             
-            legIK[i].bones[0].GetChild(1).position = (legIK[i].bones[0].position + legIK[i].bones[1].position) / 2.0f;
-            legIK[i].bones[0].GetChild(1).localScale = new Vector3(legWidth, (bone1Pos - bone0Pos).magnitude, 1.0f);
-            legIK[i].bones[1].GetChild(1).position = (legIK[i].bones[1].position + legIK[i].bones[2].position) / 2.0f;
-            legIK[i].bones[1].GetChild(1).localScale = new Vector3(legWidth, (bone2Pos - bone1Pos).magnitude, 1.0f);
+            legIK[i].Bones[0].GetChild(1).position = (legIK[i].Bones[0].position + legIK[i].Bones[1].position) / 2.0f;
+            legIK[i].Bones[0].GetChild(1).localScale = new Vector3(legWidth, (bone1Pos - bone0Pos).magnitude, 1.0f);
+            legIK[i].Bones[1].GetChild(1).position = (legIK[i].Bones[1].position + legIK[i].Bones[2].position) / 2.0f;
+            legIK[i].Bones[1].GetChild(1).localScale = new Vector3(legWidth, (bone2Pos - bone1Pos).magnitude, 1.0f);
         }
     }
 
@@ -178,7 +177,7 @@ public class PlayerLegs : MonoBehaviour
         if (playerController != null)
         {
             Gizmos.color = Color.grey;
-            Gizmos.DrawSphere(playerController.groundPosition, 0.1f);
+            Gizmos.DrawSphere(playerController.GroundPosition, 0.1f);
 
             if (legTargets != null)
             {

@@ -7,6 +7,7 @@ public class OutlineController : MonoBehaviour
 {
     public enum Mode { OutlineFull, Disabled }
 
+
     private Renderer[] renderers;
     private Material outlineMask, outlineFill;
     private bool isInitialized;

@@ -10,22 +10,23 @@ public class PlanetShapeInfo
     public NoiseData[] noiseData;
 }
 
+
 public class PlanetPolygonGenerator : MonoBehaviour, IGenerator
 {
     [Header("Parameters")]
-    [SerializeField] public PolygonCollider2D outsidePolygon;
-    [SerializeField] public PlanetShapeInfo shapeInfo;
+    [SerializeField] private PolygonCollider2D outsidePolygon;
+    [SerializeField] private PlanetShapeInfo shapeInfo;
 
-    public Vector2[] points { get; private set; }
-    public bool isGenerated { get; private set; } = false;
-    public bool IsGenerated() => isGenerated;
+    public Vector2[] Points { get; private set; }
+    public bool IsGenerated { get; private set; } = false;
+    public string Name => "Poly. Planet";
 
 
     public void Clear()
     {
         outsidePolygon.points = new Vector2[0];
-        points = null;
-        isGenerated = false;
+        Points = null;
+        IsGenerated = false;
     }
 
     public void Generate()
@@ -33,26 +34,24 @@ public class PlanetPolygonGenerator : MonoBehaviour, IGenerator
         Clear();
 
         // Generate points in a circle
-        points = new Vector2[shapeInfo.vertexCount];
+        Points = new Vector2[shapeInfo.vertexCount];
         foreach (NoiseData noiseData in shapeInfo.noiseData) noiseData.RandomizeOffset();
-        for (int i = 0; i < points.Length; i++)
+        for (int i = 0; i < Points.Length; i++)
         {
             // Add each noise to value
-            float pct = (float)i / points.Length;
+            float pct = (float)i / Points.Length;
             float value = 0;
             foreach (NoiseData noiseData in shapeInfo.noiseData) value += noiseData.GetCyclicNoise(pct);
 
             // Create and add point
-            points[i] = value * new Vector2(Mathf.Cos(pct * Mathf.PI * 2), Mathf.Sin(pct * Mathf.PI * 2));
+            Points[i] = value * new Vector2(Mathf.Cos(pct * Mathf.PI * 2), Mathf.Sin(pct * Mathf.PI * 2));
         }
 
         // Assign points to the polygon
-        outsidePolygon.SetPath(0, points);
+        outsidePolygon.SetPath(0, Points);
 
-        isGenerated = true;
+        IsGenerated = true;
     }
-    
-    public string GetName() => "Poly. Planet";
 
     public float[] GetSurfaceRange()
     {

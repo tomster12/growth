@@ -14,14 +14,14 @@ public class IKFabrik : MonoBehaviour
     [SerializeField] private float delta = 0.01f;
     [SerializeField][Range(0, 1)] private float snapBackStrength = 1.0f;
 
-    public Vector2 targetPos;
-    public Quaternion targetRot;
-    public Vector2 polePos;
-    public Quaternion poleRot;
-    public int boneCount { get; private set; }
-    public Transform[] bones { get; private set; }
-    public float[] boneLengths { get; private set; }
-    public float totalLength { get; private set; }
+    public Vector2 TargetPos { get; set; }
+    public Quaternion TargetRot { get; set; }
+    public Vector2 PolePos { get; set; }
+    public Quaternion PoleRot { get; set; }
+    public int BoneCount { get; private set; }
+    public Transform[] Bones { get; private set; }
+    public float[] BoneLengths { get; private set; }
+    public float TotalLength { get; private set; }
 
     private Vector2[] bonesPos_RS;
     private Vector2[] initBoneDir_RS;
@@ -29,8 +29,6 @@ public class IKFabrik : MonoBehaviour
     private Vector2 initTargetPos_RS;
     private Quaternion initTargetRot_RS;
 
-
-    private void Start() => InitIK();
 
     [ContextMenu("Init IK")]
     public void InitIK()
@@ -42,21 +40,21 @@ public class IKFabrik : MonoBehaviour
     public void InitBones()
     {
         // Calculate bone count
-        boneCount = 0;
+        BoneCount = 0;
         Transform current = boneEnd;
         while (current != boneRoot)
         {
-            boneCount++;
+            BoneCount++;
             current = current.parent;
             if (current == null) throw new UnityException("Could not find start.");
         }
         // For each bone we should have
-        bones = new Transform[boneCount];
+        Bones = new Transform[BoneCount];
         current = boneEnd;
-        for (int i = boneCount - 1; i >= 0; i--)
+        for (int i = BoneCount - 1; i >= 0; i--)
         {
             // Extract bone and loop upwards
-            bones[i] = current;
+            Bones[i] = current;
             current = current.parent;
         }
     }
@@ -64,32 +62,32 @@ public class IKFabrik : MonoBehaviour
     public void InitInternal()
     {
         // Declare bone variables
-        boneLengths = new float[boneCount - 1];
-        totalLength = 0.0f;
+        BoneLengths = new float[BoneCount - 1];
+        TotalLength = 0.0f;
 
-        bonesPos_RS = new Vector2[boneCount];
-        initBoneDir_RS = new Vector2[boneCount];
-        initBoneRot_RS = new Quaternion[boneCount];
-        initTargetPos_RS = TransformPosition_WorldToRS(targetPos);
-        initTargetRot_RS = TransformRotation_WorldToRS(targetRot);
+        bonesPos_RS = new Vector2[BoneCount];
+        initBoneDir_RS = new Vector2[BoneCount];
+        initBoneRot_RS = new Quaternion[BoneCount];
+        initTargetPos_RS = TransformPosition_WorldToRS(TargetPos);
+        initTargetRot_RS = TransformRotation_WorldToRS(TargetRot);
 
         // For each bone we should have
-        for (int i = boneCount - 1; i >= 0; i--)
+        for (int i = BoneCount - 1; i >= 0; i--)
         {
             // Update bone RS variables
-            bonesPos_RS[i] = TransformPosition_WorldToRS(bones[i].position);
+            bonesPos_RS[i] = TransformPosition_WorldToRS(Bones[i].position);
 
             // Update initial bone variables and lengths
-            initBoneRot_RS[i] = TransformRotation_WorldToRS(bones[i].rotation);
-            if (bones[i] == boneEnd)
+            initBoneRot_RS[i] = TransformRotation_WorldToRS(Bones[i].rotation);
+            if (Bones[i] == boneEnd)
             {
                 initBoneDir_RS[i] = initTargetPos_RS - bonesPos_RS[i];
             }
             else
             {
                 initBoneDir_RS[i] = bonesPos_RS[i + 1] - bonesPos_RS[i];
-                boneLengths[i] = initBoneDir_RS[i].magnitude;
-                totalLength += boneLengths[i];
+                BoneLengths[i] = initBoneDir_RS[i].magnitude;
+                TotalLength += BoneLengths[i];
             }
         }
     }
@@ -99,18 +97,18 @@ public class IKFabrik : MonoBehaviour
     public void ResolveIK()
     {
         // Get positions and rotations
-        for (int i = 0; i < bones.Length; i++) bonesPos_RS[i] = TransformPosition_WorldToRS(bones[i].position);
-        Vector2 targetPos_RS = TransformPosition_WorldToRS(targetPos);
-        Quaternion targetRot_RS = TransformRotation_WorldToRS(targetRot);
+        for (int i = 0; i < Bones.Length; i++) bonesPos_RS[i] = TransformPosition_WorldToRS(Bones[i].position);
+        Vector2 targetPos_RS = TransformPosition_WorldToRS(TargetPos);
+        Quaternion targetRot_RS = TransformRotation_WorldToRS(TargetRot);
 
         // If cannot directly reach, straighten towards target
         Vector2 targetDir_RS = targetPos_RS - bonesPos_RS[0];
-        if (targetDir_RS.sqrMagnitude >= (totalLength * totalLength))
+        if (targetDir_RS.sqrMagnitude >= (TotalLength * TotalLength))
         {
             targetDir_RS = targetDir_RS.normalized;
-            for (int i = 0; i < boneCount - 1; i++)
+            for (int i = 0; i < BoneCount - 1; i++)
             {
-                bonesPos_RS[i + 1] = bonesPos_RS[i] + targetDir_RS * boneLengths[i];
+                bonesPos_RS[i + 1] = bonesPos_RS[i] + targetDir_RS * BoneLengths[i];
             }
         }
 
@@ -118,7 +116,7 @@ public class IKFabrik : MonoBehaviour
         else
         {
             // Apply snap back
-            for (int i = 0; i < boneCount - 1; i++)
+            for (int i = 0; i < BoneCount - 1; i++)
             {
                 bonesPos_RS[i + 1] = Vector2.Lerp(bonesPos_RS[i + 1], bonesPos_RS[i] + initBoneDir_RS[i], snapBackStrength);
             }
@@ -127,35 +125,35 @@ public class IKFabrik : MonoBehaviour
             for (int itr = 0; itr < iterations; itr++)
             {
                 // Backwards kinematics: going backwards, drag each bone to next
-                for (int i = boneCount - 1; i > 0; i--)
+                for (int i = BoneCount - 1; i > 0; i--)
                 {
-                    if (i == boneCount - 1)
+                    if (i == BoneCount - 1)
                     {
                         bonesPos_RS[i] = targetPos_RS;
                     }
                     else
                     {
                         Vector2 backDir = (bonesPos_RS[i] - bonesPos_RS[i + 1]).normalized;
-                        bonesPos_RS[i] = bonesPos_RS[i + 1] + backDir * boneLengths[i];
+                        bonesPos_RS[i] = bonesPos_RS[i + 1] + backDir * BoneLengths[i];
                     }
                 }
 
                 // Forwards kinematics: going forward, pull each bone to previous
-                for (int i = 1; i < boneCount; i++)
+                for (int i = 1; i < BoneCount; i++)
                 {
                     Vector2 fwDir = (bonesPos_RS[i] - bonesPos_RS[i - 1]).normalized;
-                    bonesPos_RS[i] = bonesPos_RS[i - 1] + fwDir * boneLengths[i - 1];
+                    bonesPos_RS[i] = bonesPos_RS[i - 1] + fwDir * BoneLengths[i - 1];
                 }
 
                 // Reached target so break
-                if ((bonesPos_RS[boneCount - 1] - targetPos_RS).sqrMagnitude < (delta * delta)) break;
+                if ((bonesPos_RS[BoneCount - 1] - targetPos_RS).sqrMagnitude < (delta * delta)) break;
             }
         }
 
         // Rotate intermediate bones towards pole
-        if (polePos != null)
+        if (PolePos != null)
         {
-            Vector2 pole_RS = TransformPosition_WorldToRS(polePos);
+            Vector2 pole_RS = TransformPosition_WorldToRS(PolePos);
             for (int i = 1; i < bonesPos_RS.Length - 1; i++)
             {
                 Plane plane_RS = new Plane(bonesPos_RS[i + 1] - bonesPos_RS[i - 1], bonesPos_RS[i - 1]);
@@ -167,17 +165,17 @@ public class IKFabrik : MonoBehaviour
         }
 
         // Set positions and rotations
-        for (int i = 0; i < boneCount; i++)
+        for (int i = 0; i < BoneCount; i++)
         {
-            if (bones[i] == boneEnd)
+            if (Bones[i] == boneEnd)
             {
-                bones[i].rotation = TransformRotation_RSToWorld(Quaternion.Inverse(targetRot_RS) * initTargetRot_RS * Quaternion.Inverse(initBoneRot_RS[i]));
+                Bones[i].rotation = TransformRotation_RSToWorld(Quaternion.Inverse(targetRot_RS) * initTargetRot_RS * Quaternion.Inverse(initBoneRot_RS[i]));
             }
             else
             {
-                bones[i].rotation = TransformRotation_RSToWorld(Quaternion.FromToRotation(initBoneDir_RS[i], bonesPos_RS[i + 1] - bonesPos_RS[i]) * Quaternion.Inverse(initBoneRot_RS[i]));
+                Bones[i].rotation = TransformRotation_RSToWorld(Quaternion.FromToRotation(initBoneDir_RS[i], bonesPos_RS[i + 1] - bonesPos_RS[i]) * Quaternion.Inverse(initBoneRot_RS[i]));
             }
-            bones[i].position = TransformPosition_RSToWorld(bonesPos_RS[i]);
+            Bones[i].position = TransformPosition_RSToWorld(bonesPos_RS[i]);
         }
     }
 
@@ -186,7 +184,7 @@ public class IKFabrik : MonoBehaviour
         #if UNITY_EDITOR
         // Loop upwards through transforms
         Transform current = boneEnd;
-        for (int i = 0; i < boneCount && current != null && current.parent != null; i++)
+        for (int i = 0; i < BoneCount && current != null && current.parent != null; i++)
         {
             // Get vectors and distances
             Vector2 dir = current.parent.position - current.position;
@@ -203,6 +201,8 @@ public class IKFabrik : MonoBehaviour
         #endif
     }
 
+
+    private void Start() => InitIK();
 
     private Vector2 TransformPosition_WorldToRS(Vector2 worldPos) => Quaternion.Inverse(boneRoot.rotation) * (worldPos - (Vector2)boneRoot.position);
     private Quaternion TransformRotation_WorldToRS(Quaternion worldRot) => Quaternion.Inverse(worldRot) * boneRoot.rotation;

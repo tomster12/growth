@@ -11,7 +11,6 @@ public class ChildOrganiser : MonoBehaviour
 
     private List<IOrganiserChild> children = new List<IOrganiserChild>();
 
-    private void Update() => UpdateChildren();
 
     public void UpdateChildren()
     {
@@ -36,11 +35,7 @@ public class ChildOrganiser : MonoBehaviour
         children.Add(newChild);
         newChild.GetTransform().parent = transform;
     }
-}
 
-public interface IOrganiserChild
-{
-    public bool GetVisible();
-    public Transform GetTransform();
-    public float GetHeight();
+
+    private void Update() => UpdateChildren();
 }

@@ -2,6 +2,7 @@
 using UnityEngine;
 using static VoronoiMeshGenerator;
 
+
 public class RockGenerator : MonoBehaviour, IGenerator
 {
     [Header("Parameters")]
@@ -12,16 +13,16 @@ public class RockGenerator : MonoBehaviour, IGenerator
     [SerializeField] private NoiseData colorNoise = new NoiseData(new float[] { 0, 1 });
     [SerializeField] private bool disablePolygon;
 
-    public bool isGenerated { get; private set; } = false;
-    public bool IsGenerated() => isGenerated;
-    public bool IsComposite() => true;
+    public bool IsGenerated { get; private set; } = false;
+    public bool IsComposite => true;
+    public string Name => "Rock Composite";
 
 
     public void Clear()
     {
         planetPolygonGenerator.Clear();
         voronoiMeshGenerator.Clear();
-        isGenerated = false;
+        IsGenerated = false;
     }
 
     public void Generate()
@@ -32,10 +33,8 @@ public class RockGenerator : MonoBehaviour, IGenerator
         voronoiMeshGenerator.Generate();
         outsidePolygon.enabled = !disablePolygon;
         Step_ColorMesh();
-        isGenerated = true;
+        IsGenerated = true;
     }
-
-    public string GetName() => "Rock Composite";
 
     public IGenerator[] GetCompositeIGenerators() => new IGenerator[] { planetPolygonGenerator, voronoiMeshGenerator };
 
@@ -43,8 +42,8 @@ public class RockGenerator : MonoBehaviour, IGenerator
     private void Step_ColorMesh()
     {
         // Get mesh and mesh sites
-        Mesh mesh = voronoiMeshGenerator.mesh;
-        MeshSite[] meshSites = voronoiMeshGenerator.meshSites;
+        Mesh mesh = voronoiMeshGenerator.Mesh;
+        MeshSite[] meshSites = voronoiMeshGenerator.MeshSites;
         Color[] colors = new Color[mesh.vertices.Length];
         
         // Calculate colors for each site

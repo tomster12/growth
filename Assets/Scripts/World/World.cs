@@ -33,18 +33,18 @@ public class World : MonoBehaviour
     [SerializeField] private PolygonCollider2D outsidePolygon;
     [SerializeField] private Rigidbody2D rb;
 
-    public WorldGenerator worldGenerator => _worldGenerator;
+    public WorldGenerator WorldGenerator => _worldGenerator;
     
-    
-    private void Awake()
-    {
-        worlds.Add(this);
-    }
-
 
     public Vector3 GetCentre() => rb.transform.position;
 
     public Vector3 GetClosestOverallPoint(Vector2 pos) => rb.ClosestPoint(pos);
 
     public Vector3 GetClosestSurfacePoint(Vector2 pos) => outsidePolygon.ClosestPoint(pos);
+
+
+    private void Awake()
+    {
+        worlds.Add(this);
+    }
 }

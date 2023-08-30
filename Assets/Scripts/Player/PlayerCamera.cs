@@ -28,25 +28,15 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private float freeMovementMaxSpeed = 3.0f;
     [SerializeField] private float followRotationSpeed = 3.0f;
 
-    public CameraMode mode { get; private set; }
+    public CameraMode CameraModeState { get; private set; }
+    
     private IFollowable follow;
     private Vector3 movementVelocity = Vector3.zero;
 
 
-    private void Awake()
-    {
-        SetModeFree();
-    }
-
-    private void Start()
-    {
-        FixedUpdateInputZoom();
-    }
-
-
     public void SetModeFollow(IFollowable follow, bool set=false)
     {
-        mode = CameraMode.FOLLOW;
+        CameraModeState = CameraMode.FOLLOW;
         this.follow = follow;
 
         // Set values
@@ -60,13 +50,23 @@ public class PlayerCamera : MonoBehaviour
 
     public void SetModeFree()
     {
-        mode = CameraMode.FREE;
+        CameraModeState = CameraMode.FREE;
     }
 
 
+    private void Awake()
+    {
+        SetModeFree();
+    }
+
+    private void Start()
+    {
+        FixedUpdateInputZoom();
+    }
+
     private void Update()
     {
-        if (GameManager.isPaused) return;
+        if (GameManager.IsPaused) return;
         HandleInput();
     }
 
@@ -83,9 +83,9 @@ public class PlayerCamera : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (GameManager.isPaused) return;
-        if (mode == CameraMode.FREE) FixedUpdateMovementFree();
-        else if (mode == CameraMode.FOLLOW) FixedUpdateMovementFollow();
+        if (GameManager.IsPaused) return;
+        if (CameraModeState == CameraMode.FREE) FixedUpdateMovementFree();
+        else if (CameraModeState == CameraMode.FOLLOW) FixedUpdateMovementFollow();
         FixedUpdateInputZoom();
     }
 

@@ -7,50 +7,57 @@ using System.Linq;
 [Serializable]
 public class IGeneratorProxy
 {
-    [SerializeField] private Component _IGenerator;
+    [SerializeField] private Component IGeneratorComponent;
     [SerializeField] public string name;
     [SerializeField] public bool isEnabled;
     [SerializeField] public bool isGenerated;
     [SerializeField] public bool isComposite;
     [SerializeField] public IGeneratorProxy[] compositeIGeneratorProxies;
 
-    public IGenerator IGenerator => (IGenerator)_IGenerator;
+    public IGenerator IGenerator => (IGenerator)IGeneratorComponent;
+    
 
-
-    public IGeneratorProxy(IGenerator IGenerator_, bool isEnabled_=true)
+    public IGeneratorProxy(IGenerator IGenerator, bool isEnabled=true)
     {
-        _IGenerator = (Component)IGenerator_;
-        name = IGenerator.GetName();
-        isEnabled = isEnabled_;
-        isComposite = IGenerator.IsComposite();
+        IGeneratorComponent = (Component)IGenerator;
+        name = IGenerator.Name;
+        this.isEnabled = isEnabled;
+        isComposite = IGenerator.IsComposite;
         compositeIGeneratorProxies = IGenerator.GetCompositeIGenerators().Select(g => new IGeneratorProxy(g, false)).ToArray();
-        IsGenerated();
+        CheckIsGenerated();
     }
 
 
     public void Clear()
     {
         IGenerator.Clear();
-        IsGenerated();
+        CheckIsGenerated();
     }
 
     public void Generate()
     {
         IGenerator.Generate();
-        IsGenerated();
+        CheckIsGenerated();
     }
 
-    public string GetName() => name;
-
-    public bool IsGenerated()
+    public bool CheckIsComposite()
     {
-        isGenerated = IGenerator.IsGenerated();
-        foreach (IGeneratorProxy proxy in compositeIGeneratorProxies) proxy.IsGenerated();
+        isComposite = IGenerator.IsComposite;
+        return isComposite;
+    }
+
+    public bool CheckIsGenerated()
+    {
+        isGenerated = IGenerator.IsGenerated;
+        foreach (IGeneratorProxy proxy in compositeIGeneratorProxies) proxy.CheckIsGenerated();
         return isGenerated;
     }
 
-    public bool IsComposite() => isComposite;
-
+    public string CheckName()
+    {
+        name = IGenerator.Name;
+        return name;
+    }
 
     public IGenerator[] GetCompositeIGenerators() => compositeIGeneratorProxies.Select(p => p.IGenerator).ToArray();
 }

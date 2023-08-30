@@ -3,8 +3,8 @@ using System;
 using System.Linq;
 using UnityEngine;
 using UnityEditor;
-using UnityEngine.UIElements;
 using System.Collections.Generic;
+
 
 public class GeneratorController : MonoBehaviour
 {
@@ -19,7 +19,7 @@ public class GeneratorController : MonoBehaviour
         IGenerator[] allIGenerators = GetComponents<IGenerator>();
 
         List<IGeneratorProxy> compositeIGeneratorProxies = allIGenerators
-            .Where(g => g.IsComposite())
+            .Where(g => g.IsComposite)
             .Select(g => new IGeneratorProxy(g))
             .ToList();
 

@@ -1,20 +1,15 @@
 
 using UnityEngine;
 
+
 public class AddMaterials : MonoBehaviour
 {
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Material[] materials;
 
     private Material[] localMaterials;
-  
 
-    private void Awake()
-    {
-        Add();    
-    }
-
-
+    
     [ContextMenu("Add Materials")]
     public void Add()
     {
@@ -31,5 +26,11 @@ public class AddMaterials : MonoBehaviour
 
         // Set materials
         spriteRenderer.materials = localMaterials;
+    }
+  
+
+    private void Awake()
+    {
+        Add();    
     }
 }

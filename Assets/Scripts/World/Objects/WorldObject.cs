@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class WorldObject : MonoBehaviour, IInteractable
+public class WorldObject : MonoBehaviour, IRichObject
 {
     [Header("References")]
     [SerializeField] protected Collider2D cl;
@@ -12,32 +12,24 @@ public class WorldObject : MonoBehaviour, IInteractable
     [SerializeField] protected float controlDrag = 20.0f;
     [SerializeField] protected float idleDrag = 0.5f;
     [SerializeField] protected float density = 1.0f;
-    [SerializeField] private bool _hasComponentHighlight = false;
-    [SerializeField] private bool _hasComponentPhysical = false;
-    [SerializeField] private bool _hasComponentControl  = false;
+    [SerializeField] private bool hasComponentHighlight = false;
+    [SerializeField] private bool hasComponentPhysical = false;
+    [SerializeField] private bool hasComponentControl = false;
     
-    public OutlineController highlightOutline { get; protected set; } = null;
-    public Rigidbody2D physicalRB { get; protected set; } = null;
-    public bool isHovered { get; private set; } = false;
-    public bool isControlled { get; private set; } = false;
-    public bool canControl { get; private set; } = false;
-    public bool hasComponentHighlight => _hasComponentHighlight;
-    public bool hasComponentPhysical => _hasComponentPhysical;
-    public bool hasComponentControl => _hasComponentControl;
-
-    public bool CanControl => canControl;
+    public OutlineController HighlightOutline { get; protected set; } = null;
+    public Rigidbody2D RB { get; protected set; } = null;
+    public bool IsHovered { get; private set; } = false;
+    public bool IsControlled { get; private set; } = false;
+    public bool CanControl { get; private set; } = false;
+    public bool HasComponentHighlight => hasComponentHighlight;
+    public bool HasComponentPhysical => hasComponentPhysical;
+    public bool HasComponentControl => hasComponentControl;
 
     protected List<Interaction> interactions = new List<Interaction>();
     protected GravityObject physicalGR = null;
     protected Vector2 controlPosition = Vector2.zero;
     protected float controlForce = 0.0f;
     protected float controlAngle = 0.0f;
-
-
-    private void Awake()
-    {
-        DetectComponents();
-    }
 
 
     public List<Interaction> GetInteractions() => interactions;
@@ -54,34 +46,34 @@ public class WorldObject : MonoBehaviour, IInteractable
 
     public void SetHovered(bool isHovered)
     {
-        if (!hasComponentHighlight) return;
-        if (this.isHovered == isHovered) return;
+        if (!HasComponentHighlight) return;
+        if (this.IsHovered == isHovered) return;
 
         // Update variables
-        this.isHovered = isHovered;
-        highlightOutline.enabled = this.isHovered;
+        this.IsHovered = isHovered;
+        HighlightOutline.enabled = this.IsHovered;
     } 
 
     public void SetCanControl(bool canControl)
     {
-        if (!hasComponentControl) return;
+        if (!HasComponentControl) return;
 
         // Update variables
-        this.canControl = canControl;
+        this.CanControl = canControl;
     }
 
     public void SetControlAngle(float controlAngle) => this.controlAngle = controlAngle;
 
     public bool SetControlled(bool isControlled)
     {
-        if (!hasComponentControl) return false;
-        if (isControlled == this.isControlled) return false;
-        if (isControlled && !canControl) return false;
+        if (!HasComponentControl) return false;
+        if (isControlled == this.IsControlled) return false;
+        if (isControlled && !CanControl) return false;
 
         // Update variables
-        this.isControlled = isControlled;
-        physicalRB.drag = isControlled ? controlDrag : idleDrag;
-        physicalGR.isEnabled = !isControlled;
+        this.IsControlled = isControlled;
+        RB.drag = isControlled ? controlDrag : idleDrag;
+        physicalGR.IsEnabled = !isControlled;
         return true;
     }
 
@@ -90,73 +82,78 @@ public class WorldObject : MonoBehaviour, IInteractable
     public void OnDrop() => SetControlled(false);
 
 
+    private void Awake()
+    {
+        DetectComponents();
+    }
+
     [ContextMenu("Detect Components")]
     private void DetectComponents()
     {
-        highlightOutline = gameObject.GetComponent<OutlineController>();
-        physicalRB = gameObject.GetComponent<Rigidbody2D>();
+        HighlightOutline = gameObject.GetComponent<OutlineController>();
+        RB = gameObject.GetComponent<Rigidbody2D>();
         physicalGR = gameObject.GetComponent<GravityObject>();
-        if (highlightOutline) _hasComponentHighlight = true;
-        if (physicalRB && physicalGR) _hasComponentPhysical = true;
+        if (HighlightOutline) hasComponentHighlight = true;
+        if (RB && physicalGR) hasComponentPhysical = true;
     }
 
     [ContextMenu("Init Highlight")]
     protected void InitComponentHighlight()
     {
-        if (highlightOutline != null) return;
-        highlightOutline = gameObject.AddComponent<OutlineController>();
-        highlightOutline.enabled = false;
-        _hasComponentHighlight = true;
+        if (HighlightOutline != null) return;
+        HighlightOutline = gameObject.AddComponent<OutlineController>();
+        HighlightOutline.enabled = false;
+        hasComponentHighlight = true;
     }
 
     [ContextMenu("Init Physical")]
     protected void InitComponentPhysical()
     {
-        if (physicalRB != null || physicalGR != null) return;
-        _hasComponentPhysical = true;
-        physicalRB = gameObject.AddComponent<Rigidbody2D>();
+        if (RB != null || physicalGR != null) return;
+        hasComponentPhysical = true;
+        RB = gameObject.AddComponent<Rigidbody2D>();
         physicalGR = gameObject.AddComponent<GravityObject>();
-        physicalRB.gravityScale = 0;
-        physicalGR.isEnabled = true;
-        physicalGR.rb = physicalRB;
+        RB.gravityScale = 0;
+        physicalGR.IsEnabled = true;
+        physicalGR.rb = RB;
         cl.isTrigger = false;
-        physicalRB.useAutoMass = true;
-        physicalRB.useAutoMass = false;
-        physicalRB.mass *= density;
+        RB.useAutoMass = true;
+        RB.useAutoMass = false;
+        RB.mass *= density;
     }
 
     [ContextMenu("Init Control")]
     protected void InitComponentControl()
     {
-        _hasComponentControl = true;
+        hasComponentControl = true;
     }
 
     [ContextMenu("Clear Components")]
     private void ClearComponents()
     {
         DetectComponents();
-        if (hasComponentHighlight) ClearComponentHighlight();
-        if (hasComponentPhysical) ClearComponentPhysical();
-        if (hasComponentControl) ClearComponentControl();
+        if (HasComponentHighlight) ClearComponentHighlight();
+        if (HasComponentPhysical) ClearComponentPhysical();
+        if (HasComponentControl) ClearComponentControl();
     }
     
     protected void ClearComponentHighlight()
     {
-        if (highlightOutline != null) DestroyImmediate(highlightOutline);
-        _hasComponentHighlight = false;
+        if (HighlightOutline != null) DestroyImmediate(HighlightOutline);
+        hasComponentHighlight = false;
     }
 
     protected void ClearComponentPhysical()
     {
-        if (physicalRB != null) DestroyImmediate(physicalRB);
+        if (RB != null) DestroyImmediate(RB);
         if (physicalGR != null) DestroyImmediate(physicalGR);
-        _hasComponentPhysical = false;
+        hasComponentPhysical = false;
     }
 
     protected void ClearComponentControl()
     {
-        if (isControlled) SetControlled(false);
-        _hasComponentControl = false;
+        if (IsControlled) SetControlled(false);
+        hasComponentControl = false;
     }
 
     protected void FixedUpdate()
@@ -166,14 +163,14 @@ public class WorldObject : MonoBehaviour, IInteractable
     
     private void FixedUpdateControl()
     {
-        if (isControlled)
+        if (IsControlled)
         {
             // Move towards target
-            Vector2 dir = controlPosition - (Vector2)physicalRB.transform.position;
-            physicalRB.AddForce(dir * controlForce);
+            Vector2 dir = controlPosition - (Vector2)RB.transform.position;
+            RB.AddForce(dir * controlForce);
 
             // Angle towards desired
-            physicalRB.AddTorque((physicalRB.transform.eulerAngles.y - controlAngle) * controlForce);
+            RB.AddTorque((RB.transform.eulerAngles.y - controlAngle) * controlForce);
         }
     }
 }

@@ -32,7 +32,7 @@ public class PluckableStone : WorldObject
         interactionPluck.Update();
 
         float angle = 270.0f + (-45.0f + Mathf.Sin((Time.time / (2.0f * Mathf.PI)) * 0.5f) * 90.0f);
-        Debug.Log(angle);
+        // Debug.Log(angle);
         SetControlAngle(angle);
     }
 
@@ -43,14 +43,14 @@ public class PluckableStone : WorldObject
         SetCanControl(true);
 
         // Move out of ground
-        physicalRB.transform.position += (Vector3)(popDir.normalized * cl.bounds.extents * 1.5f);
+        RB.transform.position += (Vector3)(popDir.normalized * cl.bounds.extents * 1.5f);
 
         // Pop in a direction (ignore mass)
-        physicalRB.AddForce(popDir.normalized * pluckVelocity * physicalRB.mass, ForceMode2D.Impulse);
+        RB.AddForce(popDir.normalized * pluckVelocity * RB.mass, ForceMode2D.Impulse);
 
         // Produce particles
         GameObject particlesGO = Instantiate(pluckPsysPfb);
-        particlesGO.transform.position = physicalRB.transform.position;
+        particlesGO.transform.position = RB.transform.position;
         particlesGO.transform.up = popDir.normalized;
     }
 }

@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * NOTICE: This file has been significantly changed compared to the original.
+ * NOTICE: This file has been modified compared to the original.
  */
 
 
@@ -41,7 +41,7 @@ namespace GK
             public VertexType type;
             public int vertexUID = -1;
             public int intersectionFromUID = -1, intersectionToUID = -1;
-            
+
             private ClippedVertex(Vector2 vertex, VertexType type)
             {
                 this.vertex = vertex;
@@ -50,27 +50,30 @@ namespace GK
 
             public static ClippedVertex NewPolygonVertex(Vector2 vertex, int vertexUID)
             {
-                ClippedVertex v = new ClippedVertex(vertex, VertexType.POLYGON);
-                v.vertexUID = vertexUID;
-                v.intersectionFromUID = vertexUID;
-                v.intersectionToUID = vertexUID;
-                return v;
+                return new ClippedVertex(vertex, VertexType.POLYGON)
+                {
+                    vertexUID = vertexUID,
+                    intersectionFromUID = vertexUID,
+                    intersectionToUID = vertexUID
+                };
             }
 
             public static ClippedVertex NewPolygonIntersectionVertex(Vector2 vertex, int vertexUID, int intersectionFromUID, int intersectionToUID)
             {
-                ClippedVertex v = new ClippedVertex(vertex, VertexType.POLYGON_INTERSECTION);
-                v.vertexUID = vertexUID;
-                v.intersectionFromUID = intersectionFromUID;
-                v.intersectionToUID = intersectionToUID;
-                return v;
+                return new ClippedVertex(vertex, VertexType.POLYGON_INTERSECTION)
+                {
+                    vertexUID = vertexUID,
+                    intersectionFromUID = intersectionFromUID,
+                    intersectionToUID = intersectionToUID
+                };
             }
 
             public static ClippedVertex NewSiteVertex(Vector2 vertex, int vertexUID)
             {
-                ClippedVertex v = new ClippedVertex(vertex, VertexType.SITE_VERTEX);
-                v.vertexUID = vertexUID;
-                return v;
+                return new ClippedVertex(vertex, VertexType.SITE_VERTEX)
+                {
+                    vertexUID = vertexUID
+                };
             }
         }
 
@@ -128,7 +131,7 @@ namespace GK
             List<ClippedVertex> verticesNext = new List<ClippedVertex>();
 
             // Setup intersection indexing
-            Func<int, int, int, int, int> getIntersectionUI = (int ev0, int ev1, int v0, int v1) =>
+            int getIntersectionUI(int ev0, int ev1, int v0, int v1)
             {
                 String key = "";
                 key += (ev0 < ev1) ? (ev0 + "," + ev1 + ",") : (ev1 + "," + ev0 + ",");
@@ -136,13 +139,13 @@ namespace GK
                 if (!intersectionIndexMap.ContainsKey(key)) intersectionIndexMap.Add(key, nextIntersectionIndex++);
                 int intersectionUID = intersectionIndexMap[key];
                 return intersectionUID;
-            };
+            }
 
             // Setup polygon points
             verticesCurrent.Clear();
             for (int i = 0; i < polygon.Count; i++)
             {
-                verticesCurrent.Add(ClippedVertex.NewPolygonVertex( polygon[i], diag.Vertices.Count + i));
+                verticesCurrent.Add(ClippedVertex.NewPolygonVertex(polygon[i], diag.Vertices.Count + i));
             }
 
 
@@ -213,25 +216,25 @@ namespace GK
                     // - On the boundary
                     else
                     {
-                        float m0, m1;
-                        Geom.LineLineIntersection(lv, ld.normalized, v0, (v1 - v0).normalized, out m0, out m1);
+                        Geom.LineLineIntersection(lv, ld.normalized, v0, (v1 - v0).normalized, out float m0, out _);
                         var intersection = lv + ld.normalized * m0;
 
                         // - Intersecting an outer edge
                         if (
                             cv0.type == VertexType.POLYGON || cv1.type == VertexType.POLYGON
                             || (cv0.intersectionFromUID == cv1.intersectionFromUID && cv0.intersectionFromUID != -1)
-                        ) {
+                        )
+                        {
                             int intersectionUID = getIntersectionUI(edge.Vert0, edge.Vert1, cv0.intersectionFromUID, cv1.intersectionToUID);
-                            verticesNext.Add(ClippedVertex.NewPolygonIntersectionVertex( intersection, intersectionUID, cv0.intersectionFromUID, cv1.intersectionToUID ));
+                            verticesNext.Add(ClippedVertex.NewPolygonIntersectionVertex(intersection, intersectionUID, cv0.intersectionFromUID, cv1.intersectionToUID));
                         }
 
                         // - Intersection at a site point
                         else
                         {
-                            verticesNext.Add(ClippedVertex.NewSiteVertex( intersection, m0 < 0.0001f ? edge.Vert0 : edge.Vert1 ));
+                            verticesNext.Add(ClippedVertex.NewSiteVertex(intersection, m0 < 0.0001f ? edge.Vert0 : edge.Vert1));
                         }
-                        
+
                         // - Points straddling start of inside
                         if (p1Inside) verticesNext.Add(cv1);
                     }
@@ -239,16 +242,16 @@ namespace GK
 
 
                 // Update to use next set of points
-                var tmp = verticesCurrent;
-                verticesCurrent = verticesNext;
-                verticesNext = tmp;
+                (verticesNext, verticesCurrent) = (verticesCurrent, verticesNext);
             }
 
 
             // Create clipped site
-            ClippedSite clippedSite = new ClippedSite();
-            clippedSite.clippedCentroid = diag.Sites[site];
-            clippedSite.clippedVertices = new List<ClippedVertex>();
+            ClippedSite clippedSite = new ClippedSite
+            {
+                clippedCentroid = diag.Sites[site],
+                clippedVertices = new List<ClippedVertex>()
+            };
             clippedSite.clippedVertices.AddRange(verticesCurrent);
             return clippedSite;
         }

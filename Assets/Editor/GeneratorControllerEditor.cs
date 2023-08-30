@@ -1,13 +1,12 @@
 
 using UnityEditor;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 
 [CustomEditor(typeof(GeneratorController))]
 public class GeneratorControllerEditor : Editor
 {
-    private GeneratorController controller => (GeneratorController)target;
+    private GeneratorController Controller => (GeneratorController)target;
     private VisualTreeAsset xuml;
 
 
@@ -19,10 +18,10 @@ public class GeneratorControllerEditor : Editor
         if (xuml == null) return inspector;
         xuml.CloneTree(inspector);
 
-        inspector.Q<Button>("ButtonFindGenerators").clicked += () => controller.FindGenerators();
-        inspector.Q<Button>("ButtonGenerate").clicked += () => controller.Generate();
-        inspector.Q<Button>("ButtonClear").clicked += () => controller.Clear();
-        inspector.Q<Button>("ButtonRandomize").clicked += () => controller.RandomizeSeed();
+        inspector.Q<Button>("ButtonFindGenerators").clicked += () => Controller.FindGenerators();
+        inspector.Q<Button>("ButtonGenerate").clicked += () => Controller.Generate();
+        inspector.Q<Button>("ButtonClear").clicked += () => Controller.Clear();
+        inspector.Q<Button>("ButtonRandomize").clicked += () => Controller.RandomizeSeed();
 
         return inspector;
     }

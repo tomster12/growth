@@ -1,6 +1,7 @@
 
 using UnityEngine;
 
+
 public class PolygonMeshGenerator : MonoBehaviour, IGenerator
 {
     [Header("Parameters")]
@@ -9,10 +10,10 @@ public class PolygonMeshGenerator : MonoBehaviour, IGenerator
     [SerializeField] private CircleCollider2D circleToFit;
     [SerializeField] private Color[] colorRange = new Color[] { new Color(0, 0, 0), new Color(1, 1, 1) };
     [SerializeField] private NoiseData colorNoise = new NoiseData(new float[] { 0, 1 });
-    
-    public bool isGenerated { get; private set; } = false;
-    public bool IsGenerated() => isGenerated;
 
+    public bool IsGenerated { get; private set;}
+    public string Name => "Poly. Mesh";
+    
     private Mesh mesh;
 
 
@@ -20,7 +21,7 @@ public class PolygonMeshGenerator : MonoBehaviour, IGenerator
     {
         mesh = null;
         mf.mesh = null;
-        isGenerated = false;
+        IsGenerated = false;
     }
 
     public void Generate()
@@ -70,14 +71,14 @@ public class PolygonMeshGenerator : MonoBehaviour, IGenerator
         }
 
         // Create new mesh and set
-        mesh = new Mesh();
-        mesh.vertices = vertices;
-        mesh.triangles = triangles;
-        mesh.colors = colors;
+        mesh = new Mesh
+        {
+            vertices = vertices,
+            triangles = triangles,
+            colors = colors
+        };
         mf.mesh = mesh;
 
-        isGenerated = true;
+        IsGenerated = true;
     }
-
-    public string GetName() => "Poly. Mesh";
 }

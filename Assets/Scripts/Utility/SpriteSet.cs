@@ -14,6 +14,13 @@ public class SpriteSet : MonoBehaviour
     private Dictionary<string, Sprite> sprites = new Dictionary<string, Sprite>();
 
 
+    public Sprite GetSprite(string name)
+    {
+        if (!isInitialized) Initialize();
+        return sprites[name];
+    }
+
+
     private void Awake()
     {
         instance = this;
@@ -22,12 +29,5 @@ public class SpriteSet : MonoBehaviour
     private void Initialize()
     {
         foreach (Sprite sprite in spriteList) sprites[sprite.name] = sprite;
-    }
-
-
-    public Sprite GetSprite(string name)
-    {
-        if (!isInitialized) Initialize();
-        return sprites[name];
     }
 }

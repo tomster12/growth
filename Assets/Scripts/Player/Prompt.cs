@@ -8,12 +8,12 @@ public class Prompt : MonoBehaviour, IOrganiserChild
     [SerializeField] private SpriteRenderer spriteRendererInput;
     [SerializeField] private SpriteRenderer spriteRendererIcon;
 
+    public bool IsSet => interaction != null;
+
     private Interaction interaction;
 
-    public bool isSet => interaction != null;
 
-
-    public bool GetVisible() => isSet && interaction.isEnabled;
+    public bool GetVisible() => IsSet && interaction.IsEnabled;
 
     public Transform GetTransform() => transform;
 
@@ -34,7 +34,7 @@ public class Prompt : MonoBehaviour, IOrganiserChild
     private void UpdateElements()
     {
         // Enabled so update
-        if (isSet && interaction.isEnabled)
+        if (IsSet && interaction.IsEnabled)
         {
             spriteRendererInput.sprite = interaction.GetCurrentSpriteInput();
             spriteRendererIcon.sprite = interaction.GetCurrentSpriteIcon();

@@ -18,8 +18,6 @@ public class PlayerController : MonoBehaviour, IFollowable
     [SerializeField] private float feetLowerStrength = 0.1f;
     [SerializeField] private float verticalLeanHeight = 0.2f;
     [SerializeField] private float baseFeetHeight = 1.0f;
-    public float feetHeight => baseFeetHeight + inputVerticalLean * verticalLeanHeight;
-    public float groundedHeight => feetHeight + groundedSpacing;
     [Space(10)]
     [SerializeField] private float airDrag = 1.0f;
     [SerializeField] private float airAngularDrag = 1.0f;
@@ -35,20 +33,42 @@ public class PlayerController : MonoBehaviour, IFollowable
     [Space(10)]
     [SerializeField] private bool drawGizmos = false;
 
-    public Vector2 rightDir => new Vector2(upDir.y, -upDir.x);
-    public Rigidbody2D rb => characterRB;
-    public new Transform transform => characterRB.transform;
-    public Vector2 groundPosition { get; private set; }
-    public Vector2 groundDir { get; private set; }
-    public Vector2 upDir { get; private set; }
-    public Vector2 targetPosition { get; private set; }
-    public bool isGrounded { get; private set; }
-    public Vector2 inputDir { get; private set; }
-    public float movementSlowdown = 0.0f;
+    public float FeetHeight => baseFeetHeight + inputVerticalLean * verticalLeanHeight;
+    public float GroundedHeight => FeetHeight + groundedSpacing;
+    public Vector2 RightDir => new Vector2(UpDir.y, -UpDir.x);
+    public Rigidbody2D RB => characterRB;
+    public Transform Transform => characterRB.transform;
+    public Vector2 GroundPosition { get; private set; }
+    public Vector2 GroundDir { get; private set; }
+    public Vector2 UpDir { get; private set; }
+    public Vector2 TargetPosition { get; private set; }
+    public bool IsGrounded { get; private set; }
+    public Vector2 InputDir { get; private set; }
+    public float MovementSlowdown { get; set; }
 
     private bool inputJump;
     private float inputVerticalLean;
     private float jumpTimer = 0.0f;
+
+
+    public Transform GetFollowTransform() => characterRB.transform;
+
+    public Vector2 GetFollowPosition() => characterRB.position;
+
+    public Vector2 GetFollowUpwards() => UpDir;
+
+    public Vector2 GetJumpDir()
+    {
+        Vector2 jumpDir = UpDir;
+
+        if (characterRB.velocity.magnitude > verticalJumpThreshold)
+        {
+            float rightComponent = Vector2.Dot(characterRB.velocity.normalized, RightDir);
+            jumpDir += RightDir * Mathf.Sign(rightComponent);
+        }
+
+        return jumpDir.normalized;
+    }
 
 
     private void Start()
@@ -57,44 +77,23 @@ public class PlayerController : MonoBehaviour, IFollowable
         playerCamera.SetModeFollow(this, true);
     }
 
-
-    public Transform GetFollowTransform() => characterRB.transform;
-
-    public Vector2 GetFollowPosition() => characterRB.position;
-
-    public Vector2 GetFollowUpwards() => upDir;
-
-    public Vector2 GetJumpDir()
-    {
-        Vector2 jumpDir = upDir;
-
-        if (characterRB.velocity.magnitude > verticalJumpThreshold)
-        {
-            float rightComponent = Vector2.Dot(characterRB.velocity.normalized, rightDir);
-            jumpDir += rightDir * Mathf.Sign(rightComponent);
-        }
-
-        return jumpDir.normalized;
-    }
-
-
     private void Update()
     {
-        if (GameManager.isPaused) return;
+        if (GameManager.IsPaused) return;
         HandleInput();
     }
 
     private void HandleInput()
     {
         // Take in input
-        inputDir = Vector3.zero;
-        inputDir += Input.GetAxisRaw("Horizontal") * rightDir;
-        inputVerticalLean = (playerInteractor.squeezeAmount != 0.0f)
-                            ? (-playerInteractor.squeezeAmount)
+        InputDir = Vector3.zero;
+        InputDir += Input.GetAxisRaw("Horizontal") * RightDir;
+        inputVerticalLean = (playerInteractor.SqueezeAmount != 0.0f)
+                            ? (-playerInteractor.SqueezeAmount)
                             : (Input.GetAxisRaw("Vertical") == 0 ? 0 : (int)Mathf.Sign(Input.GetAxisRaw("Vertical")));
         
         // Vertical movement while not grounded
-        if (!isGrounded) inputDir += Input.GetAxisRaw("Horizontal") * rightDir;
+        if (!IsGrounded) InputDir += Input.GetAxisRaw("Horizontal") * RightDir;
 
         // Update input jump
         inputJump = Input.GetKey(KeyCode.Space);
@@ -102,45 +101,45 @@ public class PlayerController : MonoBehaviour, IFollowable
 
     private void FixedUpdate()
     {
-        if (GameManager.isPaused) return;
+        if (GameManager.IsPaused) return;
         
         // Calculate closest world and ground position
         World.GetClosestWorld(characterRB.transform.position, out Vector2 closestGroundPosition);
-        groundPosition = closestGroundPosition;
+        GroundPosition = closestGroundPosition;
 
         // Calculate ground positions
-        groundDir = groundPosition - (Vector2)characterRB.transform.position;
-        isGrounded = groundDir.magnitude < groundedHeight;
-        upDir = groundDir.normalized * -1;
+        GroundDir = GroundPosition - (Vector2)characterRB.transform.position;
+        IsGrounded = GroundDir.magnitude < GroundedHeight;
+        UpDir = GroundDir.normalized * -1;
         FixedUpdateMovement();
     }
 
     private void FixedUpdateMovement()
     {
         //  Rotate upwards
-        float angleDiff = isGrounded
-            ? (Vector2.SignedAngle(characterRB.transform.up, upDir)) % 360
-            : (Vector2.SignedAngle(characterRB.transform.up, rb.velocity.normalized)) % 360;
+        float angleDiff = IsGrounded
+            ? (Vector2.SignedAngle(characterRB.transform.up, UpDir)) % 360
+            : (Vector2.SignedAngle(characterRB.transform.up, RB.velocity.normalized)) % 360;
         characterRB.AddTorque(angleDiff * rotationSpeed * Mathf.Deg2Rad);
 
         // - While grounded
-        if (isGrounded)
+        if (IsGrounded)
         {
             characterRB.drag = groundDrag;
             characterRB.angularDrag = groundAngularDrag;
-            characterGravity.isEnabled = false;
+            characterGravity.IsEnabled = false;
 
             // Force upwards with legs
-            targetPosition = groundPosition + (upDir * feetHeight);
-            Vector2 dir = targetPosition - (Vector2)characterRB.transform.position;
-            float upComponent = Vector2.Dot(upDir, dir);
+            TargetPosition = GroundPosition + (UpDir * FeetHeight);
+            Vector2 dir = TargetPosition - (Vector2)characterRB.transform.position;
+            float upComponent = Vector2.Dot(UpDir, dir);
 
             if (upComponent > 0) characterRB.AddForce(dir * feetRaiseStrength, ForceMode2D.Impulse);
             else characterRB.AddForce(dir * feetLowerStrength, ForceMode2D.Impulse);
 
             // Force with input
-            float speed = groundMovementSpeed * (1.0f - movementSlowdown);
-            characterRB.AddForce(inputDir.normalized * speed, ForceMode2D.Impulse);
+            float speed = groundMovementSpeed * (1.0f - MovementSlowdown);
+            characterRB.AddForce(InputDir.normalized * speed, ForceMode2D.Impulse);
 
             // Jump force if inputting and can
             if (inputJump && jumpTimer == 0.0f)
@@ -159,7 +158,7 @@ public class PlayerController : MonoBehaviour, IFollowable
         {
             characterRB.drag = airDrag;
             characterRB.angularDrag = airAngularDrag;
-            characterGravity.isEnabled = true;
+            characterGravity.IsEnabled = true;
 
             // Reset jump timer to max
             jumpTimer = jumpTimerMax;
@@ -167,7 +166,7 @@ public class PlayerController : MonoBehaviour, IFollowable
 
 
         // Force with input
-        characterRB.AddForce(inputDir.normalized * airMovementSpeed, ForceMode2D.Impulse);
+        characterRB.AddForce(InputDir.normalized * airMovementSpeed, ForceMode2D.Impulse);
     }
 
     private void OnDrawGizmos()
@@ -190,20 +189,20 @@ public class PlayerController : MonoBehaviour, IFollowable
         //}
 
         // Draw to uncontrolled
-        if (groundPosition != Vector2.zero)
+        if (GroundPosition != Vector2.zero)
         {
             Gizmos.color = Color.white;
-            Gizmos.DrawSphere(groundPosition + upDir * groundedHeight, 0.025f);
+            Gizmos.DrawSphere(GroundPosition + UpDir * GroundedHeight, 0.025f);
         }
 
         // Draw to target
-        if (targetPosition != Vector2.zero && isGrounded)
+        if (TargetPosition != Vector2.zero && IsGrounded)
         {
             Gizmos.color = Color.green;
-            Gizmos.DrawLine(characterRB.transform.position, targetPosition);
+            Gizmos.DrawLine(characterRB.transform.position, TargetPosition);
 
             Gizmos.color = Color.blue;
-            Gizmos.DrawSphere(targetPosition, 0.025f);
+            Gizmos.DrawSphere(TargetPosition, 0.025f);
         }
     }
 }

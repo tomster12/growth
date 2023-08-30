@@ -6,7 +6,7 @@ using UnityEngine;
 [Serializable]
 class InteractionPluck : Interaction
 {
-    public bool isPlucked { get; private set; }
+    public bool IsPlucked { get; private set; }
 
     private Action onPluck;
     private float pluckTimerMax;
@@ -21,14 +21,14 @@ class InteractionPluck : Interaction
         this.pluckTimerMax = pluckTimerMax;
 
         // Initialize as enabled
-        isEnabled = true;
+        IsEnabled = true;
     }
 
 
     public void Update()
     {
         // Decrease timer and pluck once done
-        if (isActive)
+        if (IsActive)
         {
             pluckTimer = Mathf.Min(pluckTimer + Time.deltaTime, pluckTimerMax);
             IInteractor.SetSqueezeAmount(0.8f * pluckTimer / pluckTimerMax);
@@ -41,8 +41,8 @@ class InteractionPluck : Interaction
     protected override void OnInputDown(IInteractor IInteractor)
     {
         // Begin timer decreasing and update variables
-        if (isPlucked) return;
-        isActive = true;
+        if (IsPlucked) return;
+        IsActive = true;
         pluckTimer = 0.0f;
         this.IInteractor = IInteractor;
         this.IInteractor.SetInteracting(true);
@@ -51,12 +51,12 @@ class InteractionPluck : Interaction
     protected override void OnInputUp(IInteractor IInteractor)
     {
         // Stop timer decreasing and reset variables
-        if (isPlucked) return;
-        isActive = false;
+        if (IsPlucked) return;
+        IsActive = false;
         pluckTimer = 0.0f;
         if (this.IInteractor != null)
         {
-            isActive = false;
+            IsActive = false;
             this.IInteractor.SetSqueezeAmount(0.0f);
             this.IInteractor.SetInteracting(false);
             this.IInteractor = null;
@@ -65,12 +65,12 @@ class InteractionPluck : Interaction
 
     private void OnPluck()
     {
-        if (isPlucked) return;
+        if (IsPlucked) return;
 
         // Update interaction variables
-        isPlucked = true;
-        isActive = false;
-        isEnabled = false;
+        IsPlucked = true;
+        IsActive = false;
+        IsEnabled = false;
 
         pluckTimer = 0.0f;
         IInteractor.SetSqueezeAmount(0.0f);
