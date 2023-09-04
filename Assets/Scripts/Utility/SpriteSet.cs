@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class SpriteSet : MonoBehaviour
 {
-    public static SpriteSet instance;
+    public static SpriteSet Instance { get; private set; }
 
     [SerializeField] private Sprite[] spriteList;
 
@@ -23,7 +23,7 @@ public class SpriteSet : MonoBehaviour
 
     private void Awake()
     {
-        instance = this;
+        Instance = this;
     }
 
     private void Initialize()

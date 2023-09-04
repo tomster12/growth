@@ -88,8 +88,8 @@ public class PlayerController : MonoBehaviour, IFollowable
         // Take in input
         InputDir = Vector3.zero;
         InputDir += Input.GetAxisRaw("Horizontal") * RightDir;
-        inputVerticalLean = (playerInteractor.SqueezeAmount != 0.0f)
-                            ? (-playerInteractor.SqueezeAmount)
+        inputVerticalLean = (playerInteractor.CursorSpacing != 0.0f)
+                            ? (-playerInteractor.CursorSpacing)
                             : (Input.GetAxisRaw("Vertical") == 0 ? 0 : (int)Mathf.Sign(Input.GetAxisRaw("Vertical")));
         
         // Vertical movement while not grounded

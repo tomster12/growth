@@ -7,6 +7,7 @@ public class World : MonoBehaviour
 {
     public static List<World> worlds = new List<World>();
     
+    public static World GetClosestWorld(Vector2 pos) => GetClosestWorld(pos, out Vector2 _);
     public static World GetClosestWorld(Vector2 pos, out Vector2 groundPosition)
     {
         // Loop over and find the closest world

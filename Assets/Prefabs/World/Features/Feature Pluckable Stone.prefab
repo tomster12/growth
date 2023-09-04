@@ -17,7 +17,6 @@ GameObject:
   - component: {fileID: 3338917768004317440}
   - component: {fileID: 3338917768004317458}
   - component: {fileID: 3132586360992694577}
-  - component: {fileID: 9030188980349619821}
   - component: {fileID: -7607101712983403901}
   m_Layer: 11
   m_Name: Feature Pluckable Stone
@@ -211,31 +210,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59dca7b3da9ff3d47be59f9d056533ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cl: {fileID: 3338917768004317451}
-  controlDrag: 20
-  idleDrag: 0.5
-  density: 2
-  _hasComponentHighlight: 1
-  _hasComponentPhysical: 0
-  _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
+  _CL: {fileID: 3338917768004317452}
+  _density: 1
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
   popDir: {x: 0, y: 0}
---- !u!114 &9030188980349619821
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3338917768004317453}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c68b36e5e6f141b4fa8d1cd83375b4b9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &-7607101712983403901
 MonoBehaviour:
   m_ObjectHideFlags: 0

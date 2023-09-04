@@ -1,6 +1,5 @@
 
 using System.Linq;
-using System.Collections.Generic;
 using UnityEngine;
 
 
@@ -44,23 +43,23 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
     [SerializeField] private Color legDirInteractColor = new Color(1.0f, 1.0f, 1.0f, 0.25f);
     [SerializeField] private float promptOffset = 1.0f;
 
-    public float SqueezeAmount { get; private set; }
-    private int AreTargetInteractionsEnabled => targetInteractions == null ? 0 : targetInteractions.Where(i => i.IsEnabled).Count();
+    public float CursorSpacing { get; private set; }
 
     private LineHelper controlLimitLH;
     private LineHelper targetDirLH;
     private Vector2 hoverPos;
     private float hoverDistance;
-    private IRichObject targetIInteractable;
-    private List<Interaction> targetInteractions;
+    private ComposableObject targetComposable;
     private float targetDistance;
     private bool isControlling;
-    private bool isInteracting;
+    private Interaction currentInteraction;
+    private bool IsInteracting => currentInteraction != null;
+    private bool IsTargeting => targetComposable != null;
 
 
-    public void SetSqueezeAmount(float squeezeAmount) => this.SqueezeAmount = squeezeAmount;
+    public void SetInteractionEmphasis(float emphasis) => this.CursorSpacing = emphasis;
 
-    public void SetInteracting(bool isInteracting) => this.isInteracting = isInteracting;
+    public void SetInteraction(Interaction interaction) => this.currentInteraction = interaction;
     
     public void SetControlled(bool toControl) => SetTargetControlled(toControl);
 
@@ -95,9 +94,9 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
     {
         if (GameManager.IsPaused) return;
         HandleInput();
-        UpdateHover();
-        UpdateControlled();
-        UpdateInteraction();
+        UpdateHovering();
+        UpdateControlling();
+        UpdateInteracting();
     }
 
     private void HandleInput()
@@ -107,51 +106,55 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         hoverDistance = (hoverPos - (Vector2)playerController.Transform.position).magnitude;
     }
 
-    private void UpdateHover()
+    private void UpdateHovering()
     {
         // Only retarget if not controlling or interacting
-        if (!isControlling && !isInteracting)
+        if (!isControlling && !IsInteracting)
         {
-            IRichObject hoveredIInteractable = null;
+            ComposableObject hoveredComposable = null;
 
             // - Mouse close enough to hover new
             if (hoverDistance < maxHoverDistance)
             {
-                // Raycast at mouse on all cursorHoverables
+                // Raycast at mouse on all ComposableObjects
                 RaycastHit2D[] hits = Physics2D.RaycastAll(hoverPos, Vector2.zero);
                 foreach (RaycastHit2D hit in hits)
                 {
-                    IRichObject hitIInteractable = hit.transform.GetComponent<IRichObject>();
-                    if (hitIInteractable != null) { hoveredIInteractable = hitIInteractable; break; }
+                    ComposableObject hitComposable = hit.transform.GetComponent<ComposableObject>();
+                    if (hitComposable != null) { hoveredComposable = hitComposable; break; }
                 }
             }
 
-            // - Overwrite current hover
-            if (hoveredIInteractable != targetIInteractable)
+            // - Overwrite current target
+            if (hoveredComposable != targetComposable)
             {
-                targetIInteractable?.SetHovered(false);
-                targetIInteractable = hoveredIInteractable;
-                targetIInteractable?.SetHovered(true);
-                SetTargetInteractions(targetIInteractable?.GetInteractions());
+                targetComposable?.PartInteractable?.StopViewingInteractions();
+                targetComposable?.PartHighlightable?.SetHighlighted(false);
+                targetComposable = hoveredComposable;
+                targetComposable?.PartHighlightable?.SetHighlighted(true);
+                targetComposable?.PartInteractable?.StartViewingInteractions(this);
+                UpdateInteractionsList();
             }
         }
     }
 
-    private void UpdateControlled()
+    private void UpdateControlling()
     {
         // Currently controlling
         if (isControlling)
         {
-            targetDistance = (targetIInteractable.GetPosition() - (Vector2)playerController.Transform.position).magnitude;
+            // Calcoulate target distance
+            Vector2 targetDir = targetComposable.Position - (Vector2)playerController.Transform.position;
+            targetDistance = targetDir.magnitude;
             
-            // - Set control position
+            // - Recalculate hoverDir and set control position
             Vector2 hoverDir = hoverPos - (Vector2)playerController.Transform.position;
             Vector2 limitedHoverDir = Vector2.ClampMagnitude(hoverDir, maxControlDistance);
             Vector2 limitedHoverPos = (Vector2)playerController.Transform.position + limitedHoverDir;
-            targetIInteractable.SetControlPosition(limitedHoverPos, controlForce);
+            targetComposable.PartControllable.SetControlPosition(limitedHoverPos, controlForce);
 
             // - Mouse outside control length so show circle
-            float outsidePct = Mathf.Min(1.0f - (maxControlDistance - hoverDir.magnitude) / controlWarningDistance, 1.0f);
+            float outsidePct = Mathf.Min(1.0f - (maxControlDistance - targetDistance) / controlWarningDistance, 1.0f);
             if (outsidePct > 0.0f)
             {
                 controlLimitLH.SetActive(true);
@@ -176,27 +179,34 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
             controlLimitLH.SetActive(false);
 
             // - Not interacting, hovering and clicked so pickup object
-            if (!isInteracting && targetIInteractable != null && targetIInteractable.CanControl && Input.GetMouseButtonDown(0)) SetTargetControlled(true);
+            if (!IsInteracting
+                && targetComposable != null
+                && targetComposable.HasPartControllable
+                && targetComposable.PartControllable.CanControl
+                && Input.GetMouseButtonDown(0))
+            {
+                SetTargetControlled(true);
+            }
         }
     }
 
-    private void UpdateInteraction()
+    private void UpdateInteracting()
     {
         // Point legs at controlled or interacted
-        if (isInteracting || isControlling)
+        if (IsInteracting || isControlling)
         {
-            // - lUpdate leg variables
+            // - Update leg variables
             playerLegs.IsPointing = true;
             playerLegs.PointingLeg = 2;
-            playerLegs.PointingPos = targetIInteractable.GetPosition();
+            playerLegs.PointingPos = targetComposable.Position;
 
             // - Draw line
             targetDirLH.SetActive(true);
             Vector2 pathStart = playerLegs.GetLegEnd(playerLegs.PointingLeg);
-            Vector2 pathEnd = targetIInteractable.GetPosition();
+            Vector2 pathEnd = targetComposable.Position;
             Vector3 pathStartFixed = new Vector3(pathStart.x, pathStart.y, playerController.Transform.position.z + 0.1f);
             Vector3 pathEndFixed = new Vector3(pathEnd.x, pathEnd.y, playerController.Transform.position.z + 0.1f);
-            Color col = isInteracting ? legDirInteractColor : legDirControlColor;
+            Color col = IsInteracting ? legDirInteractColor : legDirControlColor;
             if (isControlling) col.a *= 0.1f + 0.9f * Mathf.Max(1.0f - targetDistance / maxControlDistance, 0.0f);
             targetDirLH.DrawLine(pathStartFixed, pathEndFixed, col, LineHelper.LineFill.SOLID);
         }
@@ -209,25 +219,30 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         }
 
         // Update slowdown
-        playerController.MovementSlowdown = isInteracting ? interactSlowdown : isControlling ? controlSlowdown : 0.0f;
-
-        // Update interactions
-        if (targetInteractions != null)
-        {
-            foreach (Interaction interaction in targetInteractions) interaction.TryInteract(this);
-        }
+        playerController.MovementSlowdown = IsInteracting ? interactSlowdown : isControlling ? controlSlowdown : 0.0f;
     }
     
+    private void UpdateInteractionsList()
+    {
+        // Clear organiser, add all children, update organiser
+        promptOrganiser.Clear();
+        if (targetComposable?.PartInteractable != null)
+        {
+            foreach (Interaction interaction in targetComposable.PartInteractable.Interactions)
+            {
+                GameObject promptGO = Instantiate(promptPfb);
+                Prompt prompt = promptGO.GetComponent<Prompt>();
+                prompt.SetInteraction(interaction);
+                promptOrganiser.AddChild(prompt);
+            }
+            promptOrganiser.UpdateChildren();
+        }
+    }
+
     private void FixedUpdate()
     {
         if (GameManager.IsPaused) return;
         FixedUpdateCursor();
-    }
-
-    private void LateUpdate()
-    {
-        if (GameManager.IsPaused) return;
-        LateUpdateCursor();
     }
 
     private void FixedUpdateCursor()
@@ -236,7 +251,7 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         centreIndicator.gameObject.SetActive(isControlling);
 
         // Hovering / controlling so surround
-        if (targetIInteractable != null)
+        if (targetComposable != null)
         {
             // - Controlling so set centre
             if (isControlling)
@@ -256,15 +271,21 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         }
     }
 
+    private void LateUpdate()
+    {
+        if (GameManager.IsPaused) return;
+        LateUpdateCursor();
+    }
+
     private void LateUpdateCursor()
     {
         // Hovering / controlling so surround
-        if (targetIInteractable != null)
+        if (targetComposable != null)
         {
             // Calculate targets
-            Bounds b = targetIInteractable.GetHoverBounds();
+            Bounds b = targetComposable.Bounds;
             Vector2 targetPos = b.center;
-            float gap = isControlling ? cursorControlGap : (cursorHoverGap * (1.0f - SqueezeAmount));
+            float gap = isControlling ? cursorControlGap : (cursorHoverGap * (1.0f - CursorSpacing));
             Vector2 targetTLPos = new Vector2(b.center.x - b.extents.x - gap, b.center.y + b.extents.y + gap);
             Vector2 targetTRPos = new Vector2(b.center.x + b.extents.x + gap, b.center.y + b.extents.y + gap);
             Vector2 targetBLPos = new Vector2(b.center.x - b.extents.x - gap, b.center.y - b.extents.y - gap);
@@ -294,11 +315,11 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
 
         // Calculate correct color
         Color cursorColor =
-            (isInteracting) ? cursorColorInteracting
-            : (AreTargetInteractionsEnabled > 0) ? cursorColorInteractable
-            : (isControlling) ? cursorColorControl
+            (IsInteracting) ? cursorColorInteracting
+            : (GetAvailableInteractionsCount() > 0) ? cursorColorInteractable
+            : isControlling ? cursorColorControl
             : (hoverDistance > maxHoverDistance) ? cursorColorFar
-            : (targetIInteractable != null) ? cursorColoHover
+            : (targetComposable != null) ? cursorColoHover
             : cursorColorIdle;
 
         // Lerp colours
@@ -311,37 +332,24 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         promptOrganiser.transform.localPosition = Vector3.right * promptOffset;
     }
 
-    private void SetTargetInteractions(List<Interaction> targetInteractions)
+    private int GetAvailableInteractionsCount()
     {
-        // Update variables
-        this.targetInteractions = targetInteractions;
-
-        // Clear organiser, add all children, update organiser
-        promptOrganiser.Clear();
-        if (targetInteractions != null)
-        {
-            foreach (Interaction interaction in targetInteractions)
-            {
-                GameObject promptGO = Instantiate(promptPfb);
-                Prompt prompt = promptGO.GetComponent<Prompt>();
-                prompt.SetInteraction(interaction);
-                promptOrganiser.AddChild(prompt);
-            }
-            promptOrganiser.UpdateChildren();
-        }
+        if (targetComposable == null) return 0;
+        if (targetComposable.PartInteractable == null) return 0;
+        return targetComposable.PartInteractable.Interactions.Where(i => i.IsEnabled && !i.IsBlocked).Count();
     }
 
     private bool SetTargetControlled(bool toControl)
     {
-        if (targetIInteractable == null || toControl == isControlling) return false;
+        if (targetComposable == null || toControl == isControlling) return false;
 
         // Try begin controlling (pickup)
         if (toControl)
         {
-            if (targetIInteractable.SetControlled(true))
+            if (targetComposable.PartControllable.SetControlled(true))
             {
                 isControlling = true;
-                targetIInteractable.SetControlPosition(targetIInteractable.GetPosition(), controlForce);
+                targetComposable.PartControllable.SetControlPosition(targetComposable.Position, controlForce);
                 return true;
             }
         }
@@ -349,7 +357,7 @@ public class PlayerInteractor : MonoBehaviour, IInteractor
         // Try stop controlling (drop)
         else
         {
-            if (targetIInteractable.SetControlled(false))
+            if (targetComposable.PartControllable.SetControlled(false))
             {
                 isControlling = false;
                 return true;

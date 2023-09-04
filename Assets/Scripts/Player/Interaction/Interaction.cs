@@ -32,18 +32,18 @@ public class Interaction
         this.Input = input;
         this.VisibilityState = visibility;
 
-        blockedSprite = SpriteSet.instance.GetSprite("cross");
-        spriteInputInactive = SpriteSet.instance.GetSprite(this.Input.name + "_inactive");
-        spriteInputActive  = SpriteSet.instance.GetSprite(this.Input.name + "_active");
+        blockedSprite = SpriteSet.Instance.GetSprite("cross");
+        spriteInputInactive = SpriteSet.Instance.GetSprite(this.Input.name + "_inactive");
+        spriteInputActive  = SpriteSet.Instance.GetSprite(this.Input.name + "_active");
         if (iconSpriteName != null)
         {
-            spriteIconInactive = SpriteSet.instance.GetSprite(iconSpriteName + "_inactive");
-            spriteIconActive = SpriteSet.instance.GetSprite(iconSpriteName + "_active");
+            spriteIconInactive = SpriteSet.Instance.GetSprite(iconSpriteName + "_inactive");
+            spriteIconActive = SpriteSet.Instance.GetSprite(iconSpriteName + "_active");
         }
     }
 
 
-    public bool TryInteract(IInteractor IInteractor)
+    public bool PollInput(IInteractor IInteractor)
     {
         if (!IsEnabled) return false;
         else if (Input.CheckInputDown()) OnInputDown(IInteractor);
@@ -68,9 +68,9 @@ public class Interaction
     }
 
 
-    protected virtual void OnHold(IInteractor IInteractor) { }
+    protected virtual void OnHold(IInteractor IObjectController) { }
 
-    protected virtual void OnInputDown(IInteractor IInteractor) { }
+    protected virtual void OnInputDown(IInteractor IObjectController) { }
 
-    protected virtual void OnInputUp(IInteractor IInteractor) { }
+    protected virtual void OnInputUp(IInteractor IObjectController) { }
 }

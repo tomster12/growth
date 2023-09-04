@@ -24,7 +24,7 @@ public class GeneratorController : MonoBehaviour
             .ToList();
 
         List<IGeneratorProxy> otherIGeneratorProxies = allIGenerators
-            .Where(g => !compositeIGeneratorProxies.Any(cg => cg.IGenerator == g || cg.compositeIGeneratorProxies.Any(p => p.IGenerator == g)))
+            .Where(g => !compositeIGeneratorProxies.Any(gp => gp.IGenerator == g || gp.compositeIGeneratorProxies.Any(cgp => cgp.IGenerator == g)))
             .Select(g => new IGeneratorProxy(g))
             .ToList();
         
