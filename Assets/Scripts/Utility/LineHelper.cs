@@ -2,19 +2,15 @@
 using UnityEngine;
 
 
+public enum LineFill { NONE, SOLID, DOTTED }
+
 public class LineHelper : MonoBehaviour
 {
-    public enum LineMode { NONE, LINE, CIRCLE }
-    
-    public enum LineFill { NONE, SOLID, DOTTED }
-
-
     private static int circleVertexCount = 25;
 
     [SerializeField] private Material materialDottedPfb;
     [SerializeField] private Material materialSolidPfb;
 
-    public LineMode CurrentLineMode { get; private set; } = LineMode.NONE;
     public LineFill CurrentLineFill { get; private set; } = LineFill.NONE;
     public float repeatMult = 0.8f;
 
@@ -23,13 +19,14 @@ public class LineHelper : MonoBehaviour
     private LineRenderer lineRenderer;
 
 
-
-    public void DrawCircle(Vector3 centre, float radius, Color color, LineFill lineFill = LineFill.SOLID)
+    public void DrawCircle(Vector3 centre, float radius, Color color, float width = 0.1f, LineFill lineFill = LineFill.SOLID)
     {
-        SetMode(LineMode.CIRCLE);
         SetFill(lineFill);
 
-        // Set color
+        // Set variables
+        lineRenderer.positionCount = circleVertexCount + 1;
+        lineRenderer.startWidth = width;
+        lineRenderer.endWidth = width;
         lineRenderer.startColor = color;
         lineRenderer.endColor = color;
 
@@ -42,19 +39,21 @@ public class LineHelper : MonoBehaviour
         }
 
         // Set repeats
-        if (this.CurrentLineFill == LineFill.DOTTED)
+        if (CurrentLineFill == LineFill.DOTTED)
         {
             float length = 2 * radius * Mathf.PI;
             materialDotted.SetFloat("_Rep", length * repeatMult);
         }
     }
 
-    public void DrawLine(Vector3 from, Vector3 to, Color color, LineFill lineFill = LineFill.SOLID)
+    public void DrawLine(Vector3 from, Vector3 to, Color color, float width = 0.1f, LineFill lineFill = LineFill.SOLID)
     {
-        SetMode(LineMode.LINE);
         SetFill(lineFill);
 
-        // Set color
+        // Set variables
+        lineRenderer.positionCount = 2;
+        lineRenderer.startWidth = width;
+        lineRenderer.endWidth = width;
         lineRenderer.startColor = color;
         lineRenderer.endColor = color;
 
@@ -63,13 +62,40 @@ public class LineHelper : MonoBehaviour
         lineRenderer.SetPosition(1, to);
 
         // Set repeats
-        if (this.CurrentLineFill == LineFill.DOTTED)
+        if (CurrentLineFill == LineFill.DOTTED)
         {
             float length = (to - from).magnitude;
             materialDotted.SetFloat("_Rep", length * repeatMult);
         }
     }
-    
+
+    public void DrawCurve(Vector3 from, Vector3 to, Vector3 control, Color color, float width = 0.1f, int segmentCount = 20, LineFill lineFill = LineFill.SOLID)
+    {
+        SetFill(lineFill);
+
+        // Set variables
+        lineRenderer.positionCount = segmentCount + 1;
+        lineRenderer.startWidth = width;
+        lineRenderer.endWidth = width;
+        lineRenderer.startColor = color;
+        lineRenderer.endColor = color;
+
+        // Calculate points along the curve
+        for (int i = 0; i <= segmentCount; i++)
+        {
+            float t = i / (float)segmentCount;
+            Vector3 p = Utility.CalculateBezierPoint(from, control, to, t);
+            lineRenderer.SetPosition(i, p);
+        }
+        
+        // Set repeats
+        if (CurrentLineFill == LineFill.DOTTED)
+        {
+            float length = Utility.CalculateBezierLength(from, control, to, segmentCount);
+            materialDotted.SetFloat("_Rep", length * repeatMult);
+        }
+    }
+
     public void SetActive(bool isActive) => lineRenderer.enabled = isActive;
 
 
@@ -81,37 +107,17 @@ public class LineHelper : MonoBehaviour
         lineRenderer = gameObject.AddComponent<LineRenderer>();
     }
 
-    private void SetMode(LineMode lineMode, float width=0.1f)
-    {
-        if (this.CurrentLineMode == lineMode) return;
-        this.CurrentLineMode = lineMode;
-
-        // Mode specific initialization
-        if (this.CurrentLineMode == LineMode.CIRCLE)
-        {
-            lineRenderer.positionCount = circleVertexCount + 1;
-        }
-        else if (this.CurrentLineMode == LineMode.LINE)
-        {
-            lineRenderer.positionCount = 2;
-        }
-
-        // Global line renderer setup
-        lineRenderer.startWidth = width;
-        lineRenderer.endWidth = width;
-    }
-
     private void SetFill(LineFill lineFill)
     {
-        if (this.CurrentLineFill == lineFill) return;
-        this.CurrentLineFill = lineFill;
+        if (CurrentLineFill == lineFill) return;
+        CurrentLineFill = lineFill;
 
         // Mode specific initialization
-        if (this.CurrentLineFill == LineFill.SOLID)
+        if (CurrentLineFill == LineFill.SOLID)
         {
             lineRenderer.material = materialSolid;
         }
-        else if (this.CurrentLineFill == LineFill.DOTTED)
+        else if (CurrentLineFill == LineFill.DOTTED)
         {
             lineRenderer.material = materialDotted;
         }

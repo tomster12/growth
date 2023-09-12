@@ -9,21 +9,21 @@ public class BendyNode
 {
     private BendyNode parent;
     [SerializeField] private Transform transform;
-    [SerializeField] private float length;
-    [SerializeField] private NoiseData noiseData;
-    [SerializeField] private float offsetAngle;
+    [SerializeField] private float length = 1.0f;
+    [SerializeField] private float windAmplitude = 10.0f;
+    [SerializeField] private float offsetAngle = 0.0f;
     [SerializeField] private List<BendyNode> children = new List<BendyNode>();
 
 
-    public BendyNode(float length, NoiseData noiseData, float offsetAngle=0.0f)
+    public BendyNode(float length, float windAmplitude, float offsetAngle=0.0f)
     {
         this.length = length;
-        this.noiseData = noiseData;
+        this.windAmplitude = windAmplitude;
         this.offsetAngle = offsetAngle;
     }
 
 
-    public void Awake()
+    public void Start()
     {
         Update();
     }
@@ -31,7 +31,9 @@ public class BendyNode
     public void Update()
     {
         // Set angle
-        float angle = offsetAngle + this.noiseData.GetNoise(transform.position + Vector3.one * Time.time);
+        Vector2 windDir = EnvironmentManager.GetWind(transform.position + transform.up * length * 0.5f);
+        float windAmount = Vector2.Dot(transform.right, windDir);
+        float angle = offsetAngle + windAmount * windAmplitude;
         transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, transform.localEulerAngles.y, angle);
         
         // Set position

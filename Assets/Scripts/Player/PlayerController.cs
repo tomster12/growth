@@ -43,9 +43,10 @@ public class PlayerController : MonoBehaviour, IFollowable
     public Vector2 UpDir { get; private set; }
     public Vector2 TargetPosition { get; private set; }
     public bool IsGrounded { get; private set; }
-    public Vector2 InputDir { get; private set; }
     public float MovementSlowdown { get; set; }
+    public float OverrideLean { get; set; }
 
+    public Vector2 inputDir;
     private bool inputJump;
     private float inputVerticalLean;
     private float jumpTimer = 0.0f;
@@ -85,18 +86,20 @@ public class PlayerController : MonoBehaviour, IFollowable
 
     private void HandleInput()
     {
-        // Take in input
-        InputDir = Vector3.zero;
-        InputDir += Input.GetAxisRaw("Horizontal") * RightDir;
-        inputVerticalLean = (playerInteractor.CursorSpacing != 0.0f)
-                            ? (-playerInteractor.CursorSpacing)
-                            : (Input.GetAxisRaw("Vertical") == 0 ? 0 : (int)Mathf.Sign(Input.GetAxisRaw("Vertical")));
+        // Take in input for movement
+        inputDir = Vector3.zero;
+        inputDir += Input.GetAxisRaw("Horizontal") * RightDir;
         
         // Vertical movement while not grounded
-        if (!IsGrounded) InputDir += Input.GetAxisRaw("Horizontal") * RightDir;
+        if (!IsGrounded) inputDir += Input.GetAxisRaw("Horizontal") * RightDir;
 
-        // Update input jump
+        // Take in input for jump
         inputJump = Input.GetKey(KeyCode.Space);
+
+        // Take in input for leaning
+        inputVerticalLean = 0.0f;
+        if (Input.GetAxisRaw("Vertical") != 0) inputVerticalLean = (int)Mathf.Sign(Input.GetAxisRaw("Vertical"));
+        if (OverrideLean != 0.0f) inputVerticalLean = -OverrideLean;
     }
 
     private void FixedUpdate()
@@ -117,9 +120,8 @@ public class PlayerController : MonoBehaviour, IFollowable
     private void FixedUpdateMovement()
     {
         //  Rotate upwards
-        float angleDiff = IsGrounded
-            ? (Vector2.SignedAngle(characterRB.transform.up, UpDir)) % 360
-            : (Vector2.SignedAngle(characterRB.transform.up, RB.velocity.normalized)) % 360;
+        Vector2 rotateTo = IsGrounded ? UpDir : RB.velocity.normalized;
+        float angleDiff = Vector2.SignedAngle(characterRB.transform.up, rotateTo) % 360
         characterRB.AddTorque(angleDiff * rotationSpeed * Mathf.Deg2Rad);
 
         // - While grounded
@@ -129,17 +131,16 @@ public class PlayerController : MonoBehaviour, IFollowable
             characterRB.angularDrag = groundAngularDrag;
             characterGravity.IsEnabled = false;
 
-            // Force upwards with legs
+            // Force to correct height with legs
             TargetPosition = GroundPosition + (UpDir * FeetHeight);
             Vector2 dir = TargetPosition - (Vector2)characterRB.transform.position;
             float upComponent = Vector2.Dot(UpDir, dir);
-
             if (upComponent > 0) characterRB.AddForce(dir * feetRaiseStrength, ForceMode2D.Impulse);
             else characterRB.AddForce(dir * feetLowerStrength, ForceMode2D.Impulse);
 
             // Force with input
             float speed = groundMovementSpeed * (1.0f - MovementSlowdown);
-            characterRB.AddForce(InputDir.normalized * speed, ForceMode2D.Impulse);
+            characterRB.AddForce(inputDir.normalized * speed, ForceMode2D.Impulse);
 
             // Jump force if inputting and can
             if (inputJump && jumpTimer == 0.0f)
@@ -166,7 +167,7 @@ public class PlayerController : MonoBehaviour, IFollowable
 
 
         // Force with input
-        characterRB.AddForce(InputDir.normalized * airMovementSpeed, ForceMode2D.Impulse);
+        characterRB.AddForce(inputDir.normalized * airMovementSpeed, ForceMode2D.Impulse);
     }
 
     private void OnDrawGizmos()

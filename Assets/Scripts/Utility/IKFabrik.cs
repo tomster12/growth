@@ -92,9 +92,12 @@ public class IKFabrik : MonoBehaviour
         }
     }
 
-    public void LateUpdate() => ResolveIK();
 
-    public void ResolveIK()
+    private void Start() => InitIK();
+
+    private void LateUpdate() => ResolveIK();
+
+    private void ResolveIK()
     {
         // Get positions and rotations
         for (int i = 0; i < Bones.Length; i++) bonesPos_RS[i] = TransformPosition_WorldToRS(Bones[i].position);
@@ -179,7 +182,7 @@ public class IKFabrik : MonoBehaviour
         }
     }
 
-    public void OnDrawGizmos()
+    private void OnDrawGizmos()
     {
         #if UNITY_EDITOR
         // Loop upwards through transforms
@@ -200,10 +203,7 @@ public class IKFabrik : MonoBehaviour
         }
         #endif
     }
-
-
-    private void Start() => InitIK();
-
+    
     private Vector2 TransformPosition_WorldToRS(Vector2 worldPos) => Quaternion.Inverse(boneRoot.rotation) * (worldPos - (Vector2)boneRoot.position);
     private Quaternion TransformRotation_WorldToRS(Quaternion worldRot) => Quaternion.Inverse(worldRot) * boneRoot.rotation;
 

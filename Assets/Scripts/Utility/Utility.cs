@@ -11,7 +11,6 @@ public static class Utility
         return Mathf.Abs(Vector3.Cross(A - B, A - C).z) * 0.5f;
     }
 
-
     public static Vector2 RandomInTriangle(Vector2 A, Vector2 B, Vector2 C)
     {
         // Return a random point in a triangle
@@ -23,12 +22,12 @@ public static class Utility
         return (m1 * A) + (m2 * B) + (m3 * C);
     }
 
-
     private static int[] RandomInPolygon_tris;
     private static Vector3[] RandomInPolygon_verts;
     private static int RandomInPolygon_triCount;
     private static float[] RandomInPolygon_triangleAreas;
     private static float RandomInPolygon_totalArea;
+
     public static Vector2 RandomInPolygon(PolygonCollider2D polygon, bool useCached = false)
     {
         // Generate all variables and store
@@ -74,14 +73,12 @@ public static class Utility
         );
     }
 
-
     public static Vector2 GetAveragePoint(List<Vector2> points)
     {
         Vector2 sum = Vector2.zero;
         points.ForEach(p => sum += p);
         return sum / points.Count;
     }
-
 
     public static bool PointInside(Vector2 p, List<Vector2> points)
     {
@@ -98,7 +95,6 @@ public static class Utility
         return inside;
     }
     
-
     public static float DistanceToPoints(Vector2 p, Vector2[] points)
     {
         float minDist = float.MaxValue;
@@ -121,11 +117,41 @@ public static class Utility
         return minDist;
     }
 
-
     public static void SetLayer(Transform t, int layer)
     {
         // Recursive transform layer update
         t.gameObject.layer = layer;
         foreach (Transform c in t) SetLayer(c, layer);
+    }
+
+    public static float CalculateBezierLength(Vector2 p0, Vector2 p1, Vector2 p2, int segments)
+    {
+        float length = 0;
+        Vector2 previousPoint = CalculateBezierPoint(p0, p1, p2, 0);
+
+        for (int i = 1; i <= segments; i++)
+        {
+            float t = i / (float)segments;
+            Vector2 currentPoint = CalculateBezierPoint(p0, p1, p2, t);
+            length += Vector2.Distance(previousPoint, currentPoint);
+            previousPoint = currentPoint;
+        }
+
+        return length;
+    }
+
+    public static Vector2 CalculateBezierPoint(Vector2 p0, Vector2 p1, Vector2 p2, float t)
+    {
+        float u = 1 - t;
+        float uu = u * u;
+        float tt = t * t;
+        return (uu * p0) + (2 * u * t * p1) + (tt * p2);
+    }
+    
+    public static class Easing
+    {
+        public static float EaseOutSine(float x) => Mathf.Sin((x * Mathf.PI) / 2);
+        public static float EaseInSine(float x) => 1 - Mathf.Cos((x * Mathf.PI) / 2);
+        public static float EaseInExpo(float x) => x == 0 ? 0 : Mathf.Pow(2, 10 * x - 10);
     }
 }

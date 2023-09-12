@@ -5,9 +5,9 @@ using UnityEngine;
 public class PluckableStone : ComposableObject
 {
     [Header("Pluck Config")]
-    [SerializeField] private float density = 2.0f;
-    [SerializeField] private float pluckTimerMax = 1.0f;
-    [SerializeField] private float pluckVelocity = 30.0f;
+    [SerializeField] private float  density= 2.0f;
+    [SerializeField] private float pluckTimerMax = 2.0f;
+    [SerializeField] private float pluckVelocity = 12.5f;
     [SerializeField] private GameObject pluckPsysPfb;
 
     public Vector2 popDir;
@@ -27,11 +27,6 @@ public class PluckableStone : ComposableObject
         PartInteractable.Interactions.Add(interactionPluck);
     }
 
-
-    private void Update()
-    {
-        interactionPluck.Update();
-    }
 
     private void OnPluck()
     {

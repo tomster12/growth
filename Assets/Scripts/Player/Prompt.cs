@@ -10,7 +10,7 @@ public class Prompt : MonoBehaviour, IOrganiserChild
 
     public bool IsSet => interaction != null;
 
-    private Interaction interaction;
+    private PlayerInteractor.Interaction interaction;
 
 
     public bool GetVisible() => IsSet && interaction.IsEnabled;
@@ -19,7 +19,7 @@ public class Prompt : MonoBehaviour, IOrganiserChild
 
     public float GetHeight() => spriteRendererInput.size.y;
 
-    public void SetInteraction(Interaction interaction)
+    public void SetInteraction(PlayerInteractor.Interaction interaction)
     {
         this.interaction = interaction;
         UpdateElements();

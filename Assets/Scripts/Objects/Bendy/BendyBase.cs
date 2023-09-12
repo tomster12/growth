@@ -7,9 +7,9 @@ public class BendyBase : MonoBehaviour
     [SerializeField] private BendyNode baseNode;
 
 
-    private void Awake()
+    private void Start()
     {
-        baseNode.Awake();
+        baseNode.Start();
     }
 
     private void Update()

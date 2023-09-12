@@ -32,6 +32,13 @@ public class PlayerLegs : MonoBehaviour
     private bool[] haveStepped = new bool[4];
 
 
+    public Vector2 GetLegEnd(int legIndex)
+    {
+        if (legIndex < 0 || legIndex > 3) return Vector2.zero;
+        return legIK[legIndex].Bones[legIK[legIndex].BoneCount - 1].position;
+    }
+
+
     private void Update()
     {
         float walkPct = Vector2.Dot(playerController.RB.velocity, playerController.RightDir.normalized);
@@ -121,12 +128,6 @@ public class PlayerLegs : MonoBehaviour
         return (Vector2)playerController.Transform.position
             + (playerController.RightDir.normalized * horizontalMult * legGap)
             + (playerController.UpDir.normalized * kneeHeight * 2);
-    }
-
-    public Vector2 GetLegEnd(int legIndex)
-    {
-        if (legIndex < 0 || legIndex > 3) return Vector2.zero;
-        return legIK[legIndex].Bones[legIK[legIndex].BoneCount - 1].position;
     }
 
     [ContextMenu("Set Leg Lengths")]

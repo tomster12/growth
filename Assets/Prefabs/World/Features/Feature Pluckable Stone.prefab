@@ -211,8 +211,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _CL: {fileID: 3338917768004317452}
-  _density: 1
-  pluckTimerMax: 1.6
+  density: 2
+  pluckTimerMax: 2
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
   popDir: {x: 0, y: 0}
