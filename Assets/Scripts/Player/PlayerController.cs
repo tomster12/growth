@@ -38,6 +38,7 @@ public class PlayerController : MonoBehaviour, IFollowable
     public Vector2 RightDir => new Vector2(UpDir.y, -UpDir.x);
     public Rigidbody2D RB => characterRB;
     public Transform Transform => characterRB.transform;
+    public World ClosestWorld { get; private set; }
     public Vector2 GroundPosition { get; private set; }
     public Vector2 GroundDir { get; private set; }
     public Vector2 UpDir { get; private set; }
@@ -107,7 +108,7 @@ public class PlayerController : MonoBehaviour, IFollowable
         if (GameManager.IsPaused) return;
         
         // Calculate closest world and ground position
-        World.GetClosestWorld(characterRB.transform.position, out Vector2 closestGroundPosition);
+        ClosestWorld = World.GetClosestWorld(characterRB.transform.position, out Vector2 closestGroundPosition);
         GroundPosition = closestGroundPosition;
 
         // Calculate ground positions
@@ -121,7 +122,7 @@ public class PlayerController : MonoBehaviour, IFollowable
     {
         //  Rotate upwards
         Vector2 rotateTo = IsGrounded ? UpDir : RB.velocity.normalized;
-        float angleDiff = Vector2.SignedAngle(characterRB.transform.up, rotateTo) % 360
+        float angleDiff = Vector2.SignedAngle(characterRB.transform.up, rotateTo) % 360;
         characterRB.AddTorque(angleDiff * rotationSpeed * Mathf.Deg2Rad);
 
         // - While grounded

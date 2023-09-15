@@ -37,7 +37,7 @@ public class GravityAttractor : MonoBehaviour
                 if (surfaceDir.magnitude == 0) continue;
                 float cleanMagnitude = Mathf.Max(surfaceDir.magnitude, minimumDistance);
                 float force = gravityForce * (RB.mass * obj.RB.mass) / cleanMagnitude;
-                obj.RB.AddForce(surfaceDir.normalized * force);
+                obj.AddForce(surfaceDir.normalized * force);
             }
         }
     }

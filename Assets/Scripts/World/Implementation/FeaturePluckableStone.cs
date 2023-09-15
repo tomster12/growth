@@ -13,7 +13,7 @@ public class FeaturePluckableStone : MonoBehaviour, IFeature
     public void Spawn(WorldSurfaceEdge edge, Vector3 a, Vector3 b, float edgePct)
     {
         // Setup pluck direction and generate
-        pluckable.popDir = Vector2.Perpendicular(b - a);
+        pluckable.PopDir = Vector2.Perpendicular(b - a);
         generator.Generate();
 
         // Position and rotate

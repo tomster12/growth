@@ -12,11 +12,18 @@ public class GravityObject : MonoBehaviour
 
     public Vector2 Centre => RB.transform.position;
     public bool IsEnabled { get; set; } = true;
+    public Vector2 gravityDir { get; protected set; }
+
+
+    public void AddForce(Vector2 force)
+    {
+        RB.AddForce(force);
+        gravityDir = force;
+    }
 
 
     private void Start()
     {
-        // Add to global world
         gravityObjects.Add(this);
     }
 }

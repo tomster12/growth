@@ -44,6 +44,7 @@ public class PlayerInteractor : MonoBehaviour
     [SerializeField] private float controlSlowdown = 0.4f;
     [SerializeField] private float interactSlowdown = 0.7f;
     [SerializeField] private float dropTimerMax = 1.0f;
+    [SerializeField] private float indicateTimerMax = 3.0f;
     [SerializeField] private float controlLimitLerpSpeed = 3.0f;
     [SerializeField] private Color controlLimitWarningColor = new Color(0.9f, 0.2f, 0.2f, 0.3f);
     [SerializeField] private Color controlLimitOutsideColor = new Color(0.9f, 0.2f, 0.2f, 0.3f);
@@ -66,12 +67,14 @@ public class PlayerInteractor : MonoBehaviour
     private float targetDistance;
     private float dropTimer;
     private Interaction currentInteraction;
+    private float indicateTimer;
+    private PartControllable TargetControllable => targetComposable?.GetPart<PartControllable>();
+    private PartInteractable TargetInteractable => targetComposable?.GetPart<PartInteractable>();
+    private PartHighlightable TargetHighlightable => targetComposable?.GetPart<PartHighlightable>();
     private bool IsTargeting => currentState != InteractorState.NONE;
     private bool CanHover => currentState == InteractorState.NONE || currentState == InteractorState.HOVERING;
     private bool CanInteract => currentState == InteractorState.HOVERING;
-    private bool CanControl => currentState == InteractorState.HOVERING
-                                && targetComposable.HasPartControllable
-                                && targetComposable.PartControllable.CanControl;
+    private bool CanControl => currentState == InteractorState.HOVERING && TargetControllable != null && TargetControllable.CanControl;
                 
 
     public bool StartInteracting(Interaction interaction)
@@ -127,6 +130,7 @@ public class PlayerInteractor : MonoBehaviour
         UpdateHovering();
         UpdateControlling();
         UpdateInteracting();
+        UpdateIndicating();
     }
 
     private void HandleInput()
@@ -183,16 +187,16 @@ public class PlayerInteractor : MonoBehaviour
             // Limit control dir and set control position
             limitedControlDir = Vector2.ClampMagnitude(hoverDir, maxControlDistance);
             limitedControlPos = (Vector2)playerController.Transform.position + limitedControlDir;
-            targetComposable.PartControllable.SetControlPosition(limitedControlPos, controlForce);
+            TargetControllable.SetControlPosition(limitedControlPos, controlForce);
 
             // Mouse outside control length so show circle
-            float hoverBoundaryPct = 1.0f - (maxControlDistance - hoverDistance) / controlLimitWarningDistance;
-            float targetBoundaryPct = 1.0f - (maxControlDistance - targetDistance) / controlLimitWarningDistance;
+            float hoverBoundaryPct = Mathf.Min(1.0f, 1.0f - (maxControlDistance - hoverDistance) / controlLimitWarningDistance);
+            float targetBoundaryPct = Mathf.Min(1.0f, 1.0f - (maxControlDistance - targetDistance) / controlLimitWarningDistance);
             float maxBoundaryPct = Mathf.Max(hoverBoundaryPct, targetBoundaryPct);
             Color targetLimitColor;
             if (maxBoundaryPct > 0.0f)
             {
-                if (targetBoundaryPct >= 1.0f) targetLimitColor = controlLimitOutsideColor;
+                if (targetBoundaryPct == 1.0f) targetLimitColor = controlLimitOutsideColor;
                 else targetLimitColor = new Color(controlLimitWarningColor.r, controlLimitWarningColor.g, controlLimitWarningColor.b, controlLimitWarningColor.a * maxBoundaryPct);
             }
             else targetLimitColor = controlLimitClearColor;
@@ -213,7 +217,7 @@ public class PlayerInteractor : MonoBehaviour
             targetDirLH.DrawLine(pathStartFixed, pathEndFixed, col);
 
             // Drop when far away
-            if (targetBoundaryPct >= 1.0f)
+            if (targetBoundaryPct == 1.0f)
             {
                 dropTimer += Time.deltaTime;
                 if (dropTimer > dropTimerMax)
@@ -244,8 +248,15 @@ public class PlayerInteractor : MonoBehaviour
     {
         if (currentState == InteractorState.HOVERING || currentState == InteractorState.INTERACTING)
         {
-            targetComposable.PartInteractable?.UpdateInteracting();
+            TargetInteractable?.UpdateInteracting();
         }
+    }
+
+    private void UpdateIndicating()
+    {
+        indicateTimer = Mathf.Max(0.0f, indicateTimer - Time.deltaTime);
+        if (Input.GetKeyDown(KeyCode.Tab)) indicateTimer = indicateTimerMax;
+        PartIndicatable.ShowIndicators = indicateTimer > 0.0f;
     }
 
     private void FixedUpdate()
@@ -346,9 +357,9 @@ public class PlayerInteractor : MonoBehaviour
     {
         // Clear organiser, add all children, update organiser
         promptOrganiser.Clear();
-        if (targetComposable?.PartInteractable != null)
+        if (TargetInteractable != null)
         {
-            foreach (Interaction interaction in targetComposable.PartInteractable.Interactions)
+            foreach (Interaction interaction in TargetInteractable.Interactions)
             {
                 GameObject promptGO = Instantiate(promptPfb);
                 Prompt prompt = promptGO.GetComponent<Prompt>();
@@ -362,16 +373,16 @@ public class PlayerInteractor : MonoBehaviour
     private bool GetIfCanInteract()
     {
         if (targetComposable == null) return false;
-        if (targetComposable.PartInteractable == null) return false;
-        return targetComposable.PartInteractable.Interactions.Where(i => i.IsEnabled && i.CanInteract).Count() > 0;
+        if (TargetInteractable == null) return false;
+        return TargetInteractable.CanInteract;
     }
 
     private void SetTarget(ComposableObject newTarget)
     {
         // Update target composable
-        targetComposable?.PartHighlightable?.SetHighlighted(false);
+        TargetHighlightable?.SetHighlighted(false);
         targetComposable = newTarget;
-        targetComposable?.PartHighlightable?.SetHighlighted(true);
+        TargetHighlightable?.SetHighlighted(true);
         UpdateInteractionsList();
     }
 
@@ -383,9 +394,9 @@ public class PlayerInteractor : MonoBehaviour
         if (toControl)
         {
             if (!CanControl) return false;
-            if (!targetComposable.PartControllable.SetControlled(true)) return false;
+            if (!TargetControllable.SetControlled(true)) return false;
             currentState = InteractorState.CONTROLLING;
-            targetComposable.PartControllable.SetControlPosition(targetComposable.Position, controlForce);
+            TargetControllable.SetControlPosition(targetComposable.Position, controlForce);
             controlLimitCurrentColor = controlLimitClearColor;
             controlLimitLH.SetActive(true);
             return true;
@@ -395,7 +406,7 @@ public class PlayerInteractor : MonoBehaviour
         else
         {
             if (currentState != InteractorState.CONTROLLING) return false;
-            if (!targetComposable.PartControllable.SetControlled(false)) return false;
+            if (!TargetControllable.SetControlled(false)) return false;
             currentState = InteractorState.HOVERING;
             controlLimitLH.SetActive(false);
             targetDirLH.SetActive(false);

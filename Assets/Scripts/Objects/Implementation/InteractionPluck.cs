@@ -31,12 +31,15 @@ class InteractionPluck : PlayerInteractor.Interaction
     {
         if (IsPlucked || IsActive) return;
 
+        // Calculate direction of target
+        float rightPct = Vector2.Dot(PlayerController.RightDir, TargetComposable.Position - (Vector2)PlayerController.Transform.position);
+
         // Set variables to started
         if (!PlayerInteractor.StartInteracting(this)) return;
         IsActive = true;
         PlayerController.MovementSlowdown = InteractSlowdown;
         PlayerLegs.IsPointing = true;
-        PlayerLegs.PointingLeg = 2;
+        PlayerLegs.PointingLeg = rightPct > 0.0f ? 2 : 1;
         TargetDirLH.SetActive(true);
         pluckTimer = 0.0f;
     }

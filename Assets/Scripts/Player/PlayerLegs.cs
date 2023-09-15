@@ -9,6 +9,9 @@ public class PlayerLegs : MonoBehaviour
     [SerializeField] Color[] gizmoLegColors;
     [SerializeField] float[] walkOffsets;
 
+    [Header("Prefabs")]
+    [SerializeField] GameObject stepParticlePfb;
+
     [Header("Config")]
     [SerializeField] private float legOffset = 0.3f;
     [SerializeField] private float legWidth = 0.15f;
@@ -27,6 +30,7 @@ public class PlayerLegs : MonoBehaviour
     public Vector2 PointingPos { get; set; }
 
     private bool legCurrentInit;
+    private bool[] legGrounded = new bool[4];
     private Vector2[] legTargets = new Vector2[4];
     private Vector2[] legCurrent = new Vector2[4];
     private bool[] haveStepped = new bool[4];
@@ -46,29 +50,40 @@ public class PlayerLegs : MonoBehaviour
 
         for (int i = 0; i < 4; i++)
         {
-            // Figure out where leg end should be
-            GetLegEndRaycast(i, 0, out Vector2 pos, out bool isTouching);
+            // Check idle leg position for ground
+            GetLegEndRaycast(i, 0, out Transform idleTransform, out Vector2 idlePos, out bool idleIsTouching);
 
-            // Set leg to ground if touching
-            if (isTouching)
+            // If grounded calculate walking position
+            if (idleIsTouching)
             {
                 if (walkDir != 0)
                 {
-                    GetLegEndRaycast(i, walkDir, out Vector2 frontPos, out bool frontIsTouching);
+                    GetLegEndRaycast(i, walkDir, out Transform frontTransform, out Vector2 frontPos, out bool frontIsTouching);
 
-                    float pct = (frontPos - legTargets[i]).magnitude / stepSize;
-                    if (!haveStepped[i]) pct += walkOffsets[i];
-
-                    if (pct > stepThreshold)
+                    // Move leg if over walking threshold
+                    float pct = (frontPos - legTargets[i]).magnitude / (stepSize - stepThreshold);
+                    int offsetIndex = (walkDir < 0) ? (3 - i) : i;
+                    if (!haveStepped[i]) pct += walkOffsets[offsetIndex];
+                    if (pct > 1.0f)
                     {
-                        if (frontIsTouching) legTargets[i] = frontPos;
-                        else legTargets[i] = pos;
-                        haveStepped[i] = true;
+                        if (frontIsTouching)
+                        {
+                            legTargets[i] = frontPos;
+                            GenerateStepParticles(frontTransform, legTargets[i]);
+                        }
+                        else
+                        {
+                            legTargets[i] = idlePos;
+                            GenerateStepParticles(idleTransform, legTargets[i]);
+                        }
+                        haveStepped[i] = legGrounded[i];
                     }
                 }
+
+                // Not walking so idle position
                 else
                 {
-                    legTargets[i] = pos;
+                    legTargets[i] = idlePos;
                     haveStepped[i] = false;
                 }
             }
@@ -93,12 +108,21 @@ public class PlayerLegs : MonoBehaviour
             legIK[i].TargetRot = Quaternion.identity;
             legIK[i].PolePos = GetLegPole(i);
             legIK[i].PoleRot = Quaternion.identity;
+            legGrounded[i] = idleIsTouching;
         }
 
         legCurrentInit = true;
     }
 
-    private void GetLegEndRaycast(int legIndex, int walkDir, out Vector2 pos, out bool isTouching)
+    private void GenerateStepParticles(Transform transform, Vector2 pos)
+    {
+        // Only produce steps on world
+        if (transform != playerController.ClosestWorld.WorldGenerator.WorldTransform) return;
+        GameObject particleGO = Instantiate(stepParticlePfb);
+        particleGO.transform.position = pos;
+    }
+
+    private void GetLegEndRaycast(int legIndex, int walkDir, out Transform transform, out Vector2 pos, out bool isTouching)
     {
         float horizontalMult = (legIndex <= 1) ? (-2 + legIndex) : (-1 + legIndex);
         int terrainMask = 1 << LayerMask.NameToLayer("Terrain");
@@ -115,11 +139,19 @@ public class PlayerLegs : MonoBehaviour
         Vector2 downDir = playerController.GroundDir.normalized;
         float downDistMax = playerController.GroundedHeight;
         RaycastHit2D downHit = Physics2D.Raycast(downFrom, downDir, downDistMax, terrainMask);
-
+    
         // Update out variables
         isTouching = downHit.collider != null;
-        if (isTouching) pos = downHit.point;
-        else pos = downFrom + downDir * downDistMax;
+        if (isTouching) 
+        {
+            pos = downHit.point;
+            transform = downHit.collider.transform;
+        }
+        else
+        {
+            pos = downFrom + downDir * downDistMax;
+            transform = null;
+        }
     }
 
     private Vector2 GetLegPole(int legIndex)
@@ -141,16 +173,12 @@ public class PlayerLegs : MonoBehaviour
 
             Vector2 bone0Pos = (Vector2)playerController.Transform.position
                 + ((Vector2)playerController.Transform.right * Mathf.Sign(horizontalMult) * legOffset);
-
-            Vector2 bone1Pos = (Vector2)playerController.Transform.position
-                + ((Vector2)playerController.Transform.right * Mathf.Sign(horizontalMult) * legOffset)
+            Vector2 bone1Pos = bone0Pos
                 + ((Vector2)playerController.Transform.right * horizontalMult * legGap * 0.5f)
                 + ((Vector2)playerController.Transform.up * kneeHeight);
-
-            Vector2 bone2Pos = (Vector2)playerController.Transform.position
-                + ((Vector2)playerController.Transform.right * Mathf.Sign(horizontalMult) * legOffset)
+            Vector2 bone2Pos = bone0Pos
                 + ((Vector2)playerController.Transform.right * horizontalMult * legGap)
-                - ((Vector2)playerController.Transform.up * playerController.GroundedHeight);
+                - ((Vector2)playerController.Transform.up * playerController.FeetHeight);
 
             legIK[i].Bones[0].up = bone1Pos - bone0Pos;
             legIK[i].Bones[1].up = bone2Pos - bone1Pos;

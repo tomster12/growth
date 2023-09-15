@@ -18,13 +18,13 @@ public class PartControllable : Part
     protected float controlPositionForce = 1.0f;
     protected float controlAngle = 0.0f;
     protected float controlAngleForce = 1.0f;
-    protected PartPhysical Physical => Composable.PartPhysical;
+    protected PartPhysical Physical => Composable.GetPart<PartPhysical>();
 
 
     public override void InitPart(ComposableObject composable)
     {
         base.InitPart(composable);
-        if (!composable.HasPartPhysical) throw new System.Exception("ComponentControllable requires ComponentPhysical.");
+        composable.RequirePart<PartPhysical>();
         Assert.AreEqual(IsControlled, false);
         Physical.RB.drag = idleDrag;
         Physical.RB.angularDrag = idleAngularDrag;

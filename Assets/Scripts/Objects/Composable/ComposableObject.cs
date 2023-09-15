@@ -8,85 +8,54 @@ public class ComposableObject : MonoBehaviour
     [Header("References")]
     [SerializeField] private Collider2D _CL;
 
-    public PartPhysical PartPhysical { get; private set; }
-    public PartHighlightable PartHighlightable { get; private set; }
-    public PartControllable PartControllable { get; private set; }
-    public PartInteractable PartInteractable { get; private set; }
-    public bool HasPartPhysical => PartPhysical != null;
-    public bool HasPartHighlightable => PartHighlightable != null;
-    public bool HasPartControllable => PartControllable != null;
-    public bool HasPartInteractable => PartInteractable != null;
     public Collider2D CL => _CL;
     public Bounds Bounds => CL.bounds;
     public Vector2 Position => transform.position;
 
+    private Dictionary<System.Type, Part> parts = new Dictionary<System.Type, Part>();
+
+
+    public bool HasPart<T>() where T: Part
+    {
+         return parts.ContainsKey(typeof(T));
+    }
+
+    public T GetPart<T>() where T: Part
+    {
+        return (T)parts.GetValueOrDefault(typeof(T), null);
+    }
+
+    public bool RequirePart<T>() where T: Part
+    {
+        if (!HasPart<T>()) throw new System.Exception("ComponentControllable requires " + typeof(T).ToString() + ".");
+        return true;
+    }
+
 
     private void Awake()
     {
-        PartPhysical = gameObject.GetComponent<PartPhysical>();
-        PartHighlightable = gameObject.GetComponent<PartHighlightable>();
-        PartControllable = gameObject.GetComponent<PartControllable>();
-        PartInteractable = gameObject.GetComponent<PartInteractable>();
-        PartPhysical?.InitPart(this);
-        PartHighlightable?.InitPart(this);
-        PartControllable?.InitPart(this);
-        PartInteractable?.InitPart(this);
+        Part[] existingParts = GetComponents<Part>();
+        foreach (Part part in existingParts)
+        {
+            Debug.Log(part.GetType());
+            parts[part.GetType()] = part;
+            part.InitPart(this);
+        }
     }
 
-
-    protected void AddPartPhysical()
+    protected void AddPart<T>() where T: Part
     {
-        if (HasPartPhysical) return;
-        PartPhysical ??= gameObject.AddComponent<PartPhysical>();
-        PartPhysical.InitPart(this);
+        if (HasPart<T>()) return;
+        Part part = gameObject.AddComponent<T>();
+        parts[typeof(T)] = part;
+        part.InitPart(this);
     }
 
-    protected void AddPartHighlightable()
+    protected void RemovePart<T>() where T: Part
     {
-        if (HasPartHighlightable) return;
-        PartHighlightable ??= gameObject.AddComponent<PartHighlightable>();
-        PartHighlightable.InitPart(this);
-    }
-
-    protected void AddPartControllable()
-    {
-        if (HasPartControllable) return;
-        PartControllable ??= gameObject.AddComponent<PartControllable>();
-        PartControllable.InitPart(this);
-    }
-
-    protected void AddPartInteractable()
-    {
-        if (HasPartInteractable) return;
-        PartInteractable ??= gameObject.AddComponent<PartInteractable>();
-        PartInteractable.InitPart(this);
-    }
-
-    protected void RemovePartPhysical()
-    {
-        if (!HasPartPhysical) return;
-        PartPhysical.DeinitPart();
-        GameObject.DestroyImmediate(PartPhysical);
-    }
-
-    protected void RemovePartHighlightable()
-    {
-        if (!HasPartHighlightable) return;
-        PartHighlightable.DeinitPart();
-        GameObject.DestroyImmediate(PartHighlightable);
-    }
-
-    protected void RemovePartControllable()
-    {
-        if (!HasPartControllable) return;
-        PartControllable.DeinitPart();
-        GameObject.DestroyImmediate(PartControllable);
-    }
-
-    protected void RemovePartInteractable()
-    {
-        if (!HasPartInteractable) return;
-        PartInteractable.DeinitPart();
-        GameObject.DestroyImmediate(PartInteractable);
+        if (!HasPart<T>()) return;
+        parts[typeof(T)].DeinitPart();
+        GameObject.DestroyImmediate(parts[typeof(T)]);
+        parts[typeof(T)] = null;
     }
 }
