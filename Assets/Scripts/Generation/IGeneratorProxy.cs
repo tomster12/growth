@@ -15,9 +15,9 @@ public class IGeneratorProxy
     [SerializeField] public IGeneratorProxy[] compositeIGeneratorProxies;
 
     public IGenerator IGenerator => (IGenerator)IGeneratorComponent;
-    
 
-    public IGeneratorProxy(IGenerator IGenerator, bool isEnabled=true)
+
+    public IGeneratorProxy(IGenerator IGenerator, bool isEnabled = true)
     {
         IGeneratorComponent = (Component)IGenerator;
         name = IGenerator.Name;
@@ -36,6 +36,8 @@ public class IGeneratorProxy
 
     public void Generate()
     {
+        // TODO: Figure out why this sometimes is called with a null IGeneratorComponent
+        if (!IGeneratorComponent) return;
         IGenerator.Generate();
         CheckIsGenerated();
     }

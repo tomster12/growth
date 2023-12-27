@@ -1,19 +1,16 @@
 # Dotnet code style settings:
 [*.{cs,vb}]
 
-# Shorten new syntax
+# Disable shorten new() syntax suggestion
 dotnet_diagnostic.IDE0090.severity = none
 
-# Read-only
+# Disable Read-only warning
 dotnet_diagnostic.IDE0044.severity = none
 dotnet_diagnostic.IDE0251.severity = none
 
-# Unused private members
+# Disable unused private members warning
 dotnet_diagnostic.IDE0051.severity = none
 
-# Properties are camelCase
-# dotnet_naming_rule.property_should_be_camelcase.severity = suggestion
-# dotnet_naming_rule.property_should_be_camelcase.symbols = property
-# dotnet_naming_rule.property_should_be_camelcase.style = camelcase
-# dotnet_naming_symbols.property.applicable_kinds = property
-# dotnet_naming_style.camelcase.capitalization = camel_case
+# General naming rules
+dotnet_style.braces_for_single_line_statements = true:suggestion
+insert_final_newline = true

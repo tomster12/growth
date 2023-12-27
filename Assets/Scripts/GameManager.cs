@@ -1,6 +1,5 @@
 
 using System;
-using UnityEditor;
 using UnityEngine;
 
 
@@ -8,27 +7,21 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
     public static bool IsPaused { get; private set; }
-    public static bool IsMouseLocked => UnityEngine.Cursor.visible;
-    
-    [SerializeField] private PlayerController playerController;    
+    public static bool IsMouseLocked => Cursor.visible;
+
+    [SerializeField] private PlayerController playerController;
     [SerializeField] private GameObject menu;
 
-    private Action<bool> OnIsPausedChange;
-
+    private event Action<bool> OnIsPausedChange = delegate { };
 
     public void ExitGame()
     {
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
-        #else
+#else
         Application.Quit();
-        #endif
+#endif
     }
-
-    public void SubscribeOnIsPausedChange(Action<bool> action) => OnIsPausedChange += action;
-    
-    public void UnsubscribeOnIsPausedChange(Action<bool> action) => OnIsPausedChange += action;
-
 
     private void Awake()
     {
@@ -38,7 +31,6 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        // Pause on escape
         if (Input.GetKeyDown(KeyCode.Escape)) SetPaused(!IsPaused);
     }
 
@@ -52,7 +44,7 @@ public class GameManager : MonoBehaviour
         OnIsPausedChange?.Invoke(isPaused);
     }
 
-    private void LockMouse() => UnityEngine.Cursor.visible = false;
+    private void LockMouse() => Cursor.visible = false;
 
-    private void UnlockMouse() => UnityEngine.Cursor.visible = true;
+    private void UnlockMouse() => Cursor.visible = true;
 };
