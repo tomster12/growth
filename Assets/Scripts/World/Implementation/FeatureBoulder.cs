@@ -3,7 +3,7 @@ using UnityEngine;
 using static WorldGenerator;
 
 
-public class FeatureBoulder : MonoBehaviour, IFeature
+public class FeatureBoulder : MonoBehaviour, IWorldFeature
 {
     [Header("References")]
     [SerializeField] private GeneratorController generator;

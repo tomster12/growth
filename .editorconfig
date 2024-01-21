@@ -1,5 +1,6 @@
 # Dotnet code style settings:
 [*.{cs,vb}]
+root = true
 
 # Disable shorten new() syntax suggestion
 dotnet_diagnostic.IDE0090.severity = none
@@ -11,6 +12,10 @@ dotnet_diagnostic.IDE0251.severity = none
 # Disable unused private members warning
 dotnet_diagnostic.IDE0051.severity = none
 
+# Class members should be ordered by access
+dotnet_diagnostic.ordering_rule_fields_should_be_before_properties.severity = suggestion
+dotnet_diagnostic.ordering_rule_fields_should_be_before_properties.symbols = fields
+dotnet_diagnostic.ordering_rule_fields_should_be_before_properties.style = before_property
+
 # General naming rules
-dotnet_style.braces_for_single_line_statements = true:suggestion
 insert_final_newline = true

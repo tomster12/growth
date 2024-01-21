@@ -3,7 +3,7 @@ using UnityEngine;
 using static WorldGenerator;
 
 
-public class FeaturePluckableStone : MonoBehaviour, IFeature
+public class FeaturePluckableStone : MonoBehaviour, IWorldFeature
 {
     [Header("References")]
     [SerializeField] private PluckableStone pluckable;

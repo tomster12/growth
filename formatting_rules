@@ -1,0 +1,32 @@
+
+using NAMESPACES
+
+public class CLASSNAME
+{
+    public static STATIC_VARIABLES
+
+    public static STATIC_FUNCTIONS
+
+
+    [SerializeField] private SERIALIZED
+
+    private static VARIABLES
+    private VARIABLES
+
+    public static VARIABLES
+    public VARIABLES
+
+
+    public FUNCTIONS
+
+    private FUNCTIONS
+
+    public GETTERS
+
+    private GETTERS
+
+    public SETTERS
+
+    private SETTERS
+}
+<TRAILING_WHITESPACE>

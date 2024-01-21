@@ -40,12 +40,12 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
     private class RuleInstance
     {
         public EdgeRule rule;
-        public IFeature IFeature;
-        
-        public RuleInstance(EdgeRule rule, IFeature feature)
+        public IWorldFeature IWorldFeature;
+
+        public RuleInstance(EdgeRule rule, IWorldFeature feature)
         {
             this.rule = rule;
-            this.IFeature = feature;
+            this.IWorldFeature = feature;
         }
     };
 
@@ -95,7 +95,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
         float totalLength = worldGenerator.SurfaceEdges.Aggregate(0.0f, (acc, edge) => acc + edge.length);
         BiomeGenEdge[] edgeInfos = new BiomeGenEdge[totalEdges];
         for (int i = 0; i < totalEdges; i++) edgeInfos[i] = new BiomeGenEdge(i, worldGenerator.SurfaceEdges[i].length, totalLength);
-        
+
         // Check whether is even possible
         float requiredLength = biomeRequirements.Aggregate(0.0f, (acc, req) => req.minimumSize + acc);
         float smallestBiomeLength = biomeRequirements.Aggregate(float.MaxValue, (acc, req) => Mathf.Min(acc, req.minimumSize));
@@ -185,7 +185,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
                     }
                     movedAmount += edgeInfos[newEndIndex].length;
                 }
-                if (debugLog) Debug.Log("Moved " + movedAmount + " / pushed back " + pushBackLength + " / required " + lengthLeft  + " to new end " + newEndIndex);
+                if (debugLog) Debug.Log("Moved " + movedAmount + " / pushed back " + pushBackLength + " / required " + lengthLeft + " to new end " + newEndIndex);
                 float newBiomeLength = previousLength - pushBackLength + movedAmount;
                 for (int i = index, old = 0; i != newEndIndex; i = modAdd(i, 1))
                 {
@@ -204,7 +204,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
                     }
                     edgeInfos[i].lengthToBiomeStart = 0.0f;
                 }
-                for (int o = newStartIndex;;)
+                for (int o = newStartIndex; ;)
                 {
                     o = modAdd(o, -1);
                     if (edgeInfos[o].IsAssigned()) break;
@@ -266,7 +266,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
             // ERRROR: Biomes left to place but no space
             if ((assignedBiomeCount < requiredBiomeCount) && (totalLengthLeft < requiredLengthLeft))
             {
-                throw new Exception("Could not finish assignment of biomes, placed " + assignedBiomeCount + " / " + biomeRequirements.Length  + ", " + requiredLengthLeft + " needed / " + totalLengthLeft + ".");
+                throw new Exception("Could not finish assignment of biomes, placed " + assignedBiomeCount + " / " + biomeRequirements.Length + ", " + requiredLengthLeft + " needed / " + totalLengthLeft + ".");
             }
 
             // BREAK: no more length left
@@ -294,7 +294,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
             }
             else if (prevReq != null) worldGenerator.SurfaceEdges[i].worldSite.biome = prevReq.biome;
         }
-        
+
         // Flood fill biomes down
         Queue<WorldSite> floodFillOpenSet = new Queue<WorldSite>();
         foreach (WorldSurfaceEdge edge in worldGenerator.SurfaceEdges) floodFillOpenSet.Enqueue(edge.worldSite);
@@ -337,7 +337,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
         }
     }
 
-    private void Step_PopulateBiomes() 
+    private void Step_PopulateBiomes()
     {
         for (int i = 0; i < worldGenerator.SurfaceEdges.Count; i++)
         {
@@ -418,16 +418,16 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
             RuleInstance[] matchingInstances = ruleInstances.Where(i => i.rule == rule).ToArray();
             foreach (RuleInstance instance in matchingInstances)
             {
-                float dst = Vector3.Distance(centre, instance.IFeature.GetPosition());
+                float dst = Vector3.Distance(centre, instance.IWorldFeature.GetPosition());
                 if (dst < rule.minDistance) return null;
             }
         }
 
         // Spawn feature
         GameObject feature = Instantiate(rule.feature);
-        IFeature IFeature = feature.GetComponent<IFeature>();
-        IFeature?.Spawn(edge, edge.a, edge.b, edgePct);
-        ruleInstances.Add(new RuleInstance(rule, IFeature));
+        IWorldFeature IWorldFeature = feature.GetComponent<IWorldFeature>();
+        IWorldFeature?.Spawn(edge, edge.a, edge.b, edgePct);
+        ruleInstances.Add(new RuleInstance(rule, IWorldFeature));
         return feature;
     }
 

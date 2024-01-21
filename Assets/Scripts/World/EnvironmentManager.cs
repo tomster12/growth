@@ -11,7 +11,11 @@ public class EnvironmentManager : MonoBehaviour
     [SerializeField] private float windStrength;
     [SerializeField] private float windScale;
 
-        
+    private void Awake()
+    {
+        Instance = this;
+    }
+
     public static Vector2 GetWind(Vector2 pos)
     {
         Vector3 noisePosX = new Vector3(pos.x + Instance.windVelocity.x * Time.time, pos.y + Instance.windVelocity.y * Time.time, 0.0f);
@@ -19,11 +23,5 @@ public class EnvironmentManager : MonoBehaviour
         NoiseData.SimplexNoise3D_float(noisePosX, Instance.windScale, out float noiseX, out Vector3 _);
         NoiseData.SimplexNoise3D_float(noisePosY, Instance.windScale, out float noiseY, out Vector3 _);
         return new Vector2(noiseX, noiseY) * Instance.windStrength;
-    }
-
-
-    private void Awake()
-    {
-        Instance = this;
     }
 }

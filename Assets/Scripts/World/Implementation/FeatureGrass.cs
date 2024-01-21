@@ -3,14 +3,13 @@ using UnityEngine;
 using static WorldGenerator;
 
 
-public class FeatureGrass : MonoBehaviour, IFeature
+public class FeatureGrass : MonoBehaviour, IWorldFeature
 {
     [Header("References")]
     [SerializeField] SpriteRenderer spriteRenderer;
 
     [Header("Config")]
     [SerializeField] NoiseData heightNoise = new NoiseData(new float[] { 0.8f, 1.2f });
-
 
     public void Spawn(WorldSurfaceEdge edge, Vector3 a, Vector3 b, float edgePct)
     {

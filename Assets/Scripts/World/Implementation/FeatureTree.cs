@@ -3,7 +3,7 @@ using UnityEngine;
 using static WorldGenerator;
 
 
-public class FeatureTree : MonoBehaviour, IFeature
+public class FeatureTree : MonoBehaviour, IWorldFeature
 {
     [Header("References")]
     [SerializeField] private Transform mesh;
