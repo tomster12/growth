@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using System;
 using static WorldGenerator;
@@ -6,49 +5,25 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.Assertions;
 
-
-public class WorldBiomeGenerator : MonoBehaviour, IGenerator
+public class WorldBiomeGenerator : Generator
 {
-    private class BiomeGenEdge
+    public override string Name => "World Biome";
+
+    public override void Generate()
     {
-        public BiomeRequirement req;
-        public int index;
-        public float length;
-        public float lengthToBiomeStart;
-        public float biomeTotalLength;
-        public int biomeEndNextIndex;
-        public bool IsAssigned() => req != null;
+        Clear();
+        StepAssignBiomes();
+        StepGenerateEnergy();
+        StepPopulateBiomes();
+        StepSetColors();
+        IsGenerated = true;
+    }
 
-        public BiomeGenEdge(int index, float length, float lengthToBiomeStart)
-        {
-            this.index = index;
-            this.length = length;
-            this.lengthToBiomeStart = lengthToBiomeStart;
-            this.biomeTotalLength = 0.0f;
-            this.biomeEndNextIndex = 0;
-        }
-    };
-
-    [Serializable]
-    private class BiomeRequirement
+    public override void Clear()
     {
-        public SurfaceBiome biome;
-        public int requiredCount;
-        public float minimumSize;
-    };
-
-    private class RuleInstance
-    {
-        public EdgeRule rule;
-        public IWorldFeature IWorldFeature;
-
-        public RuleInstance(EdgeRule rule, IWorldFeature feature)
-        {
-            this.rule = rule;
-            this.IWorldFeature = feature;
-        }
-    };
-
+        ruleInstances.Clear();
+        IsGenerated = false;
+    }
 
     [Header("References")]
     [SerializeField] private WorldGenerator worldGenerator;
@@ -59,30 +34,9 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
     [SerializeField] private int maxBiomeCount = 4;
     [SerializeField] private bool debugLog = true;
 
-    public bool IsGenerated { get; private set; } = false;
-    public string Name => "World Biome";
-
     private List<RuleInstance> ruleInstances = new List<RuleInstance>();
 
-
-    public void Clear()
-    {
-        ruleInstances.Clear();
-        IsGenerated = false;
-    }
-
-    public void Generate()
-    {
-        Clear();
-        Step_AssignBiomes();
-        Step_GenerateEnergy();
-        Step_PopulateBiomes();
-        Step_SetColors();
-        IsGenerated = true;
-    }
-
-
-    private void Step_AssignBiomes()
+    private void StepAssignBiomes()
     {
         // Sanity checks
         int requiredBiomeCount = biomeRequirements.Length;
@@ -324,7 +278,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
         }
     }
 
-    private void Step_GenerateEnergy()
+    private void StepGenerateEnergy()
     {
         // Generate site energy with biome
         foreach (WorldSite site in worldGenerator.Sites)
@@ -337,7 +291,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
         }
     }
 
-    private void Step_PopulateBiomes()
+    private void StepPopulateBiomes()
     {
         for (int i = 0; i < worldGenerator.SurfaceEdges.Count; i++)
         {
@@ -389,7 +343,7 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
         }
     }
 
-    private void Step_SetColors()
+    private void StepSetColors()
     {
         // Update colours of the mesh with energy
         Color[] meshColors = new Color[worldGenerator.Mesh.vertexCount];
@@ -443,4 +397,45 @@ public class WorldBiomeGenerator : MonoBehaviour, IGenerator
         if (hitRules.Count > 0) return hitRules[UnityEngine.Random.Range(0, hitRules.Count)];
         else return null;
     }
+
+    private class BiomeGenEdge
+    {
+        public BiomeRequirement req;
+        public int index;
+        public float length;
+        public float lengthToBiomeStart;
+        public float biomeTotalLength;
+        public int biomeEndNextIndex;
+
+        public BiomeGenEdge(int index, float length, float lengthToBiomeStart)
+        {
+            this.index = index;
+            this.length = length;
+            this.lengthToBiomeStart = lengthToBiomeStart;
+            this.biomeTotalLength = 0.0f;
+            this.biomeEndNextIndex = 0;
+        }
+
+        public bool IsAssigned() => req != null;
+    };
+
+    [Serializable]
+    private class BiomeRequirement
+    {
+        public SurfaceBiome biome;
+        public int requiredCount;
+        public float minimumSize;
+    };
+
+    private class RuleInstance
+    {
+        public EdgeRule rule;
+        public IWorldFeature IWorldFeature;
+
+        public RuleInstance(EdgeRule rule, IWorldFeature feature)
+        {
+            this.rule = rule;
+            this.IWorldFeature = feature;
+        }
+    };
 }

@@ -1,13 +1,10 @@
-
 using System.Linq;
 using UnityEngine;
 
-
-
 public class PlayerInteractor : MonoBehaviour
 {
-    public enum InteractorState { NONE, HOVERING, CONTROLLING, INTERACTING };
-
+    public enum InteractorState
+    { NONE, HOVERING, CONTROLLING, INTERACTING };
 
     public static PlayerInteractor Instance { get; private set; }
 
@@ -75,7 +72,6 @@ public class PlayerInteractor : MonoBehaviour
     private bool CanHover => currentState == InteractorState.NONE || currentState == InteractorState.HOVERING;
     private bool CanInteract => currentState == InteractorState.HOVERING;
     private bool CanControl => currentState == InteractorState.HOVERING && TargetControllable != null && TargetControllable.CanControl;
-                
 
     public bool StartInteracting(Interaction interaction)
     {
@@ -94,7 +90,6 @@ public class PlayerInteractor : MonoBehaviour
         return true;
     }
 
- 
     private void Awake()
     {
         Instance = this;
@@ -120,7 +115,7 @@ public class PlayerInteractor : MonoBehaviour
         limitedCentreIndicator.gameObject.SetActive(false);
 
         // Subscribe pause event
-        GameManager.Instance.SubscribeOnIsPausedChange(OnGameManagerIsPausedChange);
+        GameManager.onIsPausedChange += OnGameManagerIsPausedChange;
     }
 
     private void Update()
@@ -183,7 +178,7 @@ public class PlayerInteractor : MonoBehaviour
             Vector2 hoverDir = hoverPos - (Vector2)playerController.Transform.position;
             targetDistance = targetDir.magnitude;
             hoverDistance = hoverDir.magnitude;
-            
+
             // Limit control dir and set control position
             limitedControlDir = Vector2.ClampMagnitude(hoverDir, maxControlDistance);
             limitedControlPos = (Vector2)playerController.Transform.position + limitedControlDir;
@@ -331,7 +326,6 @@ public class PlayerInteractor : MonoBehaviour
                 cursorCornerBL.transform.position = Vector2.Lerp(cursorCornerBL.transform.position, targetBLPos, Time.deltaTime * cursorHoverMovementSpeed);
                 cursorCornerBR.transform.position = Vector2.Lerp(cursorCornerBR.transform.position, targetBRPos, Time.deltaTime * cursorHoverMovementSpeed);
             }
-
         }
 
         // Calculate correct color
@@ -427,10 +421,10 @@ public class PlayerInteractor : MonoBehaviour
         }
     }
 
-
     public class Interaction
     {
-        public enum Visibility { HIDDEN, INPUT, ICON, TEXT }
+        public enum Visibility
+        { HIDDEN, INPUT, ICON, TEXT }
 
         public bool IsEnabled { get; protected set; }
         public bool IsActive { get; protected set; }
@@ -453,7 +447,6 @@ public class PlayerInteractor : MonoBehaviour
         protected Color LegDirInteractColor => PlayerInteractor.legDirInteractColor;
         protected float InteractSlowdown => PlayerInteractor.interactSlowdown;
 
-
         public Interaction(string name, InteractionInput input, Visibility visibility, string iconSpriteName)
         {
             IsEnabled = true;
@@ -466,14 +459,13 @@ public class PlayerInteractor : MonoBehaviour
 
             blockedSprite = SpriteSet.Instance.GetSprite("cross");
             spriteInputInactive = SpriteSet.Instance.GetSprite(this.Input.name + "_inactive");
-            spriteInputActive  = SpriteSet.Instance.GetSprite(this.Input.name + "_active");
+            spriteInputActive = SpriteSet.Instance.GetSprite(this.Input.name + "_active");
             if (iconSpriteName != null)
             {
                 spriteIconInactive = SpriteSet.Instance.GetSprite(iconSpriteName + "_inactive");
                 spriteIconActive = SpriteSet.Instance.GetSprite(iconSpriteName + "_active");
             }
         }
-
 
         public void UpdateInteracting()
         {
@@ -496,7 +488,6 @@ public class PlayerInteractor : MonoBehaviour
             return spriteIconActive;
         }
 
-
         private bool PollPlayerInput()
         {
             if (Input.CheckInputDown()) OnInputDown();
@@ -506,12 +497,16 @@ public class PlayerInteractor : MonoBehaviour
             return true;
         }
 
-        protected virtual void OnHold() { }
+        protected virtual void OnHold()
+        { }
 
-        protected virtual void OnInputDown() { }
+        protected virtual void OnInputDown()
+        { }
 
-        protected virtual void OnInputUp() { }
+        protected virtual void OnInputUp()
+        { }
 
-        protected virtual void UpdateAction() { }
+        protected virtual void UpdateAction()
+        { }
     }
 }

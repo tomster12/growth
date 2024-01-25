@@ -1,22 +1,16 @@
-
 using UnityEditor;
 using UnityEngine.UIElements;
-
 
 [CustomEditor(typeof(GeneratorController))]
 public class GeneratorControllerEditor : Editor
 {
-    private GeneratorController Controller => (GeneratorController)target;
-    private VisualTreeAsset xuml;
-
-
     public override VisualElement CreateInspectorGUI()
     {
         VisualElement inspector = new VisualElement();
-        
-        if (xuml == null) xuml = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/Editor/GeneratorControllerEditorXUML.uxml");
-        if (xuml == null) return inspector;
-        xuml.CloneTree(inspector);
+
+        if (XUML == null) XUML = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/Editor/GeneratorControllerEditorXUML.uxml");
+        if (XUML == null) return inspector;
+        XUML.CloneTree(inspector);
 
         inspector.Q<Button>("ButtonFindGenerators").clicked += () => Controller.FindGenerators();
         inspector.Q<Button>("ButtonGenerate").clicked += () => Controller.Generate();
@@ -25,4 +19,7 @@ public class GeneratorControllerEditor : Editor
 
         return inspector;
     }
+
+    private VisualTreeAsset XUML;
+    private GeneratorController Controller => (GeneratorController)target;
 }

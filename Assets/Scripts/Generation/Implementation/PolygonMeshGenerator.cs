@@ -1,30 +1,10 @@
-
 using UnityEngine;
 
-
-public class PolygonMeshGenerator : MonoBehaviour, IGenerator
+public class PolygonMeshGenerator : Generator
 {
-    [Header("Parameters")]
-    [SerializeField] private MeshFilter mf;
-    [SerializeField] private PolygonCollider2D polygon;
-    [SerializeField] private CircleCollider2D circleToFit;
-    [SerializeField] private Color[] colorRange = new Color[] { new Color(0, 0, 0), new Color(1, 1, 1) };
-    [SerializeField] private NoiseData colorNoise = new NoiseData(new float[] { 0, 1 });
+    public override string Name => "Poly. Mesh";
 
-    public bool IsGenerated { get; private set;}
-    public string Name => "Poly. Mesh";
-    
-    private Mesh mesh;
-
-
-    public void Clear()
-    {
-        mesh = null;
-        mf.mesh = null;
-        IsGenerated = false;
-    }
-
-    public void Generate()
+    public override void Generate()
     {
         Clear();
 
@@ -81,4 +61,20 @@ public class PolygonMeshGenerator : MonoBehaviour, IGenerator
 
         IsGenerated = true;
     }
+
+    public override void Clear()
+    {
+        mesh = null;
+        mf.mesh = null;
+        IsGenerated = false;
+    }
+
+    [Header("Parameters")]
+    [SerializeField] private MeshFilter mf;
+    [SerializeField] private PolygonCollider2D polygon;
+    [SerializeField] private CircleCollider2D circleToFit;
+    [SerializeField] private Color[] colorRange = new Color[] { new Color(0, 0, 0), new Color(1, 1, 1) };
+    [SerializeField] private NoiseData colorNoise = new NoiseData(new float[] { 0, 1 });
+
+    private Mesh mesh;
 }

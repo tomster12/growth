@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,10 +5,69 @@ using UnityEngine.Assertions;
 using System.Linq;
 using static VoronoiMeshGenerator;
 
-
 [ExecuteInEditMode]
-public class WorldGenerator : MonoBehaviour, IGenerator
+public class WorldGenerator : Generator
 {
+    public override string Name => "World Generator";
+    public override Generator[] ComposedGenerators => new Generator[] { planetPolygonGenerator, meshGenerator, biomeGenerator };
+
+    public Mesh Mesh { get; private set; }
+    public List<WorldSite> Sites { get; private set; }
+    public List<WorldSurfaceEdge> SurfaceEdges { get; private set; }
+    public Transform WorldTransform => outsidePolygon.transform;
+    public Transform BackDecorContainer => _backDecorContainer;
+    public Transform BackgroundContainer => _backgroundContainer;
+    public Transform ForegroundContainer => _foregroundContainer;
+    public Transform TerrainContainer => _terrainContainer;
+    public Transform FrontDecorContainer => _frontDecorContainer;
+
+    public void SafeGenerate()
+    {
+        // Keep trying Generate and catch errors
+        int tries = 0;
+        while (tries < pipelineMaxTries)
+        {
+            try
+            {
+                Generate();
+                break;
+            }
+            catch (Exception e)
+            {
+                tries++;
+                Debug.LogException(e);
+                Debug.LogWarning("World Pipeline threw an error " + tries + "/" + pipelineMaxTries + ".");
+            }
+        }
+
+        // Hit max number of tries
+        if (tries == pipelineMaxTries)
+        {
+            Debug.LogException(new Exception("World Pipeline hit maximum number of tries (" + tries + "/" + pipelineMaxTries + ")."));
+        }
+    }
+
+    public override void Generate()
+    {
+        Clear();
+
+        StepSetContainers();
+        StepGenerateMesh();
+        StepCalculateOutsideEdges();
+        StepCalculateSiteEdgeDistance();
+        StepInitializeComponents();
+        StepGenerateBiome();
+
+        IsGenerated = true;
+    }
+
+    public override void Clear()
+    {
+        ClearContainers();
+        ClearOutput();
+        IsGenerated = false;
+    }
+
     public class WorldSite
     {
         public World world;
@@ -40,7 +98,6 @@ public class WorldGenerator : MonoBehaviour, IGenerator
         }
     };
 
-
     [Header("====== References ======", order = 0)]
     [Header("Generators", order = 1)]
     [SerializeField] private PlanetPolygonGenerator planetPolygonGenerator;
@@ -66,79 +123,13 @@ public class WorldGenerator : MonoBehaviour, IGenerator
     [SerializeField] private GameObject atmospherePfb;
     [SerializeField] private Material meshMaterial;
     [Space(20, order = 0)]
-
     [Header("====== Pipeline Config ======", order = 1)]
     [SerializeField] private bool doNotGenerateShape = false;
     [SerializeField] private int pipelineMaxTries = 5;
     [SerializeField] private float atmosphereSizeMin = 150.0f;
     [SerializeField] private float atmosphereSizeMax = 200.0f;
     [SerializeField] private float gravityForce = 10.0f;
-    
-    public Mesh Mesh { get; private set; }
-    public List<WorldSite> Sites { get; private set; }
-    public List<WorldSurfaceEdge> SurfaceEdges { get; private set; }
-    public Transform WorldTransform => outsidePolygon.transform;
-    public Transform BackDecorContainer => _backDecorContainer;
-    public Transform BackgroundContainer => _backgroundContainer;
-    public Transform ForegroundContainer => _foregroundContainer;
-    public Transform TerrainContainer => _terrainContainer;
-    public Transform FrontDecorContainer => _frontDecorContainer;
-    public bool IsGenerated { get; private set; } = false;
-    public bool IsComposite => true;
-    public string Name => "World Composite";
-
     private SpriteRenderer atmosphere;
-
-
-    public void Clear()
-    {
-        ClearContainers();
-        ClearOutput();
-        IsGenerated = false;
-    }
-
-    public void SafeGenerate()
-    {
-        // Keep trying Generate and catch errors
-        int tries = 0;
-        while (tries < pipelineMaxTries)
-        {
-            try
-            {
-                Generate();
-                break;
-            }
-            catch (Exception e)
-            {
-                tries++;
-                Debug.LogException(e);
-                Debug.LogWarning("World Pipeline threw an error " + tries + "/" + pipelineMaxTries + ".");
-            }
-        }
-
-        // Hit max number of tries
-        if (tries == pipelineMaxTries)
-        {
-            Debug.LogException(new Exception("World Pipeline hit maximum number of tries (" + tries + "/" + pipelineMaxTries + ")."));
-        }
-    }
-
-    public void Generate()
-    {
-        Clear();
-
-        Step_SetContainers();
-        Step_GenerateMesh();
-        Step_CalculateOutsideEdges();
-        Step_CalculateSiteEdgeDistance();
-        Step_InitializeComponents();
-        Step_GenerateBiome();
-
-        IsGenerated = true;
-    }
-
-    public IGenerator[] GetCompositeIGenerators() => new IGenerator[] { planetPolygonGenerator, meshGenerator, biomeGenerator };
-
 
     private void ClearContainers()
     {
@@ -187,7 +178,7 @@ public class WorldGenerator : MonoBehaviour, IGenerator
         ClearContainers();
     }
 
-    private void Step_SetContainers()
+    private void StepSetContainers()
     {
         Assert.AreEqual(BackDecorContainer.transform.childCount, 0);
         Assert.AreEqual(BackgroundContainer.transform.childCount, 0);
@@ -201,7 +192,7 @@ public class WorldGenerator : MonoBehaviour, IGenerator
         Layers.SetLayer(FrontDecorContainer, Layer.FRONT_DECOR);
     }
 
-    private void Step_GenerateMesh()
+    private void StepGenerateMesh()
     {
         // Generate polygon
         if (!doNotGenerateShape) planetPolygonGenerator.Generate();
@@ -215,13 +206,13 @@ public class WorldGenerator : MonoBehaviour, IGenerator
         var groundMaterial = new Material(meshMaterial);
         meshRenderer.sharedMaterial = groundMaterial;
         meshRenderer.sharedMaterial.SetFloat("_NoiseScale", noiseScale);
-        
+
         // Generate world sites
         Sites = new List<WorldSite>();
         foreach (MeshSite meshSite in meshGenerator.MeshSites) Sites.Add(new WorldSite(world, meshSite));
     }
 
-    private void Step_CalculateOutsideEdges()
+    private void StepCalculateOutsideEdges()
     {
         // Calculate external edges
         HashSet<WorldSurfaceEdge> surfaceEdgesUnordered = new HashSet<WorldSurfaceEdge>();
@@ -257,7 +248,7 @@ public class WorldGenerator : MonoBehaviour, IGenerator
             WorldSurfaceEdge current = SurfaceEdges.Last();
             MeshSite currentSite = Sites[current.meshSiteEdge.siteIndex].meshSite;
             WorldSurfaceEdge picked = null;
-            
+
             // - Find first edge that matches in either direction
             foreach (WorldSurfaceEdge checkEdge in surfaceEdgesUnordered)
             {
@@ -277,7 +268,7 @@ public class WorldGenerator : MonoBehaviour, IGenerator
         }
     }
 
-    private void Step_CalculateSiteEdgeDistance()
+    private void StepCalculateSiteEdgeDistance()
     {
         // Calculate site edge distance using neighbours
         HashSet<int> closedSet = new HashSet<int>();
@@ -318,7 +309,7 @@ public class WorldGenerator : MonoBehaviour, IGenerator
         }
     }
 
-    private void Step_InitializeComponents()
+    private void StepInitializeComponents()
     {
         // Create atmosphere object
         GameObject atmosphereGO = Instantiate(atmospherePfb);
@@ -346,8 +337,8 @@ public class WorldGenerator : MonoBehaviour, IGenerator
         gravityAttractor.gravityRadius = atmosphereSizeMax;
         gravityAttractor.gravityForce = gravityForce;
     }
-    
-    private void Step_GenerateBiome()
+
+    private void StepGenerateBiome()
     {
         biomeGenerator.Generate();
     }

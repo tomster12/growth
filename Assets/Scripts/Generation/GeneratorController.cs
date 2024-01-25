@@ -1,50 +1,38 @@
-
 using System;
-using System.Linq;
-using UnityEngine;
-using UnityEditor;
 using System.Collections.Generic;
-
+using System.Linq;
+using UnityEditor;
+using UnityEngine;
 
 public class GeneratorController : MonoBehaviour
 {
-    [SerializeField] public IGeneratorProxy[] proxies = new IGeneratorProxy[0];
-    [SerializeField] public int seed = 0;
-    [SerializeField] public bool setSeed = false;
-    [SerializeField] public bool randomizeSeed = false;
-
+    [SerializeField] public int Seed = 0;
+    [SerializeField] public bool ToRandomizeSeed = false;
+    [SerializeField] public bool ToOverwriteSeed = false;
 
     public void FindGenerators()
     {
-        IGenerator[] allIGenerators = GetComponents<IGenerator>();
+        Generator[] allGenerators = GetComponents<Generator>();
 
-        List<IGeneratorProxy> compositeIGeneratorProxies = allIGenerators
-            .Where(g => g.IsComposite)
-            .Select(g => new IGeneratorProxy(g))
-            .ToList();
+        List<Generator> topLevelGenerators = allGenerators
+            .Where(g1 => !allGenerators.Any(g2 => g2.ContainsGenerator(g1))).ToList();
 
-        List<IGeneratorProxy> otherIGeneratorProxies = allIGenerators
-            .Where(g => !compositeIGeneratorProxies.Any(gp => gp.IGenerator == g || gp.compositeIGeneratorProxies.Any(cgp => cgp.IGenerator == g)))
-            .Select(g => new IGeneratorProxy(g))
-            .ToList();
-        
-        List<IGeneratorProxy> allIGeneratorProxies = new List<IGeneratorProxy>();
-        allIGeneratorProxies.AddRange(compositeIGeneratorProxies);
-        allIGeneratorProxies.AddRange(otherIGeneratorProxies);
-        proxies = allIGeneratorProxies.ToArray();
+        generators = topLevelGenerators.ToArray();
+    }
+
+    public void Generate(bool overwriteSeed = false, bool randomizeSeed = false)
+    {
+        if (ToRandomizeSeed || randomizeSeed) RandomizeSeed();
+        if (ToOverwriteSeed || overwriteSeed) UnityEngine.Random.InitState(Seed);
+        foreach (Generator generator in generators) generator.Generate();
     }
 
     public void Clear()
     {
-        foreach (IGeneratorProxy proxy in proxies) proxy.Clear();
+        foreach (Generator generator in generators) generator.Clear();
     }
 
-    public void Generate(bool setSeed=false, bool randomizeSeed=false)
-    {
-        if (this.randomizeSeed || randomizeSeed) RandomizeSeed();
-        if (this.setSeed || setSeed) UnityEngine.Random.InitState(seed);
-        foreach(IGeneratorProxy proxy in proxies) proxy.Generate();
-    }
+    public void RandomizeSeed() => Seed = (int)DateTime.Now.Ticks;
 
-    public void RandomizeSeed() => seed = (int)DateTime.Now.Ticks;
+    [SerializeField] private Generator[] generators = new Generator[0];
 }

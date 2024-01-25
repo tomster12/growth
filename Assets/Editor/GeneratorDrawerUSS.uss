@@ -1,0 +1,10 @@
+
+.custom-toggle .unity-toggle__checkmark {
+    background-image: none;
+}
+
+.custom-toggle.unity-disable .unity-toggle__checkmark {
+    color: rgba(255, 0, 0, 255);
+    -unity-background-image-tint-color: rgba(255, 255, 255, 255);
+    background-color: rgba(0, 0, 0, 255);
+}

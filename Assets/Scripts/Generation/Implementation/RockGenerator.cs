@@ -1,51 +1,44 @@
-
 using UnityEngine;
 using static VoronoiMeshGenerator;
 
-
-public class RockGenerator : MonoBehaviour, IGenerator
+public class RockGenerator : Generator
 {
-    [Header("Parameters")]
-    [SerializeField] PolygonCollider2D outsidePolygon;
-    [SerializeField] private PlanetPolygonGenerator planetPolygonGenerator;
-    [SerializeField] private VoronoiMeshGenerator voronoiMeshGenerator;
-    [SerializeField] private Color[] colorRange = new Color[] { new Color(0, 0, 0), new Color(1, 1, 1) };
-    [SerializeField] private NoiseData colorNoise = new NoiseData(new float[] { 0, 1 });
-    [SerializeField] private bool disablePolygon;
+    public override string Name => "Rock Composite";
+    public override Generator[] ComposedGenerators => new Generator[] { planetPolygonGenerator, voronoiMeshGenerator };
 
-    public bool IsGenerated { get; private set; } = false;
-    public bool IsComposite => true;
-    public string Name => "Rock Composite";
-
-
-    public void Clear()
-    {
-        planetPolygonGenerator.Clear();
-        voronoiMeshGenerator.Clear();
-        IsGenerated = false;
-    }
-
-    public void Generate()
+    public override void Generate()
     {
         Clear();
         outsidePolygon.enabled = true;
         planetPolygonGenerator.Generate();
         voronoiMeshGenerator.Generate();
         outsidePolygon.enabled = !disablePolygon;
-        Step_ColorMesh();
+        StepColorMesh();
         IsGenerated = true;
     }
 
-    public IGenerator[] GetCompositeIGenerators() => new IGenerator[] { planetPolygonGenerator, voronoiMeshGenerator };
+    public override void Clear()
+    {
+        planetPolygonGenerator.Clear();
+        voronoiMeshGenerator.Clear();
+        IsGenerated = false;
+    }
 
+    [Header("Parameters")]
+    [SerializeField] private PolygonCollider2D outsidePolygon;
+    [SerializeField] private PlanetPolygonGenerator planetPolygonGenerator;
+    [SerializeField] private VoronoiMeshGenerator voronoiMeshGenerator;
+    [SerializeField] private Color[] colorRange = new Color[] { new Color(0, 0, 0), new Color(1, 1, 1) };
+    [SerializeField] private NoiseData colorNoise = new NoiseData(new float[] { 0, 1 });
+    [SerializeField] private bool disablePolygon;
 
-    private void Step_ColorMesh()
+    private void StepColorMesh()
     {
         // Get mesh and mesh sites
         Mesh mesh = voronoiMeshGenerator.Mesh;
         MeshSite[] meshSites = voronoiMeshGenerator.MeshSites;
         Color[] colors = new Color[mesh.vertices.Length];
-        
+
         // Calculate colors for each site
         foreach (MeshSite meshSite in meshSites)
         {

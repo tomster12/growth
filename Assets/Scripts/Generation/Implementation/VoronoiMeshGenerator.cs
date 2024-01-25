@@ -1,4 +1,3 @@
-
 using GK;
 using System;
 using System.Collections.Generic;
@@ -6,9 +5,84 @@ using System.Linq;
 using UnityEngine;
 using static GK.VoronoiClipper;
 
-
-public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
+public class VoronoiMeshGenerator : Generator
 {
+    public override string Name => "Voronoi Mesh";
+    public MeshSite[] MeshSites { get; private set; }
+    public Mesh Mesh { get; private set; }
+
+    public void SafeGenerate(MeshFilter meshFilter, PolygonCollider2D outsidePolygon, int seedCount, float seedMinDistance)
+    {
+        // Keep trying Generate and catch errors
+        int tries = 0;
+        while (tries < pipelineMaxTries)
+        {
+            try
+            {
+                Generate(meshFilter, outsidePolygon, seedCount, seedMinDistance);
+                break;
+            }
+            catch (Exception e)
+            {
+                tries++;
+                Debug.LogException(e);
+                Debug.LogWarning("Pipeline threw error " + tries + "/" + pipelineMaxTries + ".");
+            }
+        }
+
+        // Hit max number of tries
+        if (tries == pipelineMaxTries)
+        {
+            throw new Exception("Voronoi Mesh Pipeline hit maximum number of tries (" + tries + "/" + pipelineMaxTries + ").");
+        }
+    }
+
+    public void Generate(MeshFilter meshFilter, PolygonCollider2D outsidePolygon, int seedCount, float seedMinDistance)
+    {
+        this.meshFilter = meshFilter;
+        this.outsidePolygon = outsidePolygon;
+        this.seedCount = seedCount;
+        this.seedMinDistance = seedMinDistance;
+        Generate();
+    }
+
+    public override void Generate()
+    {
+        Clear();
+        StepGenerateSeeds();
+        StepGenerateVoronoi();
+        StepClipSites();
+        StepGenerateMeshAndSites();
+        StepProcessSites();
+        if (clearInternal) ClearInternal();
+        IsGenerated = true;
+    }
+
+    public override void Clear()
+    {
+        ClearInternal();
+        ClearOutput();
+        IsGenerated = false;
+    }
+
+    public void ClearInternal()
+    {
+        // Clear internal variables
+        _voronoiSeedSites = null;
+        _voronoiCalculator = null;
+        _voronoiDiagram = null;
+        _clipperPolygon = null;
+        _voronoiClipper = null;
+    }
+
+    public void ClearOutput()
+    {
+        // Clear external variables
+        if (Mesh != null) Mesh.Clear();
+        MeshSites = null;
+        Mesh = null;
+    }
+
     [Serializable]
     public class MeshSiteVertex
     {
@@ -53,7 +127,6 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
         public HashSet<int> neighbouringSites;
     }
 
-
     [Header("Gizmos")]
     [SerializeField] private bool showGizmoSeedCentroids = false;
     [SerializeField] private bool showGizmoDelauneyMain = false;
@@ -70,93 +143,13 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
     [SerializeField] private int pipelineMaxTries = 10;
     [SerializeField] private int seedMaxTries = 50;
     [SerializeField] private bool clearInternal = true;
-
-    public MeshSite[] MeshSites { get; private set; }
-    public bool IsGenerated { get; private set; } = false;
-    public string Name => "Voronoi Mesh";
-    public Mesh Mesh { get; private set; }
-
     private Vector2[] _voronoiSeedSites;
     private VoronoiCalculator _voronoiCalculator;
     private VoronoiDiagram _voronoiDiagram;
     private List<Vector2> _clipperPolygon;
     private VoronoiClipper _voronoiClipper;
 
-
-    public void Clear()
-    {
-        ClearInternal();
-        ClearOutput();
-        IsGenerated = false;
-    }
-
-    public void ClearInternal()
-    {
-        // Clear internal variables
-        _voronoiSeedSites = null;
-        _voronoiCalculator = null;
-        _voronoiDiagram = null;
-        _clipperPolygon = null;
-        _voronoiClipper = null;
-    }
-
-    public void ClearOutput()
-    {
-        // Clear external variables
-        if (Mesh != null) Mesh.Clear();
-        MeshSites = null;
-        Mesh = null;
-    }
-
-    public void SafeGenerate(MeshFilter meshFilter, PolygonCollider2D outsidePolygon, int seedCount, float seedMinDistance)
-    {
-        // Keep trying Generate and catch errors
-        int tries = 0;
-        while (tries < pipelineMaxTries)
-        {
-            try
-            {
-                Generate(meshFilter, outsidePolygon, seedCount, seedMinDistance);
-                break;
-            }
-            catch (Exception e)
-            {
-                tries++;
-                Debug.LogException(e);
-                Debug.LogWarning("Pipeline threw error " + tries + "/" + pipelineMaxTries + ".");
-            }
-        }
-
-        // Hit max number of tries
-        if (tries == pipelineMaxTries)
-        {
-            throw new Exception("Voronoi Mesh Pipeline hit maximum number of tries (" + tries + "/" + pipelineMaxTries + ").");
-        }
-    }
-
-    public void Generate(MeshFilter meshFilter, PolygonCollider2D outsidePolygon, int seedCount, float seedMinDistance)
-    {
-        this.meshFilter = meshFilter;
-        this.outsidePolygon = outsidePolygon;
-        this.seedCount = seedCount;
-        this.seedMinDistance = seedMinDistance;
-        Generate();
-    }
-
-    public void Generate()
-    {
-        Clear();
-        Step_GenerateSeeds();
-        Step_GenerateVoronoi();
-        Step_ClipSites();
-        Step_GenerateMeshAndSites();
-        Step_ProcessSites();
-        if (clearInternal) ClearInternal();
-        IsGenerated = true;
-    }
-
-
-    private void Step_GenerateSeeds()
+    private void StepGenerateSeeds()
     {
         // Generate a set number of seeds
         List<Vector2> voronoiSeedSiteList = new List<Vector2>();
@@ -192,7 +185,7 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
         _voronoiSeedSites = voronoiSeedSiteList.ToArray();
     }
 
-    private void Step_GenerateVoronoi()
+    private void StepGenerateVoronoi()
     {
         // Perform voronoi calculation
         _voronoiCalculator = new VoronoiCalculator();
@@ -210,7 +203,7 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
         }
     }
 
-    private void Step_ClipSites()
+    private void StepClipSites()
     {
         // Initialize variables
         _clipperPolygon = outsidePolygon.points.ToList();
@@ -229,7 +222,7 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
         }
     }
 
-    private void Step_GenerateMeshAndSites()
+    private void StepGenerateMeshAndSites()
     {
         // Setup all mesh data variables
         MeshSites = new MeshSite[_voronoiClipper.clippedSites.Count];
@@ -299,7 +292,7 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
         meshFilter.mesh = Mesh;
     }
 
-    private void Step_ProcessSites()
+    private void StepProcessSites()
     {
         // Add neighbours using delauney
         bool addNeighbours(int s0, int s1)
@@ -337,7 +330,7 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
                     (v0.type == VertexType.POLYGON && v1.type == VertexType.POLYGON)
                     || (v0.type == VertexType.POLYGON_INTERSECTION && v1.type == VertexType.POLYGON && v0.intersectionToUID == v1.vertexUID)
                     || (v0.type == VertexType.POLYGON && v1.type == VertexType.POLYGON_INTERSECTION && v0.vertexUID == v1.intersectionFromUID)
-                    || (v0.type == VertexType.POLYGON_INTERSECTION && v1.type == VertexType.POLYGON_INTERSECTION && v0.intersectionFromUID == v1.intersectionFromUID) );
+                    || (v0.type == VertexType.POLYGON_INTERSECTION && v1.type == VertexType.POLYGON_INTERSECTION && v0.intersectionFromUID == v1.intersectionFromUID));
                 meshSite.isOutside |= edge.isOutside;
                 if (edge.isOutside) surfaceEdges.Add(edge);
 
@@ -355,12 +348,13 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
                             int nextO = (o + 1) % oClippedSite.clippedVertices.Count;
                             ClippedVertex ov0 = oClippedSite.clippedVertices[o];
                             ClippedVertex ov1 = oClippedSite.clippedVertices[nextO];
-                            
+
                             // - Check if match in either direction
                             if (
                                 v0.vertexUID == ov0.vertexUID && v1.vertexUID == ov1.vertexUID
                                 || v0.vertexUID == ov1.vertexUID && v1.vertexUID == ov0.vertexUID
-                            ) {
+                            )
+                            {
                                 edge.neighbouringSiteIndex = oMeshSite.siteIndex;
                                 edge.neighbouringEdgeIndex = o;
                                 oMeshSite.edges[o].neighbouringSiteIndex = meshSite.siteIndex;
@@ -453,7 +447,7 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
                 {
                     var edge = _voronoiDiagram.Edges[ei];
                     Vector2 lv, ld;
-                    
+
                     // - Edge is ray so take direction
                     if (edge.Type == VoronoiDiagram.EdgeType.RayCCW || edge.Type == VoronoiDiagram.EdgeType.RayCW)
                     {
@@ -489,7 +483,7 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
                 Vector2 siteWorld = transform.TransformPoint(clippedSite.clippedCentroid);
                 Gizmos.color = Color.red;
                 Gizmos.DrawSphere(siteWorld, 0.075f);
-                
+
                 foreach (var vertex in clippedSite.clippedVertices)
                 {
                     Vector2 vertexWorld = transform.TransformPoint(vertex.vertex);
@@ -500,7 +494,7 @@ public class VoronoiMeshGenerator : MonoBehaviour, IGenerator
                 }
             }
         }
-    
+
         // Draw mesh sites
         if (showGizmoMesh && MeshSites != null)
         {

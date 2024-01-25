@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 
-
 [Serializable]
 public class PlanetShapeInfo
 {
@@ -9,26 +8,12 @@ public class PlanetShapeInfo
     public NoiseData[] noiseData;
 }
 
-
-public class PlanetPolygonGenerator : MonoBehaviour, IGenerator
+public class PlanetPolygonGenerator : Generator
 {
-    [Header("Parameters")]
-    [SerializeField] private PolygonCollider2D outsidePolygon;
-    [SerializeField] private PlanetShapeInfo shapeInfo;
-
     public Vector2[] Points { get; private set; }
-    public bool IsGenerated { get; private set; } = false;
-    public string Name => "Poly. Planet";
+    public override string Name => "Poly. Planet";
 
-
-    public void Clear()
-    {
-        outsidePolygon.points = new Vector2[0];
-        Points = null;
-        IsGenerated = false;
-    }
-
-    public void Generate()
+    public override void Generate()
     {
         Clear();
 
@@ -46,10 +31,15 @@ public class PlanetPolygonGenerator : MonoBehaviour, IGenerator
             Points[i] = value * new Vector2(Mathf.Cos(pct * Mathf.PI * 2), Mathf.Sin(pct * Mathf.PI * 2));
         }
 
-        // Assign points to the polygon
         outsidePolygon.SetPath(0, Points);
-
         IsGenerated = true;
+    }
+
+    public override void Clear()
+    {
+        outsidePolygon.points = new Vector2[0];
+        Points = null;
+        IsGenerated = false;
     }
 
     public float[] GetSurfaceRange()
@@ -62,4 +52,8 @@ public class PlanetPolygonGenerator : MonoBehaviour, IGenerator
         }
         return new float[] { min, max };
     }
+
+    [Header("Parameters")]
+    [SerializeField] private PolygonCollider2D outsidePolygon;
+    [SerializeField] private PlanetShapeInfo shapeInfo;
 }

@@ -235,6 +235,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 393151930b50a4746b478d53b1cda916, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626306391365407}
   shapeInfo:
     vertexCount: 8
@@ -255,6 +257,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da23c10e860f37a4b9cc5c05a8af0ac6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   mf: {fileID: 7133626306391365405}
   polygon: {fileID: 7133626306391365407}
   circleToFit: {fileID: 7133626306391365392}
@@ -278,22 +282,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4f62e596a563874e8cbe44e7ec8d954, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  proxies:
-  - _IGenerator: {fileID: 7133626306391365393}
-    name: Poly. Planet
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 0
-    compositeIGeneratorProxies: []
-  - _IGenerator: {fileID: 7133626306391365394}
-    name: Poly. Mesh
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 0
-    compositeIGeneratorProxies: []
-  seed: 0
-  setSeed: 0
-  randomizeSeed: 0
+  Seed: 0
+  ToRandomizeSeed: 0
+  ToOverwriteSeed: 0
+  generators: []
 --- !u!114 &7133626306391365396
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -306,19 +298,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59dca7b3da9ff3d47be59f9d056533ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cl: {fileID: 7133626306391365392}
-  controlDrag: 20
-  idleDrag: 0.5
+  _CL: {fileID: 0}
   density: 2
-  _hasComponentHighlight: 1
-  _hasComponentPhysical: 0
-  _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
-  popDir: {x: 1.2349762, y: 0.21222687}
 --- !u!114 &7133626306391365397
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1269,7 +1253,7 @@ GameObject:
   - component: {fileID: 7133626306529509703}
   - component: {fileID: 7133626306529509752}
   - component: {fileID: 7133626306529509701}
-  - component: {fileID: 7133626306529509700}
+  - component: {fileID: 3668462492786029169}
   m_Layer: 8
   m_Name: World (Template)
   m_TagString: Untagged
@@ -1309,6 +1293,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 393151930b50a4746b478d53b1cda916, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626307694701855}
   shapeInfo:
     vertexCount: 50
@@ -1333,6 +1319,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbccb01ab4dd69547985438101472567, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   showGizmoSeedCentroids: 0
   showGizmoDelauneyMain: 0
   showGizmoDelauneyCentres: 0
@@ -1355,30 +1343,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 7133626306529509756}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1a04b3155b69636499859fa108fb7b33, type: 3}
+  m_Script: {fileID: 11500000, guid: dbb20b3aacb816a4db820883d14400e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  world: {fileID: 7133626306529509752}
-  materialDirt: {fileID: 11400000, guid: 71d2f82debc917d45b67727119002310, type: 2}
-  materialStone: {fileID: 11400000, guid: 61fcbaa9db342ee47b6a7f33dafc815a, type: 2}
-  pebblePfb: {fileID: 3338917768004317453, guid: 0bfe27a21aa41e942b02087c7c49f160, type: 3}
-  boulderTerrainPfb: {fileID: 2022025293066536358, guid: 46b5024162834b34d847fd4dc278df89, type: 3}
-  boulderFeaturePfb: {fileID: 6099407925653884417, guid: f81494f42fc45274f98cc9bd8c13ae95, type: 3}
-  stoneChance: 0.1
-  stoneChances:
-  - 0.6
-  - 0.2
-  - 0.2
-  energyMaxNoise:
-    valueRange:
-    - 40
-    - 200
-    noiseScale: 1
-  energyPctNoise:
-    valueRange:
-    - 0
-    - 1
-    noiseScale: 1
+  composedGenerators: []
+  isGenerated: 0
+  worldGenerator: {fileID: 7133626306529509752}
+  biomeRequirements: []
+  undergroundBiome: {fileID: 0}
+  maxBiomeCount: 4
+  debugLog: 1
 --- !u!114 &7133626306529509752
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1391,14 +1365,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c8dc46b35681e945af749a0b56aa082, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators:
+  - {fileID: 7133626306529509754}
+  - {fileID: 7133626306529509702}
+  - {fileID: 7133626306529509703}
+  isGenerated: 0
   planetPolygonGenerator: {fileID: 7133626306529509754}
   meshGenerator: {fileID: 7133626306529509702}
   biomeGenerator: {fileID: 7133626306529509703}
-  _featureContainer: {fileID: 7133626307170239125}
+  _backDecorContainer: {fileID: 7133626307280453509}
   _backgroundContainer: {fileID: 7133626307280453509}
   _foregroundContainer: {fileID: 7133626306691751784}
   _terrainContainer: {fileID: 7133626306883616131}
-  _foliageContainer: {fileID: 7133626308081261483}
+  _frontDecorContainer: {fileID: 0}
+  world: {fileID: 0}
   outsidePolygon: {fileID: 7133626307694701855}
   rb: {fileID: 7133626307694701840}
   meshRenderer: {fileID: 7133626307694701853}
@@ -1423,35 +1403,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4f62e596a563874e8cbe44e7ec8d954, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  proxies:
-  - _IGenerator: {fileID: 7133626306529509752}
-    name: World Composite
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 1
-    compositeIGeneratorProxies:
-    - _IGenerator: {fileID: 7133626306529509754}
-      name: Poly. Planet
-      isEnabled: 0
-      isGenerated: 1
-      isComposite: 0
-      compositeIGeneratorProxies: []
-    - _IGenerator: {fileID: 7133626306529509702}
-      name: Voronoi Mesh
-      isEnabled: 0
-      isGenerated: 1
-      isComposite: 0
-      compositeIGeneratorProxies: []
-    - _IGenerator: {fileID: 7133626306529509703}
-      name: World Biome
-      isEnabled: 0
-      isGenerated: 1
-      isComposite: 0
-      compositeIGeneratorProxies: []
-  seed: -1228292251
-  setSeed: 1
-  randomizeSeed: 0
---- !u!114 &7133626306529509700
+  Seed: 0
+  ToRandomizeSeed: 0
+  ToOverwriteSeed: 0
+  generators:
+  - {fileID: 7133626306529509752}
+--- !u!114 &3668462492786029169
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1460,12 +1417,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 7133626306529509756}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5cb1a9905ea530f4781b270a255ffad4, type: 3}
+  m_Script: {fileID: 11500000, guid: dbb20b3aacb816a4db820883d14400e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  worldGenerator: {fileID: 7133626306529509752}
-  outsidePolygon: {fileID: 7133626307694701855}
-  rb: {fileID: 7133626307694701840}
+  composedGenerators: []
+  isGenerated: 0
+  worldGenerator: {fileID: 0}
+  biomeRequirements: []
+  undergroundBiome: {fileID: 0}
+  maxBiomeCount: 4
+  debugLog: 1
 --- !u!1 &7133626306535615564
 GameObject:
   m_ObjectHideFlags: 0
@@ -3960,6 +3921,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 393151930b50a4746b478d53b1cda916, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626306895692546}
   shapeInfo:
     vertexCount: 8
@@ -3980,6 +3943,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da23c10e860f37a4b9cc5c05a8af0ac6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   mf: {fileID: 7133626306895692544}
   polygon: {fileID: 7133626306895692546}
   circleToFit: {fileID: 7133626306895692547}
@@ -4003,22 +3968,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4f62e596a563874e8cbe44e7ec8d954, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  proxies:
-  - _IGenerator: {fileID: 7133626306895692548}
-    name: Poly. Planet
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 0
-    compositeIGeneratorProxies: []
-  - _IGenerator: {fileID: 7133626306895692549}
-    name: Poly. Mesh
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 0
-    compositeIGeneratorProxies: []
-  seed: 0
-  setSeed: 0
-  randomizeSeed: 0
+  Seed: 0
+  ToRandomizeSeed: 0
+  ToOverwriteSeed: 0
+  generators: []
 --- !u!114 &7133626306895692551
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4031,19 +3984,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59dca7b3da9ff3d47be59f9d056533ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cl: {fileID: 7133626306895692547}
-  controlDrag: 20
-  idleDrag: 0.5
+  _CL: {fileID: 0}
   density: 2
-  _hasComponentHighlight: 1
-  _hasComponentPhysical: 0
-  _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
-  popDir: {x: 0.98757935, y: -3.0104675}
 --- !u!114 &7133626306895692600
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5708,6 +5653,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 393151930b50a4746b478d53b1cda916, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626307083844437}
   shapeInfo:
     vertexCount: 15
@@ -5732,6 +5679,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbccb01ab4dd69547985438101472567, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   showGizmoSeedCentroids: 0
   showGizmoDelauneyMain: 0
   showGizmoDelauneyCentres: 0
@@ -5757,6 +5706,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90b8cd3c8f301c94ebb57b1d7abc5b1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators:
+  - {fileID: 7133626307083844438}
+  - {fileID: 7133626307083844439}
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626307083844437}
   planetPolygonGenerator: {fileID: 7133626307083844438}
   voronoiMeshGenerator: {fileID: 7133626307083844439}
@@ -5781,28 +5734,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4f62e596a563874e8cbe44e7ec8d954, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  proxies:
-  - _IGenerator: {fileID: 7133626307083844424}
-    name: Rock Composite
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 1
-    compositeIGeneratorProxies:
-    - _IGenerator: {fileID: 7133626307083844438}
-      name: Poly. Planet
-      isEnabled: 0
-      isGenerated: 1
-      isComposite: 0
-      compositeIGeneratorProxies: []
-    - _IGenerator: {fileID: 7133626307083844439}
-      name: Voronoi Mesh
-      isEnabled: 0
-      isGenerated: 1
-      isComposite: 0
-      compositeIGeneratorProxies: []
-  seed: 0
-  setSeed: 0
-  randomizeSeed: 0
+  Seed: 0
+  ToRandomizeSeed: 0
+  ToOverwriteSeed: 0
+  generators: []
 --- !u!1 &7133626307085967563
 GameObject:
   m_ObjectHideFlags: 0
@@ -5954,6 +5889,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 393151930b50a4746b478d53b1cda916, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626307085967571}
   shapeInfo:
     vertexCount: 8
@@ -5974,6 +5911,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da23c10e860f37a4b9cc5c05a8af0ac6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   mf: {fileID: 7133626307085967569}
   polygon: {fileID: 7133626307085967571}
   circleToFit: {fileID: 7133626307085967572}
@@ -5997,22 +5936,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4f62e596a563874e8cbe44e7ec8d954, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  proxies:
-  - _IGenerator: {fileID: 7133626307085967573}
-    name: Poly. Planet
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 0
-    compositeIGeneratorProxies: []
-  - _IGenerator: {fileID: 7133626307085967574}
-    name: Poly. Mesh
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 0
-    compositeIGeneratorProxies: []
-  seed: 0
-  setSeed: 0
-  randomizeSeed: 0
+  Seed: 0
+  ToRandomizeSeed: 0
+  ToOverwriteSeed: 0
+  generators: []
 --- !u!114 &7133626307085967560
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6025,19 +5952,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59dca7b3da9ff3d47be59f9d056533ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cl: {fileID: 7133626307085967572}
-  controlDrag: 20
-  idleDrag: 0.5
+  _CL: {fileID: 0}
   density: 2
-  _hasComponentHighlight: 1
-  _hasComponentPhysical: 0
-  _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
-  popDir: {x: -1.0700836, y: 2.5916739}
 --- !u!114 &7133626307085967561
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8019,6 +7938,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 393151930b50a4746b478d53b1cda916, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626307373733850}
   shapeInfo:
     vertexCount: 15
@@ -8039,6 +7960,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbccb01ab4dd69547985438101472567, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   showGizmoSeedCentroids: 0
   showGizmoDelauneyMain: 0
   showGizmoDelauneyCentres: 0
@@ -8064,6 +7987,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90b8cd3c8f301c94ebb57b1d7abc5b1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators:
+  - {fileID: 7133626307373733851}
+  - {fileID: 7133626307373733852}
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626307373733850}
   planetPolygonGenerator: {fileID: 7133626307373733851}
   voronoiMeshGenerator: {fileID: 7133626307373733852}
@@ -8088,28 +8015,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4f62e596a563874e8cbe44e7ec8d954, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  proxies:
-  - _IGenerator: {fileID: 7133626307373733853}
-    name: Rock Composite
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 1
-    compositeIGeneratorProxies:
-    - _IGenerator: {fileID: 7133626307373733851}
-      name: Poly. Planet
-      isEnabled: 0
-      isGenerated: 1
-      isComposite: 0
-      compositeIGeneratorProxies: []
-    - _IGenerator: {fileID: 7133626307373733852}
-      name: Voronoi Mesh
-      isEnabled: 0
-      isGenerated: 1
-      isComposite: 0
-      compositeIGeneratorProxies: []
-  seed: 0
-  setSeed: 0
-  randomizeSeed: 0
+  Seed: 0
+  ToRandomizeSeed: 0
+  ToOverwriteSeed: 0
+  generators: []
 --- !u!1 &7133626307396689498
 GameObject:
   m_ObjectHideFlags: 0
@@ -8513,6 +8422,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 393151930b50a4746b478d53b1cda916, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626307411082469}
   shapeInfo:
     vertexCount: 8
@@ -8533,6 +8444,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da23c10e860f37a4b9cc5c05a8af0ac6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   mf: {fileID: 7133626307411082467}
   polygon: {fileID: 7133626307411082469}
   circleToFit: {fileID: 7133626307411082470}
@@ -8556,22 +8469,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4f62e596a563874e8cbe44e7ec8d954, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  proxies:
-  - _IGenerator: {fileID: 7133626307411082471}
-    name: Poly. Planet
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 0
-    compositeIGeneratorProxies: []
-  - _IGenerator: {fileID: 7133626307411082392}
-    name: Poly. Mesh
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 0
-    compositeIGeneratorProxies: []
-  seed: 0
-  setSeed: 0
-  randomizeSeed: 0
+  Seed: 0
+  ToRandomizeSeed: 0
+  ToOverwriteSeed: 0
+  generators: []
 --- !u!114 &7133626307411082394
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8584,19 +8485,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59dca7b3da9ff3d47be59f9d056533ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cl: {fileID: 7133626307411082470}
-  controlDrag: 20
-  idleDrag: 0.5
+  _CL: {fileID: 0}
   density: 2
-  _hasComponentHighlight: 1
-  _hasComponentPhysical: 0
-  _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
-  popDir: {x: 2.9772873, y: 7.6525745}
 --- !u!114 &7133626307411082395
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8829,8 +8722,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1964e7acbd4c8c84da7689eed694d9f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rb: {fileID: 7133626307421584912}
-  isEnabled: 1
+  RB: {fileID: 0}
 --- !u!1 &7133626307427099426
 GameObject:
   m_ObjectHideFlags: 0
@@ -9990,6 +9882,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 393151930b50a4746b478d53b1cda916, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626307625959499}
   shapeInfo:
     vertexCount: 8
@@ -10010,6 +9904,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da23c10e860f37a4b9cc5c05a8af0ac6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   mf: {fileID: 7133626307625959497}
   polygon: {fileID: 7133626307625959499}
   circleToFit: {fileID: 7133626307625959500}
@@ -10033,22 +9929,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4f62e596a563874e8cbe44e7ec8d954, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  proxies:
-  - _IGenerator: {fileID: 7133626307625959501}
-    name: Poly. Planet
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 0
-    compositeIGeneratorProxies: []
-  - _IGenerator: {fileID: 7133626307625959502}
-    name: Poly. Mesh
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 0
-    compositeIGeneratorProxies: []
-  seed: 0
-  setSeed: 0
-  randomizeSeed: 0
+  Seed: 0
+  ToRandomizeSeed: 0
+  ToOverwriteSeed: 0
+  generators: []
 --- !u!114 &7133626307625959488
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10061,19 +9945,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59dca7b3da9ff3d47be59f9d056533ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cl: {fileID: 7133626307625959500}
-  controlDrag: 20
-  idleDrag: 0.5
+  _CL: {fileID: 0}
   density: 2
-  _hasComponentHighlight: 1
-  _hasComponentPhysical: 0
-  _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
-  popDir: {x: -1.1635361, y: -1.3497543}
 --- !u!114 &7133626307625959489
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10702,7 +10578,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4cb173d0b7a2b474fb0c1f707884f352, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rb: {fileID: 7133626307694701840}
+  _RB: {fileID: 0}
   _polygonCollider: {fileID: 7133626307694701855}
   gravityForce: 200
   gravityRadius: 200
@@ -10848,6 +10724,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 393151930b50a4746b478d53b1cda916, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626307700342339}
   shapeInfo:
     vertexCount: 15
@@ -10868,6 +10746,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbccb01ab4dd69547985438101472567, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   showGizmoSeedCentroids: 0
   showGizmoDelauneyMain: 0
   showGizmoDelauneyCentres: 0
@@ -10893,6 +10773,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90b8cd3c8f301c94ebb57b1d7abc5b1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators:
+  - {fileID: 7133626307700342340}
+  - {fileID: 7133626307700342341}
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626307700342339}
   planetPolygonGenerator: {fileID: 7133626307700342340}
   voronoiMeshGenerator: {fileID: 7133626307700342341}
@@ -10917,28 +10801,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4f62e596a563874e8cbe44e7ec8d954, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  proxies:
-  - _IGenerator: {fileID: 7133626307700342342}
-    name: Rock Composite
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 1
-    compositeIGeneratorProxies:
-    - _IGenerator: {fileID: 7133626307700342340}
-      name: Poly. Planet
-      isEnabled: 0
-      isGenerated: 1
-      isComposite: 0
-      compositeIGeneratorProxies: []
-    - _IGenerator: {fileID: 7133626307700342341}
-      name: Voronoi Mesh
-      isEnabled: 0
-      isGenerated: 1
-      isComposite: 0
-      compositeIGeneratorProxies: []
-  seed: 0
-  setSeed: 0
-  randomizeSeed: 0
+  Seed: 0
+  ToRandomizeSeed: 0
+  ToOverwriteSeed: 0
+  generators: []
 --- !u!1 &7133626307705670691
 GameObject:
   m_ObjectHideFlags: 0
@@ -11331,6 +11197,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 393151930b50a4746b478d53b1cda916, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626307736950735}
   shapeInfo:
     vertexCount: 15
@@ -11351,6 +11219,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbccb01ab4dd69547985438101472567, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   showGizmoSeedCentroids: 0
   showGizmoDelauneyMain: 0
   showGizmoDelauneyCentres: 0
@@ -11376,6 +11246,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90b8cd3c8f301c94ebb57b1d7abc5b1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators:
+  - {fileID: 7133626307736950720}
+  - {fileID: 7133626307736950721}
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626307736950735}
   planetPolygonGenerator: {fileID: 7133626307736950720}
   voronoiMeshGenerator: {fileID: 7133626307736950721}
@@ -11400,28 +11274,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4f62e596a563874e8cbe44e7ec8d954, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  proxies:
-  - _IGenerator: {fileID: 7133626307736950722}
-    name: Rock Composite
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 1
-    compositeIGeneratorProxies:
-    - _IGenerator: {fileID: 7133626307736950720}
-      name: Poly. Planet
-      isEnabled: 0
-      isGenerated: 1
-      isComposite: 0
-      compositeIGeneratorProxies: []
-    - _IGenerator: {fileID: 7133626307736950721}
-      name: Voronoi Mesh
-      isEnabled: 0
-      isGenerated: 1
-      isComposite: 0
-      compositeIGeneratorProxies: []
-  seed: 0
-  setSeed: 0
-  randomizeSeed: 0
+  Seed: 0
+  ToRandomizeSeed: 0
+  ToOverwriteSeed: 0
+  generators: []
 --- !u!1 &7133626307747256980
 GameObject:
   m_ObjectHideFlags: 0
@@ -11814,6 +11670,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 393151930b50a4746b478d53b1cda916, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626307761780359}
   shapeInfo:
     vertexCount: 15
@@ -11838,6 +11696,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbccb01ab4dd69547985438101472567, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   showGizmoSeedCentroids: 0
   showGizmoDelauneyMain: 0
   showGizmoDelauneyCentres: 0
@@ -11863,6 +11723,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90b8cd3c8f301c94ebb57b1d7abc5b1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators:
+  - {fileID: 7133626307761780408}
+  - {fileID: 7133626307761780409}
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626307761780359}
   planetPolygonGenerator: {fileID: 7133626307761780408}
   voronoiMeshGenerator: {fileID: 7133626307761780409}
@@ -11887,28 +11751,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4f62e596a563874e8cbe44e7ec8d954, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  proxies:
-  - _IGenerator: {fileID: 7133626307761780410}
-    name: Rock Composite
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 1
-    compositeIGeneratorProxies:
-    - _IGenerator: {fileID: 7133626307761780408}
-      name: Poly. Planet
-      isEnabled: 0
-      isGenerated: 1
-      isComposite: 0
-      compositeIGeneratorProxies: []
-    - _IGenerator: {fileID: 7133626307761780409}
-      name: Voronoi Mesh
-      isEnabled: 0
-      isGenerated: 1
-      isComposite: 0
-      compositeIGeneratorProxies: []
-  seed: 0
-  setSeed: 0
-  randomizeSeed: 0
+  Seed: 0
+  ToRandomizeSeed: 0
+  ToOverwriteSeed: 0
+  generators: []
 --- !u!1 &7133626307763537075
 GameObject:
   m_ObjectHideFlags: 0
@@ -12049,6 +11895,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 393151930b50a4746b478d53b1cda916, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626307763537085}
   shapeInfo:
     vertexCount: 15
@@ -12073,6 +11921,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbccb01ab4dd69547985438101472567, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   showGizmoSeedCentroids: 0
   showGizmoDelauneyMain: 0
   showGizmoDelauneyCentres: 0
@@ -12098,6 +11948,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90b8cd3c8f301c94ebb57b1d7abc5b1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators:
+  - {fileID: 7133626307763537086}
+  - {fileID: 7133626307763537087}
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626307763537085}
   planetPolygonGenerator: {fileID: 7133626307763537086}
   voronoiMeshGenerator: {fileID: 7133626307763537087}
@@ -12122,28 +11976,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4f62e596a563874e8cbe44e7ec8d954, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  proxies:
-  - _IGenerator: {fileID: 7133626307763537072}
-    name: Rock Composite
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 1
-    compositeIGeneratorProxies:
-    - _IGenerator: {fileID: 7133626307763537086}
-      name: Poly. Planet
-      isEnabled: 0
-      isGenerated: 1
-      isComposite: 0
-      compositeIGeneratorProxies: []
-    - _IGenerator: {fileID: 7133626307763537087}
-      name: Voronoi Mesh
-      isEnabled: 0
-      isGenerated: 1
-      isComposite: 0
-      compositeIGeneratorProxies: []
-  seed: 0
-  setSeed: 0
-  randomizeSeed: 0
+  Seed: 0
+  ToRandomizeSeed: 0
+  ToOverwriteSeed: 0
+  generators: []
 --- !u!1 &7133626307774277266
 GameObject:
   m_ObjectHideFlags: 0
@@ -12295,6 +12131,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 393151930b50a4746b478d53b1cda916, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626307774277274}
   shapeInfo:
     vertexCount: 8
@@ -12315,6 +12153,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da23c10e860f37a4b9cc5c05a8af0ac6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   mf: {fileID: 7133626307774277272}
   polygon: {fileID: 7133626307774277274}
   circleToFit: {fileID: 7133626307774277275}
@@ -12338,22 +12178,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4f62e596a563874e8cbe44e7ec8d954, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  proxies:
-  - _IGenerator: {fileID: 7133626307774277276}
-    name: Poly. Planet
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 0
-    compositeIGeneratorProxies: []
-  - _IGenerator: {fileID: 7133626307774277277}
-    name: Poly. Mesh
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 0
-    compositeIGeneratorProxies: []
-  seed: 0
-  setSeed: 0
-  randomizeSeed: 0
+  Seed: 0
+  ToRandomizeSeed: 0
+  ToOverwriteSeed: 0
+  generators: []
 --- !u!114 &7133626307774277279
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12366,19 +12194,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59dca7b3da9ff3d47be59f9d056533ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cl: {fileID: 7133626307774277275}
-  controlDrag: 20
-  idleDrag: 0.5
+  _CL: {fileID: 0}
   density: 2
-  _hasComponentHighlight: 1
-  _hasComponentPhysical: 0
-  _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
-  popDir: {x: -1.3022766, y: 2.8295398}
 --- !u!114 &7133626307774277264
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13382,6 +13202,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 393151930b50a4746b478d53b1cda916, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626307924300539}
   shapeInfo:
     vertexCount: 8
@@ -13402,6 +13224,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da23c10e860f37a4b9cc5c05a8af0ac6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   mf: {fileID: 7133626307924300537}
   polygon: {fileID: 7133626307924300539}
   circleToFit: {fileID: 7133626307924300540}
@@ -13425,22 +13249,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4f62e596a563874e8cbe44e7ec8d954, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  proxies:
-  - _IGenerator: {fileID: 7133626307924300541}
-    name: Poly. Planet
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 0
-    compositeIGeneratorProxies: []
-  - _IGenerator: {fileID: 7133626307924300542}
-    name: Poly. Mesh
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 0
-    compositeIGeneratorProxies: []
-  seed: 0
-  setSeed: 0
-  randomizeSeed: 0
+  Seed: 0
+  ToRandomizeSeed: 0
+  ToOverwriteSeed: 0
+  generators: []
 --- !u!114 &7133626307924300528
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13453,19 +13265,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59dca7b3da9ff3d47be59f9d056533ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cl: {fileID: 7133626307924300540}
-  controlDrag: 20
-  idleDrag: 0.5
+  _CL: {fileID: 0}
   density: 2
-  _hasComponentHighlight: 1
-  _hasComponentPhysical: 0
-  _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
-  popDir: {x: 0.40673828, y: -3.3340034}
 --- !u!114 &7133626307924300529
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14907,6 +14711,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 393151930b50a4746b478d53b1cda916, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626308137789360}
   shapeInfo:
     vertexCount: 8
@@ -14927,6 +14733,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da23c10e860f37a4b9cc5c05a8af0ac6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   mf: {fileID: 7133626308137789374}
   polygon: {fileID: 7133626308137789360}
   circleToFit: {fileID: 7133626308137789361}
@@ -14950,22 +14758,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4f62e596a563874e8cbe44e7ec8d954, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  proxies:
-  - _IGenerator: {fileID: 7133626308137789362}
-    name: Poly. Planet
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 0
-    compositeIGeneratorProxies: []
-  - _IGenerator: {fileID: 7133626308137789363}
-    name: Poly. Mesh
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 0
-    compositeIGeneratorProxies: []
-  seed: 0
-  setSeed: 0
-  randomizeSeed: 0
+  Seed: 0
+  ToRandomizeSeed: 0
+  ToOverwriteSeed: 0
+  generators: []
 --- !u!114 &7133626308137789365
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14978,19 +14774,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59dca7b3da9ff3d47be59f9d056533ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cl: {fileID: 7133626308137789361}
-  controlDrag: 20
-  idleDrag: 0.5
+  _CL: {fileID: 0}
   density: 2
-  _hasComponentHighlight: 1
-  _hasComponentPhysical: 0
-  _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
-  popDir: {x: 5.696228, y: -3.814186}
 --- !u!114 &7133626308137789366
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16750,6 +16538,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 393151930b50a4746b478d53b1cda916, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   outsidePolygon: {fileID: 7133626308406295093}
   shapeInfo:
     vertexCount: 8
@@ -16770,6 +16560,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da23c10e860f37a4b9cc5c05a8af0ac6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   mf: {fileID: 7133626308406295091}
   polygon: {fileID: 7133626308406295093}
   circleToFit: {fileID: 7133626308406295094}
@@ -16793,22 +16585,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4f62e596a563874e8cbe44e7ec8d954, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  proxies:
-  - _IGenerator: {fileID: 7133626308406295095}
-    name: Poly. Planet
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 0
-    compositeIGeneratorProxies: []
-  - _IGenerator: {fileID: 7133626308406295080}
-    name: Poly. Mesh
-    isEnabled: 1
-    isGenerated: 1
-    isComposite: 0
-    compositeIGeneratorProxies: []
-  seed: 0
-  setSeed: 0
-  randomizeSeed: 0
+  Seed: 0
+  ToRandomizeSeed: 0
+  ToOverwriteSeed: 0
+  generators: []
 --- !u!114 &7133626308406295082
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16821,19 +16601,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59dca7b3da9ff3d47be59f9d056533ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cl: {fileID: 7133626308406295094}
-  controlDrag: 20
-  idleDrag: 0.5
+  _CL: {fileID: 0}
   density: 2
-  _hasComponentHighlight: 1
-  _hasComponentPhysical: 0
-  _hasComponentControl: 1
-  controlPosition: {x: 0, y: 0}
-  controlForce: 100
   pluckTimerMax: 1.6
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
-  popDir: {x: 0.9415817, y: 2.4201546}
 --- !u!114 &7133626308406295083
 MonoBehaviour:
   m_ObjectHideFlags: 0
