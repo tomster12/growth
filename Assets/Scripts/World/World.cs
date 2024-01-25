@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,17 +5,7 @@ public class World : MonoBehaviour
 {
     public static List<World> Worlds { get; private set; } = new List<World>();
 
-    [Header("References")]
-    [SerializeField] private WorldGenerator worldGenerator;
-    [SerializeField] private PolygonCollider2D outsidePolygon;
-    [SerializeField] private Rigidbody2D rb;
-
     public WorldGenerator WorldGenerator => worldGenerator;
-
-    private void Awake()
-    {
-        Worlds.Add(this);
-    }
 
     public static World GetClosestWorld(Vector2 pos) => GetClosestWorld(pos, out Vector2 _);
 
@@ -45,4 +34,14 @@ public class World : MonoBehaviour
     public Vector3 GetClosestOverallPoint(Vector2 pos) => rb.ClosestPoint(pos);
 
     public Vector3 GetClosestSurfacePoint(Vector2 pos) => outsidePolygon.ClosestPoint(pos);
+
+    [Header("References")]
+    [SerializeField] private WorldGenerator worldGenerator;
+    [SerializeField] private PolygonCollider2D outsidePolygon;
+    [SerializeField] private Rigidbody2D rb;
+
+    private void Awake()
+    {
+        Worlds.Add(this);
+    }
 }

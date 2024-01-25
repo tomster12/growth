@@ -1,6 +1,4 @@
-
 using UnityEngine;
-
 
 [CreateAssetMenu(fileName = "Underground Biome", menuName = "Underground Biome")]
 public class UndergroundBiome : Biome

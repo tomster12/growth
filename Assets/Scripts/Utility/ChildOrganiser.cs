@@ -1,16 +1,11 @@
-
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-
 
 public class ChildOrganiser : MonoBehaviour
 {
     [SerializeField] public bool toCentreChildren = true;
     [SerializeField] public float gap = 0.5f;
-
-    private List<IOrganiserChild> children = new List<IOrganiserChild>();
-
 
     public void UpdateChildren()
     {
@@ -18,6 +13,7 @@ public class ChildOrganiser : MonoBehaviour
 
         float totalHeight = activeChildren.Sum(child => child.GetHeight());
 
+        // TODO: Why is this not doing anything? where is it used
         for (int i = 0; i < activeChildren.Length; i++)
         {
             activeChildren[i].GetTransform().localPosition = Vector3.zero;
@@ -36,6 +32,7 @@ public class ChildOrganiser : MonoBehaviour
         newChild.GetTransform().parent = transform;
     }
 
+    private List<IOrganiserChild> children = new List<IOrganiserChild>();
 
     private void Update() => UpdateChildren();
 }

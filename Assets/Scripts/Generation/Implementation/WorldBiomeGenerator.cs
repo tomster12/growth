@@ -38,6 +38,8 @@ public class WorldBiomeGenerator : Generator
 
     private void StepAssignBiomes()
     {
+        // TODO: Comment with overall algorithm description
+
         // Sanity checks
         int requiredBiomeCount = biomeRequirements.Length;
         if (requiredBiomeCount == 0) return;

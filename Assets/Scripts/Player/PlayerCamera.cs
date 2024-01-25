@@ -1,40 +1,23 @@
-
 using UnityEngine;
 using UnityEngine.Experimental.Rendering.Universal;
-
 
 public interface IFollowable
 {
     public Transform GetFollowTransform();
+
     public Vector2 GetFollowPosition();
+
     public Vector2 GetFollowUpwards();
 }
 
-
 public class PlayerCamera : MonoBehaviour
 {
-    public enum CameraMode { FREE, FOLLOW };
-
-    [Header("References")]
-    [SerializeField] private PixelPerfectCamera pixelPerfectCamera;
-    [SerializeField] private Transform controlledTransform;
-    
-    [Header("Config")]
-    [SerializeField] private int zoomLevel = 1;
-    [SerializeField] private int zoomLevelMin = 1;
-    [SerializeField] private int zoomLevelMax = 8;
-    [SerializeField] private float freeMovementAcc = 1.5f;
-    [SerializeField] private float freeMovementDamping = 0.75f;
-    [SerializeField] private float freeMovementMaxSpeed = 3.0f;
-    [SerializeField] private float followRotationSpeed = 3.0f;
+    public enum CameraMode
+    { FREE, FOLLOW };
 
     public CameraMode CameraModeState { get; private set; }
-    
-    private IFollowable follow;
-    private Vector3 movementVelocity = Vector3.zero;
 
-
-    public void SetModeFollow(IFollowable follow, bool set=false)
+    public void SetModeFollow(IFollowable follow, bool set = false)
     {
         CameraModeState = CameraMode.FOLLOW;
         this.follow = follow;
@@ -53,6 +36,20 @@ public class PlayerCamera : MonoBehaviour
         CameraModeState = CameraMode.FREE;
     }
 
+    [Header("References")]
+    [SerializeField] private PixelPerfectCamera pixelPerfectCamera;
+    [SerializeField] private Transform controlledTransform;
+
+    [Header("Config")]
+    [SerializeField] private int zoomLevel = 1;
+    [SerializeField] private int zoomLevelMin = 1;
+    [SerializeField] private int zoomLevelMax = 8;
+    [SerializeField] private float freeMovementAcc = 1.5f;
+    [SerializeField] private float freeMovementDamping = 0.75f;
+    [SerializeField] private float freeMovementMaxSpeed = 3.0f;
+    [SerializeField] private float followRotationSpeed = 3.0f;
+    private IFollowable follow;
+    private Vector3 movementVelocity = Vector3.zero;
 
     private void Awake()
     {

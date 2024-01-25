@@ -1,19 +1,8 @@
-
 using UnityEngine;
 using static WorldGenerator;
 
-
 public class FeatureTree : MonoBehaviour, IWorldFeature
 {
-    [Header("References")]
-    [SerializeField] private Transform mesh;
-    [SerializeField] private Vector2 sizeMin;
-    [SerializeField] private Vector2 sizeMax;
-    [SerializeField] private float sizeTall;
-    [SerializeField] private float tallChance;
-    [SerializeField] private float embedDistance;
-
-
     public void Spawn(WorldSurfaceEdge edge, Vector3 a, Vector3 b, float edgePct)
     {
         // Position and rotate
@@ -33,4 +22,12 @@ public class FeatureTree : MonoBehaviour, IWorldFeature
     }
 
     public Vector3 GetPosition() => transform.position;
+
+    [Header("References")]
+    [SerializeField] private Transform mesh;
+    [SerializeField] private Vector2 sizeMin;
+    [SerializeField] private Vector2 sizeMax;
+    [SerializeField] private float sizeTall;
+    [SerializeField] private float tallChance;
+    [SerializeField] private float embedDistance;
 }

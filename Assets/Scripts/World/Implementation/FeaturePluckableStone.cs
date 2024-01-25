@@ -1,15 +1,8 @@
-
 using UnityEngine;
 using static WorldGenerator;
 
-
 public class FeaturePluckableStone : MonoBehaviour, IWorldFeature
 {
-    [Header("References")]
-    [SerializeField] private PluckableStone pluckable;
-    [SerializeField] private GeneratorController generator;
-
-
     public void Spawn(WorldSurfaceEdge edge, Vector3 a, Vector3 b, float edgePct)
     {
         // Setup pluck direction and generate
@@ -23,4 +16,8 @@ public class FeaturePluckableStone : MonoBehaviour, IWorldFeature
     }
 
     public Vector3 GetPosition() => transform.position;
+
+    [Header("References")]
+    [SerializeField] private PluckableStone pluckable;
+    [SerializeField] private GeneratorController generator;
 }

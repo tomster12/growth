@@ -1,7 +1,5 @@
-
 using System.Collections.Generic;
 using UnityEngine;
-
 
 public static class Utility
 {
@@ -21,12 +19,6 @@ public static class Utility
         float m3 = r2 * r1;
         return (m1 * A) + (m2 * B) + (m3 * C);
     }
-
-    private static int[] RandomInPolygon_tris;
-    private static Vector3[] RandomInPolygon_verts;
-    private static int RandomInPolygon_triCount;
-    private static float[] RandomInPolygon_triangleAreas;
-    private static float RandomInPolygon_totalArea;
 
     public static Vector2 RandomInPolygon(PolygonCollider2D polygon, bool useCached = false)
     {
@@ -94,7 +86,7 @@ public static class Utility
         }
         return inside;
     }
-    
+
     public static float DistanceToPoints(Vector2 p, Vector2[] points)
     {
         float minDist = float.MaxValue;
@@ -147,11 +139,20 @@ public static class Utility
         float tt = t * t;
         return (uu * p0) + (2 * u * t * p1) + (tt * p2);
     }
-    
+
     public static class Easing
     {
         public static float EaseOutSine(float x) => Mathf.Sin((x * Mathf.PI) / 2);
+
         public static float EaseInSine(float x) => 1 - Mathf.Cos((x * Mathf.PI) / 2);
+
         public static float EaseInExpo(float x) => x == 0 ? 0 : Mathf.Pow(2, 10 * x - 10);
     }
+
+    // TODO: Rename with cache
+    private static int[] RandomInPolygon_tris;
+    private static Vector3[] RandomInPolygon_verts;
+    private static int RandomInPolygon_triCount;
+    private static float[] RandomInPolygon_triangleAreas;
+    private static float RandomInPolygon_totalArea;
 }

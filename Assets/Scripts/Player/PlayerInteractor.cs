@@ -1,4 +1,3 @@
-using System.Linq;
 using UnityEngine;
 
 public class PlayerInteractor : MonoBehaviour
@@ -7,6 +6,115 @@ public class PlayerInteractor : MonoBehaviour
     { NONE, HOVERING, CONTROLLING, INTERACTING };
 
     public static PlayerInteractor Instance { get; private set; }
+
+    public float InteractionEmphasis { get; set; }
+
+    public bool StartInteracting(Interaction interaction)
+    {
+        if (currentState == InteractorState.INTERACTING || !CanInteract) return false;
+        currentInteraction = interaction;
+        currentState = InteractorState.INTERACTING;
+        return true;
+    }
+
+    public bool StopInteracting(Interaction interaction)
+    {
+        if (currentState != InteractorState.INTERACTING || currentInteraction != interaction) return false;
+        currentInteraction = null;
+        currentState = InteractorState.HOVERING;
+        UpdateHovering();
+        return true;
+    }
+
+    public class Interaction
+    {
+        public Interaction(string name, InteractionInput input, Visibility visibility, string iconSpriteName)
+        {
+            IsEnabled = true;
+            IsActive = false;
+            CanInteract = true;
+
+            this.Name = name;
+            this.Input = input;
+            this.VisibilityState = visibility;
+
+            blockedSprite = SpriteSet.Instance.GetSprite("cross");
+            spriteInputInactive = SpriteSet.Instance.GetSprite(this.Input.name + "_inactive");
+            spriteInputActive = SpriteSet.Instance.GetSprite(this.Input.name + "_active");
+            if (iconSpriteName != null)
+            {
+                spriteIconInactive = SpriteSet.Instance.GetSprite(iconSpriteName + "_inactive");
+                spriteIconActive = SpriteSet.Instance.GetSprite(iconSpriteName + "_active");
+            }
+        }
+
+        public enum Visibility
+        { HIDDEN, INPUT, ICON, TEXT }
+
+        public bool IsEnabled { get; protected set; }
+        public bool IsActive { get; protected set; }
+        public bool CanInteract { get; protected set; }
+        public string Name { get; private set; }
+        public InteractionInput Input { get; private set; }
+        public Visibility VisibilityState { get; protected set; }
+
+        // TODO: Potentially rename
+        public void UpdateInteracting()
+        {
+            if (!IsEnabled) return;
+            PollPlayerInput();
+            if (IsActive) UpdateAction();
+        }
+
+        public Sprite GetCurrentSpriteInput()
+        {
+            if (!CanInteract) return blockedSprite;
+            if (!IsActive) return spriteInputInactive;
+            return spriteInputActive;
+        }
+
+        public Sprite GetCurrentSpriteIcon()
+        {
+            if (!CanInteract) return blockedSprite;
+            if (!IsActive) return spriteIconInactive;
+            return spriteIconActive;
+        }
+
+        protected PlayerInteractor PlayerInteractor => PlayerInteractor.Instance;
+        protected PlayerController PlayerController => PlayerInteractor.playerController;
+        protected PlayerLegs PlayerLegs => PlayerInteractor.playerLegs;
+        protected ComposableObject TargetComposable => PlayerInteractor.targetComposable;
+        protected LineHelper TargetDirLH => PlayerInteractor.targetDirLH;
+        protected Color LegDirInteractColor => PlayerInteractor.legDirInteractColor;
+        protected float InteractSlowdown => PlayerInteractor.interactSlowdown;
+
+        protected virtual void OnHold()
+        { }
+
+        protected virtual void OnInputDown()
+        { }
+
+        protected virtual void OnInputUp()
+        { }
+
+        protected virtual void UpdateAction()
+        { }
+
+        private Sprite blockedSprite;
+        private Sprite spriteInputInactive;
+        private Sprite spriteInputActive;
+        private Sprite spriteIconInactive;
+        private Sprite spriteIconActive;
+
+        private bool PollPlayerInput()
+        {
+            if (Input.CheckInputDown()) OnInputDown();
+            else if (Input.CheckInput()) OnHold();
+            else if (Input.CheckInputUp()) OnInputUp();
+            else return false;
+            return true;
+        }
+    }
 
     [Header("References")]
     [SerializeField] private PlayerController playerController;
@@ -49,8 +157,6 @@ public class PlayerInteractor : MonoBehaviour
     [SerializeField] private Color legDirInteractColor = new Color(1.0f, 1.0f, 1.0f, 0.25f);
     [SerializeField] private float promptOffset = 1.0f;
 
-    public float InteractionEmphasis { get; set; }
-
     private LineHelper controlLimitLH;
     private Color controlLimitClearColor;
     private Color controlLimitCurrentColor;
@@ -72,23 +178,6 @@ public class PlayerInteractor : MonoBehaviour
     private bool CanHover => currentState == InteractorState.NONE || currentState == InteractorState.HOVERING;
     private bool CanInteract => currentState == InteractorState.HOVERING;
     private bool CanControl => currentState == InteractorState.HOVERING && TargetControllable != null && TargetControllable.CanControl;
-
-    public bool StartInteracting(Interaction interaction)
-    {
-        if (currentState == InteractorState.INTERACTING || !CanInteract) return false;
-        currentInteraction = interaction;
-        currentState = InteractorState.INTERACTING;
-        return true;
-    }
-
-    public bool StopInteracting(Interaction interaction)
-    {
-        if (currentState != InteractorState.INTERACTING || currentInteraction != interaction) return false;
-        currentInteraction = null;
-        currentState = InteractorState.HOVERING;
-        UpdateHovering();
-        return true;
-    }
 
     private void Awake()
     {
@@ -419,94 +508,5 @@ public class PlayerInteractor : MonoBehaviour
             FixedUpdateCursor();
             LateUpdateCursor();
         }
-    }
-
-    public class Interaction
-    {
-        public enum Visibility
-        { HIDDEN, INPUT, ICON, TEXT }
-
-        public bool IsEnabled { get; protected set; }
-        public bool IsActive { get; protected set; }
-        public bool CanInteract { get; protected set; }
-        public string Name { get; private set; }
-        public InteractionInput Input { get; private set; }
-        public Visibility VisibilityState { get; protected set; }
-
-        private Sprite blockedSprite;
-        private Sprite spriteInputInactive;
-        private Sprite spriteInputActive;
-        private Sprite spriteIconInactive;
-        private Sprite spriteIconActive;
-
-        protected PlayerInteractor PlayerInteractor => PlayerInteractor.Instance;
-        protected PlayerController PlayerController => PlayerInteractor.playerController;
-        protected PlayerLegs PlayerLegs => PlayerInteractor.playerLegs;
-        protected ComposableObject TargetComposable => PlayerInteractor.targetComposable;
-        protected LineHelper TargetDirLH => PlayerInteractor.targetDirLH;
-        protected Color LegDirInteractColor => PlayerInteractor.legDirInteractColor;
-        protected float InteractSlowdown => PlayerInteractor.interactSlowdown;
-
-        public Interaction(string name, InteractionInput input, Visibility visibility, string iconSpriteName)
-        {
-            IsEnabled = true;
-            IsActive = false;
-            CanInteract = true;
-
-            this.Name = name;
-            this.Input = input;
-            this.VisibilityState = visibility;
-
-            blockedSprite = SpriteSet.Instance.GetSprite("cross");
-            spriteInputInactive = SpriteSet.Instance.GetSprite(this.Input.name + "_inactive");
-            spriteInputActive = SpriteSet.Instance.GetSprite(this.Input.name + "_active");
-            if (iconSpriteName != null)
-            {
-                spriteIconInactive = SpriteSet.Instance.GetSprite(iconSpriteName + "_inactive");
-                spriteIconActive = SpriteSet.Instance.GetSprite(iconSpriteName + "_active");
-            }
-        }
-
-        public void UpdateInteracting()
-        {
-            if (!IsEnabled) return;
-            PollPlayerInput();
-            if (IsActive) UpdateAction();
-        }
-
-        public Sprite GetCurrentSpriteInput()
-        {
-            if (!CanInteract) return blockedSprite;
-            if (!IsActive) return spriteInputInactive;
-            return spriteInputActive;
-        }
-
-        public Sprite GetCurrentSpriteIcon()
-        {
-            if (!CanInteract) return blockedSprite;
-            if (!IsActive) return spriteIconInactive;
-            return spriteIconActive;
-        }
-
-        private bool PollPlayerInput()
-        {
-            if (Input.CheckInputDown()) OnInputDown();
-            else if (Input.CheckInput()) OnHold();
-            else if (Input.CheckInputUp()) OnInputUp();
-            else return false;
-            return true;
-        }
-
-        protected virtual void OnHold()
-        { }
-
-        protected virtual void OnInputDown()
-        { }
-
-        protected virtual void OnInputUp()
-        { }
-
-        protected virtual void UpdateAction()
-        { }
     }
 }

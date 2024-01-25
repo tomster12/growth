@@ -10,7 +10,6 @@ public class WorldGenerator : Generator
 {
     public override string Name => "World Generator";
     public override Generator[] ComposedGenerators => new Generator[] { planetPolygonGenerator, meshGenerator, biomeGenerator };
-
     public Mesh Mesh { get; private set; }
     public List<WorldSite> Sites { get; private set; }
     public List<WorldSurfaceEdge> SurfaceEdges { get; private set; }

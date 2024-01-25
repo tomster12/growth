@@ -10,8 +10,8 @@ public class PlanetShapeInfo
 
 public class PlanetPolygonGenerator : Generator
 {
-    public Vector2[] Points { get; private set; }
     public override string Name => "Poly. Planet";
+    public Vector2[] Points { get; private set; }
 
     public override void Generate()
     {

@@ -1,23 +1,12 @@
-
 using UnityEngine;
 
-
-public enum LineFill { NONE, SOLID, DOTTED }
+public enum LineFill
+{ NONE, SOLID, DOTTED }
 
 public class LineHelper : MonoBehaviour
 {
-    private static int circleVertexCount = 25;
-
-    [SerializeField] private Material materialDottedPfb;
-    [SerializeField] private Material materialSolidPfb;
-
-    public LineFill CurrentLineFill { get; private set; } = LineFill.NONE;
     public float repeatMult = 0.8f;
-
-    private Material materialDotted;
-    private Material materialSolid;
-    private LineRenderer lineRenderer;
-
+    public LineFill CurrentLineFill { get; private set; } = LineFill.NONE;
 
     public void DrawCircle(Vector3 centre, float radius, Color color, float width = 0.1f, LineFill lineFill = LineFill.SOLID)
     {
@@ -87,7 +76,7 @@ public class LineHelper : MonoBehaviour
             Vector3 p = Utility.CalculateBezierPoint(from, control, to, t);
             lineRenderer.SetPosition(i, p);
         }
-        
+
         // Set repeats
         if (CurrentLineFill == LineFill.DOTTED)
         {
@@ -98,6 +87,13 @@ public class LineHelper : MonoBehaviour
 
     public void SetActive(bool isActive) => lineRenderer.enabled = isActive;
 
+    private static int circleVertexCount = 25;
+
+    [SerializeField] private Material materialDottedPfb;
+    [SerializeField] private Material materialSolidPfb;
+    private Material materialDotted;
+    private Material materialSolid;
+    private LineRenderer lineRenderer;
 
     private void Start()
     {

@@ -1,17 +1,8 @@
-
 using UnityEngine;
-
 
 public class Prompt : MonoBehaviour, IOrganiserChild
 {
-    [Header("References")]
-    [SerializeField] private SpriteRenderer spriteRendererInput;
-    [SerializeField] private SpriteRenderer spriteRendererIcon;
-
     public bool IsSet => interaction != null;
-
-    private PlayerInteractor.Interaction interaction;
-
 
     public bool GetVisible() => IsSet && interaction.IsEnabled;
 
@@ -25,6 +16,10 @@ public class Prompt : MonoBehaviour, IOrganiserChild
         UpdateElements();
     }
 
+    [Header("References")]
+    [SerializeField] private SpriteRenderer spriteRendererInput;
+    [SerializeField] private SpriteRenderer spriteRendererIcon;
+    private PlayerInteractor.Interaction interaction;
 
     private void Update()
     {

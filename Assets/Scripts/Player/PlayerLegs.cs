@@ -1,16 +1,24 @@
-
 using UnityEngine;
-
 
 public class PlayerLegs : MonoBehaviour
 {
+    public bool IsPointing { get; set; } = false;
+    public int PointingLeg { get; set; } = -1;
+    public Vector2 PointingPos { get; set; }
+
+    public Vector2 GetLegEnd(int legIndex)
+    {
+        if (legIndex < 0 || legIndex > 3) return Vector2.zero;
+        return legIK[legIndex].Bones[legIK[legIndex].BoneCount - 1].position;
+    }
+
     [Header("References")]
-    [SerializeField] PlayerController playerController;
-    [SerializeField] Color[] gizmoLegColors;
-    [SerializeField] float[] walkOffsets;
+    [SerializeField] private PlayerController playerController;
+    [SerializeField] private Color[] gizmoLegColors;
+    [SerializeField] private float[] walkOffsets;
 
     [Header("Prefabs")]
-    [SerializeField] GameObject stepParticlePfb;
+    [SerializeField] private GameObject stepParticlePfb;
 
     [Header("Config")]
     [SerializeField] private float legOffset = 0.3f;
@@ -25,23 +33,11 @@ public class PlayerLegs : MonoBehaviour
     [SerializeField] private int walkDir = 0;
     [SerializeField] private bool drawGizmos = false;
 
-    public bool IsPointing { get; set; } = false;
-    public int PointingLeg { get; set; } = -1;
-    public Vector2 PointingPos { get; set; }
-
     private bool legCurrentInit;
     private bool[] legGrounded = new bool[4];
     private Vector2[] legTargets = new Vector2[4];
     private Vector2[] legCurrent = new Vector2[4];
     private bool[] haveStepped = new bool[4];
-
-
-    public Vector2 GetLegEnd(int legIndex)
-    {
-        if (legIndex < 0 || legIndex > 3) return Vector2.zero;
-        return legIK[legIndex].Bones[legIK[legIndex].BoneCount - 1].position;
-    }
-
 
     private void Update()
     {
@@ -139,10 +135,10 @@ public class PlayerLegs : MonoBehaviour
         Vector2 downDir = playerController.GroundDir.normalized;
         float downDistMax = playerController.GroundedHeight;
         RaycastHit2D downHit = Physics2D.Raycast(downFrom, downDir, downDistMax, terrainMask);
-    
+
         // Update out variables
         isTouching = downHit.collider != null;
-        if (isTouching) 
+        if (isTouching)
         {
             pos = downHit.point;
             transform = downHit.collider.transform;
@@ -191,7 +187,7 @@ public class PlayerLegs : MonoBehaviour
             legIK[i].Bones[0].localPosition = new Vector3(legIK[i].Bones[0].localPosition.x, legIK[i].Bones[0].localPosition.y, 0.0f);
             legIK[i].Bones[1].localPosition = new Vector3(legIK[i].Bones[1].localPosition.x, legIK[i].Bones[1].localPosition.y, 0.0f);
             legIK[i].Bones[2].localPosition = new Vector3(legIK[i].Bones[2].localPosition.x, legIK[i].Bones[2].localPosition.y, 0.0f);
-            
+
             legIK[i].Bones[0].GetChild(1).position = (legIK[i].Bones[0].position + legIK[i].Bones[1].position) / 2.0f;
             legIK[i].Bones[0].GetChild(1).localScale = new Vector3(legWidth, (bone1Pos - bone0Pos).magnitude, 1.0f);
             legIK[i].Bones[1].GetChild(1).position = (legIK[i].Bones[1].position + legIK[i].Bones[2].position) / 2.0f;

@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,9 +7,6 @@ public class NoiseData
 {
     [SerializeField] public float[] valueRange;
     [SerializeField] public float noiseScale = 1.0f;
-
-    private float currentOffset = 0;
-
 
     public NoiseData()
     {
@@ -30,6 +26,15 @@ public class NoiseData
         this.noiseScale = noiseScale;
     }
 
+    // Based on shader defined here:
+    // - Growth\Library\PackageCache\com.aarthificial.pixelgraphics@5d5d2dab89\Runtime\Shaders\SimplexNoise3D.hlsl
+    // TODO: Explain and link to the wind in notion
+    public static void SimplexNoise3D_float(Vector3 Vertex, float Scale, out float Noise, out Vector3 Gradient)
+    {
+        Vector4 noise_vector = snoise_grad(Vertex * Scale);
+        Noise = noise_vector.w;
+        Gradient = new Vector3(noise_vector.x, noise_vector.y, noise_vector.z);
+    }
 
     public void RandomizeOffset() => currentOffset = -100000 + UnityEngine.Random.value * 200000;
 
@@ -49,25 +54,30 @@ public class NoiseData
         return GetNoise(x, y);
     }
 
-
-    // Based on shader defined here:
-    // - D:\Files\Coding\Unity\Full\Growth\Library\PackageCache\com.aarthificial.pixelgraphics@5d5d2dab89\Runtime\Shaders\SimplexNoise3D.hlsl
+    private float currentOffset = 0;
 
     private static Vector4 Vector4Step(Vector4 edge, Vector4 x) => new Vector4(
                                                                     edge.x > x.x ? 0.0f : 1.0f,
                                                                     edge.y > x.y ? 0.0f : 1.0f,
                                                                     edge.z > x.z ? 0.0f : 1.0f,
                                                                     edge.w > x.w ? 0.0f : 1.0f);
+
     private static Vector4 Vector4Abs(Vector4 a) => new Vector4(
                                                             Mathf.Abs(a.x),
                                                             Mathf.Abs(a.y),
                                                             Mathf.Abs(a.z),
                                                             Mathf.Abs(a.w));
+
     private static Vector3 Vector3Max(Vector3 p, float val) => new Vector3(Mathf.Max(p.x, val), Mathf.Max(p.y, val), Mathf.Max(p.z, val));
+
     private static Vector4 Vector4Max(Vector4 p, float val) => new Vector4(Mathf.Max(p.x, val), Mathf.Max(p.y, val), Mathf.Max(p.z, val), Mathf.Max(p.w, val));
+
     private static Vector3 Vector3Floor(Vector3 p) => new Vector3(Mathf.Floor(p.x), Mathf.Floor(p.y), Mathf.Floor(p.z));
+
     private static Vector4 Vector4Floor(Vector4 p) => new Vector4(Mathf.Floor(p.x), Mathf.Floor(p.y), Mathf.Floor(p.z), Mathf.Floor(p.w));
+
     private static Vector3 Vector3Mult(Vector3 a, Vector3 b) => new Vector3(a.x * b.x, a.y * b.y, a.z * b.z);
+
     private static Vector4 Vector4Mult(Vector4 a, Vector4 b) => new Vector4(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
 
     private static Vector3 mod289_3(Vector3 x)
@@ -245,12 +255,5 @@ public class NoiseData
             -6.0f * m3.w * x3 * Vector3.Dot(x3, g3) + m4.w * g3;
         Vector4 px = new Vector4(Vector3.Dot(x0, g0), Vector3.Dot(x1, g1), Vector3.Dot(x2, g2), Vector3.Dot(x3, g3));
         return 42.0f * new Vector4(grad.x, grad.y, grad.z, Vector4.Dot(m4, px));
-    }   
-
-    public static void SimplexNoise3D_float(Vector3 Vertex, float Scale, out float Noise, out Vector3 Gradient)
-    {
-        Vector4 noise_vector = snoise_grad(Vertex * Scale);
-        Noise = noise_vector.w;
-        Gradient = new Vector3(noise_vector.x, noise_vector.y, noise_vector.z);
     }
 }

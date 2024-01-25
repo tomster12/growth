@@ -1,6 +1,4 @@
-
 using UnityEngine;
-
 
 public class PartPhysical : Part
 {
@@ -9,7 +7,6 @@ public class PartPhysical : Part
 
     public Rigidbody2D RB { get; protected set; } = null;
     public GravityObject GRO { get; protected set; } = null;
-
 
     public override void InitPart(ComposableObject composable)
     {

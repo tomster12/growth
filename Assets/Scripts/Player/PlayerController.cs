@@ -1,9 +1,41 @@
-
 using UnityEngine;
-
 
 public class PlayerController : MonoBehaviour, IFollowable
 {
+    public Vector2 inputDir;
+    public float FeetHeight => baseFeetHeight + inputVerticalLean * verticalLeanHeight;
+    public float GroundedHeight => FeetHeight + groundedSpacing;
+    public Vector2 RightDir => new Vector2(UpDir.y, -UpDir.x);
+    public Rigidbody2D RB => characterRB;
+    public Transform Transform => characterRB.transform;
+    public World ClosestWorld { get; private set; }
+    public Vector2 GroundPosition { get; private set; }
+    public Vector2 GroundDir { get; private set; }
+    public Vector2 UpDir { get; private set; }
+    public Vector2 TargetPosition { get; private set; }
+    public bool IsGrounded { get; private set; }
+    public float MovementSlowdown { get; set; }
+    public float OverrideLean { get; set; }
+
+    public Transform GetFollowTransform() => characterRB.transform;
+
+    public Vector2 GetFollowPosition() => characterRB.position;
+
+    public Vector2 GetFollowUpwards() => UpDir;
+
+    public Vector2 GetJumpDir()
+    {
+        Vector2 jumpDir = UpDir;
+
+        if (characterRB.velocity.magnitude > verticalJumpThreshold)
+        {
+            float rightComponent = Vector2.Dot(characterRB.velocity.normalized, RightDir);
+            jumpDir += RightDir * Mathf.Sign(rightComponent);
+        }
+
+        return jumpDir.normalized;
+    }
+
     [Header("References")]
     [SerializeField] private PlayerCamera playerCamera;
     [SerializeField] private PlayerInteractor playerInteractor;
@@ -32,46 +64,9 @@ public class PlayerController : MonoBehaviour, IFollowable
     [SerializeField] private float verticalJumpThreshold = 0.1f;
     [Space(10)]
     [SerializeField] private bool drawGizmos = false;
-
-    public float FeetHeight => baseFeetHeight + inputVerticalLean * verticalLeanHeight;
-    public float GroundedHeight => FeetHeight + groundedSpacing;
-    public Vector2 RightDir => new Vector2(UpDir.y, -UpDir.x);
-    public Rigidbody2D RB => characterRB;
-    public Transform Transform => characterRB.transform;
-    public World ClosestWorld { get; private set; }
-    public Vector2 GroundPosition { get; private set; }
-    public Vector2 GroundDir { get; private set; }
-    public Vector2 UpDir { get; private set; }
-    public Vector2 TargetPosition { get; private set; }
-    public bool IsGrounded { get; private set; }
-    public float MovementSlowdown { get; set; }
-    public float OverrideLean { get; set; }
-
-    public Vector2 inputDir;
     private bool inputJump;
     private float inputVerticalLean;
     private float jumpTimer = 0.0f;
-
-
-    public Transform GetFollowTransform() => characterRB.transform;
-
-    public Vector2 GetFollowPosition() => characterRB.position;
-
-    public Vector2 GetFollowUpwards() => UpDir;
-
-    public Vector2 GetJumpDir()
-    {
-        Vector2 jumpDir = UpDir;
-
-        if (characterRB.velocity.magnitude > verticalJumpThreshold)
-        {
-            float rightComponent = Vector2.Dot(characterRB.velocity.normalized, RightDir);
-            jumpDir += RightDir * Mathf.Sign(rightComponent);
-        }
-
-        return jumpDir.normalized;
-    }
-
 
     private void Start()
     {
@@ -90,7 +85,7 @@ public class PlayerController : MonoBehaviour, IFollowable
         // Take in input for movement
         inputDir = Vector3.zero;
         inputDir += Input.GetAxisRaw("Horizontal") * RightDir;
-        
+
         // Vertical movement while not grounded
         if (!IsGrounded) inputDir += Input.GetAxisRaw("Horizontal") * RightDir;
 
@@ -106,7 +101,7 @@ public class PlayerController : MonoBehaviour, IFollowable
     private void FixedUpdate()
     {
         if (GameManager.IsPaused) return;
-        
+
         // Calculate closest world and ground position
         ClosestWorld = World.GetClosestWorld(characterRB.transform.position, out Vector2 closestGroundPosition);
         GroundPosition = closestGroundPosition;
@@ -165,7 +160,6 @@ public class PlayerController : MonoBehaviour, IFollowable
             // Reset jump timer to max
             jumpTimer = jumpTimerMax;
         }
-
 
         // Force with input
         characterRB.AddForce(inputDir.normalized * airMovementSpeed, ForceMode2D.Impulse);

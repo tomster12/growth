@@ -1,17 +1,10 @@
-
 using UnityEngine;
 using static WorldGenerator;
 
-
 public class FeatureBoulder : MonoBehaviour, IWorldFeature
 {
-    [Header("References")]
-    [SerializeField] private GeneratorController generator;
-
-
     public void Spawn(WorldSurfaceEdge edge, Vector3 a, Vector3 b, float edgePct)
     {
-        // Generate
         generator.Generate();
 
         // Position and rotate
@@ -21,4 +14,7 @@ public class FeatureBoulder : MonoBehaviour, IWorldFeature
     }
 
     public Vector3 GetPosition() => transform.position;
+
+    [Header("References")]
+    [SerializeField] private GeneratorController generator;
 }

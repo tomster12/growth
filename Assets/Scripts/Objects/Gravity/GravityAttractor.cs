@@ -1,16 +1,10 @@
-
 using UnityEngine;
-
 
 public class GravityAttractor : MonoBehaviour
 {
-    [Header("References")]
-    [SerializeField] private Rigidbody2D _RB;
-    [SerializeField] private PolygonCollider2D _polygonCollider;
-    
     [Header("Config")]
-    [SerializeField] public float gravityForce = 200.0f; // Standard Range: 150-300
-    [SerializeField] public float gravityRadius = 200.0f;
+    [SerializeField] public float gravityForce = 200.0f;
+    [SerializeField] public float gravityRadius = 200.0f; // Standard Range: 150-300
     [SerializeField] public float minimumDistance = 3.0f;
     [SerializeField] public bool rigidbodySurface = true;
 
@@ -18,9 +12,11 @@ public class GravityAttractor : MonoBehaviour
     public PolygonCollider2D PolygonCollider => _polygonCollider;
     public Vector2 Centre => RB.transform.position;
 
-
     public Vector2 ClosestPoint(Vector2 pos) => rigidbodySurface ? RB.ClosestPoint(pos) : PolygonCollider.ClosestPoint(pos);
 
+    [Header("References")]
+    [SerializeField] private Rigidbody2D _RB;
+    [SerializeField] private PolygonCollider2D _polygonCollider;
 
     private void FixedUpdate()
     {

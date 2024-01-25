@@ -1,13 +1,10 @@
-
 using System.Collections.Generic;
 using System.Linq;
-
 
 public class PartInteractable : Part
 {
     public List<PlayerInteractor.Interaction> Interactions { get; protected set; } = new List<PlayerInteractor.Interaction>();
     public bool CanInteract => Interactions.Where(i => i.IsEnabled && i.CanInteract).Count() > 0;
-
 
     public override void InitPart(ComposableObject composable)
     {

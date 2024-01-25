@@ -1,7 +1,5 @@
-
 using System;
 using UnityEngine;
-
 
 [Serializable]
 public class EdgeRule
@@ -11,7 +9,6 @@ public class EdgeRule
     [SerializeField] public float minDistance;
     [SerializeField] public GameObject feature;
 };
-
 
 public class Biome : ScriptableObject
 {

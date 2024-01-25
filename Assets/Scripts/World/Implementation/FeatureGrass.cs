@@ -1,16 +1,8 @@
-
 using UnityEngine;
 using static WorldGenerator;
 
-
 public class FeatureGrass : MonoBehaviour, IWorldFeature
 {
-    [Header("References")]
-    [SerializeField] SpriteRenderer spriteRenderer;
-
-    [Header("Config")]
-    [SerializeField] NoiseData heightNoise = new NoiseData(new float[] { 0.8f, 1.2f });
-
     public void Spawn(WorldSurfaceEdge edge, Vector3 a, Vector3 b, float edgePct)
     {
         // Choose to flip or not
@@ -32,4 +24,10 @@ public class FeatureGrass : MonoBehaviour, IWorldFeature
     }
 
     public Vector3 GetPosition() => transform.position;
+
+    [Header("References")]
+    [SerializeField] private SpriteRenderer spriteRenderer;
+
+    [Header("Config")]
+    [SerializeField] private NoiseData heightNoise = new NoiseData(new float[] { 0.8f, 1.2f });
 }

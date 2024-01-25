@@ -1,25 +1,10 @@
-
 using UnityEngine;
 using UnityEngine.Assertions;
 
-
 public class PartControllable : Part
 {
-    [Header("Config")]
-    [SerializeField] protected float controlDrag = 10.0f;
-    [SerializeField] protected float controlAngularDrag = 1.0f;
-    [SerializeField] protected float idleDrag = 0.5f;
-    [SerializeField] protected float idleAngularDrag = 0.05f;
-
     public bool IsControlled { get; private set; } = false;
     public bool CanControl { get; private set; } = true;
-    
-    protected Vector2 controlPosition = Vector2.zero;
-    protected float controlPositionForce = 1.0f;
-    protected float controlAngle = 0.0f;
-    protected float controlAngleForce = 1.0f;
-    protected PartPhysical Physical => Composable.GetPart<PartPhysical>();
-
 
     public override void InitPart(ComposableObject composable)
     {
@@ -71,6 +56,17 @@ public class PartControllable : Part
 
     public void StopControl() => SetControlled(false);
 
+    [Header("Config")]
+    [SerializeField] protected float controlDrag = 10.0f;
+    [SerializeField] protected float controlAngularDrag = 1.0f;
+    [SerializeField] protected float idleDrag = 0.5f;
+    [SerializeField] protected float idleAngularDrag = 0.05f;
+
+    protected Vector2 controlPosition = Vector2.zero;
+    protected float controlPositionForce = 1.0f;
+    protected float controlAngle = 0.0f;
+    protected float controlAngleForce = 1.0f;
+    protected PartPhysical Physical => Composable.GetPart<PartPhysical>();
 
     private void FixedUpdate()
     {

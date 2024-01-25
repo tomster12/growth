@@ -1,19 +1,8 @@
-
 using UnityEngine;
 using UnityEditor;
 
-
 public class IKFabrik : MonoBehaviour
 {
-    [Header("References")]
-    [SerializeField] private Transform boneRoot;
-    [SerializeField] private Transform boneEnd;
-
-    [Header("Config")]
-    [SerializeField] private int iterations = 10;
-    [SerializeField] private float delta = 0.01f;
-    [SerializeField][Range(0, 1)] private float snapBackStrength = 1.0f;
-
     public Vector2 TargetPos { get; set; }
     public Quaternion TargetRot { get; set; }
     public Vector2 PolePos { get; set; }
@@ -22,13 +11,6 @@ public class IKFabrik : MonoBehaviour
     public Transform[] Bones { get; private set; }
     public float[] BoneLengths { get; private set; }
     public float TotalLength { get; private set; }
-
-    private Vector2[] bonesPos_RS;
-    private Vector2[] initBoneDir_RS;
-    private Quaternion[] initBoneRot_RS;
-    private Vector2 initTargetPos_RS;
-    private Quaternion initTargetRot_RS;
-
 
     [ContextMenu("Init IK")]
     public void InitIK()
@@ -39,7 +21,7 @@ public class IKFabrik : MonoBehaviour
 
     public void InitBones()
     {
-        // Calculate bone count
+        // Get bone count through parents from end
         BoneCount = 0;
         Transform current = boneEnd;
         while (current != boneRoot)
@@ -48,7 +30,8 @@ public class IKFabrik : MonoBehaviour
             current = current.parent;
             if (current == null) throw new UnityException("Could not find start.");
         }
-        // For each bone we should have
+
+        // For each bone we should have as above
         Bones = new Transform[BoneCount];
         current = boneEnd;
         for (int i = BoneCount - 1; i >= 0; i--)
@@ -92,6 +75,19 @@ public class IKFabrik : MonoBehaviour
         }
     }
 
+    [Header("References")]
+    [SerializeField] private Transform boneRoot;
+    [SerializeField] private Transform boneEnd;
+
+    [Header("Config")]
+    [SerializeField] private int iterations = 10;
+    [SerializeField] private float delta = 0.01f;
+    [SerializeField][Range(0, 1)] private float snapBackStrength = 1.0f;
+    private Vector2[] bonesPos_RS;
+    private Vector2[] initBoneDir_RS;
+    private Quaternion[] initBoneRot_RS;
+    private Vector2 initTargetPos_RS;
+    private Quaternion initTargetRot_RS;
 
     private void Start() => InitIK();
 
@@ -162,7 +158,7 @@ public class IKFabrik : MonoBehaviour
                 Plane plane_RS = new Plane(bonesPos_RS[i + 1] - bonesPos_RS[i - 1], bonesPos_RS[i - 1]);
                 Vector2 projectedPole_RS = plane_RS.ClosestPointOnPlane(pole_RS);
                 Vector2 projectedBone_RS = plane_RS.ClosestPointOnPlane(bonesPos_RS[i]);
-                float angle_RS = Vector2.SignedAngle(projectedBone_RS - bonesPos_RS[i - 1], projectedPole_RS - bonesPos_RS[i - 1]) ;
+                float angle_RS = Vector2.SignedAngle(projectedBone_RS - bonesPos_RS[i - 1], projectedPole_RS - bonesPos_RS[i - 1]);
                 bonesPos_RS[i] = (Vector2)(Quaternion.AngleAxis(angle_RS, plane_RS.normal) * (bonesPos_RS[i] - bonesPos_RS[i - 1])) + bonesPos_RS[i - 1];
             }
         }
@@ -182,9 +178,17 @@ public class IKFabrik : MonoBehaviour
         }
     }
 
+    private Vector2 TransformPosition_WorldToRS(Vector2 worldPos) => Quaternion.Inverse(boneRoot.rotation) * (worldPos - (Vector2)boneRoot.position);
+
+    private Quaternion TransformRotation_WorldToRS(Quaternion worldRot) => Quaternion.Inverse(worldRot) * boneRoot.rotation;
+
+    private Vector3 TransformPosition_RSToWorld(Vector2 position) => boneRoot.rotation * position + boneRoot.position;
+
+    private Quaternion TransformRotation_RSToWorld(Quaternion rotation) => boneRoot.rotation * rotation;
+
     private void OnDrawGizmos()
     {
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         // Loop upwards through transforms
         Transform current = boneEnd;
         for (int i = 0; i < BoneCount && current != null && current.parent != null; i++)
@@ -201,13 +205,6 @@ public class IKFabrik : MonoBehaviour
             // Move upwards to parent
             current = current.parent;
         }
-        #endif
+#endif
     }
-    
-    private Vector2 TransformPosition_WorldToRS(Vector2 worldPos) => Quaternion.Inverse(boneRoot.rotation) * (worldPos - (Vector2)boneRoot.position);
-    private Quaternion TransformRotation_WorldToRS(Quaternion worldRot) => Quaternion.Inverse(worldRot) * boneRoot.rotation;
-
-    private Vector3 TransformPosition_RSToWorld(Vector2 position) => boneRoot.rotation * position + boneRoot.position;
-    private Quaternion TransformRotation_RSToWorld(Quaternion rotation) => boneRoot.rotation * rotation;
-
 }

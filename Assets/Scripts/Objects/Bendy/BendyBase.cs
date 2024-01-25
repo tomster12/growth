@@ -1,11 +1,8 @@
-
 using UnityEngine;
-
 
 public class BendyBase : MonoBehaviour
 {
     [SerializeField] private BendyNode baseNode;
-
 
     private void Start()
     {

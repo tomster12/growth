@@ -1,26 +1,14 @@
-
 using UnityEngine;
-
 
 public class PartIndicatable : Part
 {
     public static bool ShowIndicators { get; set; } = false;
-    private static Color invisibleColor = new Color(1.0f, 1.0f, 1.0f, 0.0f);
-    private static Color visibleColor = new Color(1.0f, 1.0f, 1.0f, 0.3f);
-    private static float offsetWobbleScale = 0.05f;
-    
     public Vector3 TargetOffset { get; set; }
     public float PositionLerpSpeed { get; set; } = 4.0f;
     public float ColorLerpSpeed { get; set; } = 10.0f;
     public float WobbleMagnitude { get; set; } = 0.2f;
     public float WobbleFrequency { get; set; } = 2.0f;
     public bool IsVisible => ShowIndicators && !Composable.GetPart<PartHighlightable>().IsHighlighted && Composable.GetPart<PartInteractable>().CanInteract;
-
-    private bool isInitialized = false;
-    private Transform indicator;
-    private SpriteRenderer indicatorSR;
-    private Vector3 currentOffset;
-
 
     public override void InitPart(ComposableObject composable)
     {
@@ -46,6 +34,13 @@ public class PartIndicatable : Part
         isInitialized = true;
     }
 
+    private static Color invisibleColor = new Color(1.0f, 1.0f, 1.0f, 0.0f);
+    private static Color visibleColor = new Color(1.0f, 1.0f, 1.0f, 0.3f);
+    private static float offsetWobbleScale = 0.05f;
+    private bool isInitialized = false;
+    private Transform indicator;
+    private SpriteRenderer indicatorSR;
+    private Vector3 currentOffset;
 
     private void Update()
     {

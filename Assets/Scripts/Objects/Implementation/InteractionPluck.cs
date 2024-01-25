@@ -1,18 +1,9 @@
-
 using System;
 using UnityEngine;
 
-
 [Serializable]
-class InteractionPluck : PlayerInteractor.Interaction
+internal class InteractionPluck : PlayerInteractor.Interaction
 {
-    public bool IsPlucked { get; private set; }
-
-    private Action onPluck;
-    private float pluckTimerMax;
-    private float pluckTimer;
-
-
     public InteractionPluck(Action onPluck, float pluckTimerMax) : base("Pluck", InteractionInput.LMB, Visibility.ICON, "up")
     {
         this.onPluck = onPluck;
@@ -20,12 +11,17 @@ class InteractionPluck : PlayerInteractor.Interaction
         IsEnabled = true;
     }
 
+    public bool IsPlucked { get; private set; }
 
     protected override void OnInputDown() => StartPluck();
 
     protected override void OnInputUp() => CancelPluck();
 
     protected override void UpdateAction() => UpdatePluck();
+
+    private Action onPluck;
+    private float pluckTimerMax;
+    private float pluckTimer;
 
     private void StartPluck()
     {

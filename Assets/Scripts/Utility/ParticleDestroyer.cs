@@ -1,11 +1,8 @@
-
 using UnityEngine;
-
 
 public class ParticleDestroyer : MonoBehaviour
 {
     [SerializeField] private ParticleSystem particles;
-
 
     private void Update()
     {

@@ -1,18 +1,15 @@
-
 using System.Linq;
 using UnityEngine;
 
-
 public class OutlineController : MonoBehaviour
 {
-    public enum Mode { OutlineFull, Disabled }
-
+    public enum Mode
+    { OutlineFull, Disabled }
 
     private Renderer[] renderers;
     private Material outlineMask, outlineFill;
     private bool isInitialized;
     private bool needsUpdate;
-
 
     private void Awake() => InitializeController();
 
@@ -93,6 +90,8 @@ public class OutlineController : MonoBehaviour
     private void UpdateMaterials()
     {
         if (!isInitialized) return;
+
+        // TODO: Why is this commented out
 
         //if (spriteRenderer == null || materials == null) return;
 
