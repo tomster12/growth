@@ -1,8 +1,7 @@
-using UnityEngine;
 using UnityEditor;
-using UnityEngine.UIElements;
 using UnityEditor.UIElements;
-using System.Collections;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 [CustomPropertyDrawer(typeof(Generator))]
 public class GeneratorDrawer : PropertyDrawer

@@ -13,10 +13,12 @@ public class ChildOrganiser : MonoBehaviour
 
         float totalHeight = activeChildren.Sum(child => child.GetHeight());
 
-        // TODO: Why is this not doing anything? where is it used
+        float cumsum = 0.0f;
         for (int i = 0; i < activeChildren.Length; i++)
         {
-            activeChildren[i].GetTransform().localPosition = Vector3.zero;
+            float dy = -totalHeight / 2.0f + cumsum;
+            activeChildren[i].GetTransform().localPosition = Vector3.up * dy;
+            cumsum += activeChildren[i].GetHeight();
         }
     }
 

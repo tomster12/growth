@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerInteractor : MonoBehaviour
+public partial class PlayerInteractor : MonoBehaviour
 {
     public enum InteractorState
     { NONE, HOVERING, CONTROLLING, INTERACTING };
@@ -9,7 +9,7 @@ public class PlayerInteractor : MonoBehaviour
 
     public float InteractionEmphasis { get; set; }
 
-    public bool StartInteracting(Interaction interaction)
+    public bool StartInteracting(PlayerInteraction interaction)
     {
         if (currentState == InteractorState.INTERACTING || !CanInteract) return false;
         currentInteraction = interaction;
@@ -17,103 +17,13 @@ public class PlayerInteractor : MonoBehaviour
         return true;
     }
 
-    public bool StopInteracting(Interaction interaction)
+    public bool StopInteracting(PlayerInteraction interaction)
     {
         if (currentState != InteractorState.INTERACTING || currentInteraction != interaction) return false;
         currentInteraction = null;
         currentState = InteractorState.HOVERING;
         UpdateHovering();
         return true;
-    }
-
-    public class Interaction
-    {
-        public Interaction(string name, InteractionInput input, Visibility visibility, string iconSpriteName)
-        {
-            IsEnabled = true;
-            IsActive = false;
-            CanInteract = true;
-
-            this.Name = name;
-            this.Input = input;
-            this.VisibilityState = visibility;
-
-            blockedSprite = SpriteSet.Instance.GetSprite("cross");
-            spriteInputInactive = SpriteSet.Instance.GetSprite(this.Input.name + "_inactive");
-            spriteInputActive = SpriteSet.Instance.GetSprite(this.Input.name + "_active");
-            if (iconSpriteName != null)
-            {
-                spriteIconInactive = SpriteSet.Instance.GetSprite(iconSpriteName + "_inactive");
-                spriteIconActive = SpriteSet.Instance.GetSprite(iconSpriteName + "_active");
-            }
-        }
-
-        public enum Visibility
-        { HIDDEN, INPUT, ICON, TEXT }
-
-        public bool IsEnabled { get; protected set; }
-        public bool IsActive { get; protected set; }
-        public bool CanInteract { get; protected set; }
-        public string Name { get; private set; }
-        public InteractionInput Input { get; private set; }
-        public Visibility VisibilityState { get; protected set; }
-
-        // TODO: Potentially rename
-        public void UpdateInteracting()
-        {
-            if (!IsEnabled) return;
-            PollPlayerInput();
-            if (IsActive) UpdateAction();
-        }
-
-        public Sprite GetCurrentSpriteInput()
-        {
-            if (!CanInteract) return blockedSprite;
-            if (!IsActive) return spriteInputInactive;
-            return spriteInputActive;
-        }
-
-        public Sprite GetCurrentSpriteIcon()
-        {
-            if (!CanInteract) return blockedSprite;
-            if (!IsActive) return spriteIconInactive;
-            return spriteIconActive;
-        }
-
-        protected PlayerInteractor PlayerInteractor => PlayerInteractor.Instance;
-        protected PlayerController PlayerController => PlayerInteractor.playerController;
-        protected PlayerLegs PlayerLegs => PlayerInteractor.playerLegs;
-        protected ComposableObject TargetComposable => PlayerInteractor.targetComposable;
-        protected LineHelper TargetDirLH => PlayerInteractor.targetDirLH;
-        protected Color LegDirInteractColor => PlayerInteractor.legDirInteractColor;
-        protected float InteractSlowdown => PlayerInteractor.interactSlowdown;
-
-        protected virtual void OnHold()
-        { }
-
-        protected virtual void OnInputDown()
-        { }
-
-        protected virtual void OnInputUp()
-        { }
-
-        protected virtual void UpdateAction()
-        { }
-
-        private Sprite blockedSprite;
-        private Sprite spriteInputInactive;
-        private Sprite spriteInputActive;
-        private Sprite spriteIconInactive;
-        private Sprite spriteIconActive;
-
-        private bool PollPlayerInput()
-        {
-            if (Input.CheckInputDown()) OnInputDown();
-            else if (Input.CheckInput()) OnHold();
-            else if (Input.CheckInputUp()) OnInputUp();
-            else return false;
-            return true;
-        }
     }
 
     [Header("References")]
@@ -166,10 +76,10 @@ public class PlayerInteractor : MonoBehaviour
     private float hoverDistance;
     private Vector2 limitedControlDir;
     private Vector2 limitedControlPos;
-    private ComposableObject targetComposable;
+    private CompositeObject targetComposable;
     private float targetDistance;
     private float dropTimer;
-    private Interaction currentInteraction;
+    private PlayerInteraction currentInteraction;
     private float indicateTimer;
     private PartControllable TargetControllable => targetComposable?.GetPart<PartControllable>();
     private PartInteractable TargetInteractable => targetComposable?.GetPart<PartInteractable>();
@@ -229,7 +139,7 @@ public class PlayerInteractor : MonoBehaviour
         // Only retarget if not controlling or interacting
         if (CanHover)
         {
-            ComposableObject hoveredComposable = null;
+            CompositeObject hoveredComposable = null;
 
             // - Mouse close enough to hover new
             if (hoverDistance < maxHoverDistance)
@@ -238,7 +148,7 @@ public class PlayerInteractor : MonoBehaviour
                 RaycastHit2D[] hits = Physics2D.RaycastAll(hoverPos, Vector2.zero);
                 foreach (RaycastHit2D hit in hits)
                 {
-                    ComposableObject hitComposable = hit.transform.GetComponent<ComposableObject>();
+                    CompositeObject hitComposable = hit.transform.GetComponent<CompositeObject>();
                     if (hitComposable != null) { hoveredComposable = hitComposable; break; }
                 }
             }
@@ -442,10 +352,10 @@ public class PlayerInteractor : MonoBehaviour
         promptOrganiser.Clear();
         if (TargetInteractable != null)
         {
-            foreach (Interaction interaction in TargetInteractable.Interactions)
+            foreach (PlayerInteraction interaction in TargetInteractable.Interactions)
             {
                 GameObject promptGO = Instantiate(promptPfb);
-                Prompt prompt = promptGO.GetComponent<Prompt>();
+                InteractionPrompt prompt = promptGO.GetComponent<InteractionPrompt>();
                 prompt.SetInteraction(interaction);
                 promptOrganiser.AddChild(prompt);
             }
@@ -460,12 +370,12 @@ public class PlayerInteractor : MonoBehaviour
         return TargetInteractable.CanInteract;
     }
 
-    private void SetTarget(ComposableObject newTarget)
+    private void SetTarget(CompositeObject newTarget)
     {
         // Update target composable
-        TargetHighlightable?.SetHighlighted(false);
+        if (TargetHighlightable) TargetHighlightable.Highlighted = false;
         targetComposable = newTarget;
-        TargetHighlightable?.SetHighlighted(true);
+        if (TargetHighlightable) TargetHighlightable.Highlighted = true;
         UpdateInteractionsList();
     }
 

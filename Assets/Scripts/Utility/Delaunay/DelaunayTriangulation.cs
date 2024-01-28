@@ -22,10 +22,8 @@
  * NOTICE: This file has been modified compared to the original.
  */
 
-
 using System.Collections.Generic;
 using UnityEngine;
-
 
 namespace GK
 {
@@ -38,21 +36,9 @@ namespace GK
 
         /// <summary>
         /// List of triangles that make up the triangulation. The elements index
-        /// the Vertices array. 
+        /// the Vertices array.
         /// </summary>
         public readonly List<int> Triangles;
-
-        internal DelaunayTriangulation()
-        {
-            Vertices = new List<Vector2>();
-            Triangles = new List<int>();
-        }
-
-        internal void Clear()
-        {
-            Vertices.Clear();
-            Triangles.Clear();
-        }
 
         /// <summary>
         /// Verify that this is an actual Delaunay triangulation
@@ -83,6 +69,18 @@ namespace GK
             {
                 return false;
             }
+        }
+
+        internal DelaunayTriangulation()
+        {
+            Vertices = new List<Vector2>();
+            Triangles = new List<int>();
+        }
+
+        internal void Clear()
+        {
+            Vertices.Clear();
+            Triangles.Clear();
         }
     }
 }

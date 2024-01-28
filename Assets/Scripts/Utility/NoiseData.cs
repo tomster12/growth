@@ -1,6 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.UI;
 
 [Serializable]
 public class NoiseData
@@ -26,9 +25,6 @@ public class NoiseData
         this.noiseScale = noiseScale;
     }
 
-    // Based on shader defined here:
-    // - Growth\Library\PackageCache\com.aarthificial.pixelgraphics@5d5d2dab89\Runtime\Shaders\SimplexNoise3D.hlsl
-    // TODO: Explain and link to the wind in notion
     public static void SimplexNoise3D_float(Vector3 Vertex, float Scale, out float Noise, out Vector3 Gradient)
     {
         Vector4 noise_vector = snoise_grad(Vertex * Scale);

@@ -22,8 +22,6 @@
  * NOTICE: This file has been modified compared to the original.
  */
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace GK

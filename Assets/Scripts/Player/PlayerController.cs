@@ -70,7 +70,7 @@ public class PlayerController : MonoBehaviour, IFollowable
 
     private void Start()
     {
-        // Set camera to follow
+        ClosestWorld = World.GetClosestWorld(characterRB.transform.position, out Vector2 closestGroundPosition);
         playerCamera.SetModeFollow(this, true);
     }
 

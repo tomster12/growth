@@ -22,20 +22,17 @@
  * NOTICE: This file has been modified compared to the original.
  */
 
-
 using System.Collections.Generic;
 using UnityEngine;
 
-
 namespace GK
 {
-
     public class VoronoiDiagram
     {
         /// <summary>
         /// The voronoi diagram is calculated from a Delaunay triangulation.
         /// This is a reference to the "source" triangulation, in case you need
-        /// it again. 
+        /// it again.
         /// </summary>
         public readonly DelaunayTriangulation Triangulation;
 
@@ -51,32 +48,14 @@ namespace GK
 
         /// <summary>
         /// The edges of the voronoi diagram, grouped by site and ordered
-        /// counter-clockwise. 
+        /// counter-clockwise.
         /// </summary>
         public readonly List<Edge> Edges;
 
         /// <summary>
-        /// The first edge of every site. 
+        /// The first edge of every site.
         /// </summary>
         public readonly List<int> FirstEdgeBySite;
-
-        internal VoronoiDiagram()
-        {
-            Triangulation = new DelaunayTriangulation();
-            Sites = Triangulation.Vertices;
-            Vertices = new List<Vector2>();
-            Edges = new List<Edge>();
-            FirstEdgeBySite = new List<int>();
-        }
-
-        internal void Clear()
-        {
-            Triangulation.Clear();
-            Sites.Clear();
-            Vertices.Clear();
-            Edges.Clear();
-            FirstEdgeBySite.Clear();
-        }
 
         /// <summary>
         /// Enum representing a type of voronoi edge. A "line" is an infinite line
@@ -87,7 +66,7 @@ namespace GK
         ///
         /// There are two different varietes of edges, clock-wise and
         /// counter-clockwise. Regular edges are all clockwise, but rays can be
-        /// either, so use the type to indicate which it is. 
+        /// either, so use the type to indicate which it is.
         /// <summary>
         public enum EdgeType
         {
@@ -102,44 +81,43 @@ namespace GK
         /// </summary>
         public struct Edge
         {
-
             /// <summary>
             /// The type of edge, line, ray or segment.
             /// </summary>
-            readonly public EdgeType Type;
+            public readonly EdgeType Type;
 
             /// <summary>
             /// The site associted with the edge (indexed to the "Sites" array
             /// in the parent VoronoiDiagram object)
             /// </summary>
-            readonly public int Site;
+            public readonly int Site;
 
             /// <summary>
-            /// The first vertex of the voronoi edge. 
+            /// The first vertex of the voronoi edge.
             ///
-            /// If the edge is a line, it's a point on that line. 
-            /// If the edge is a ray, it's the point where the ray originates. 
-            /// If the edge is a line segment, it's one of the two endpoints. 
+            /// If the edge is a line, it's a point on that line.
+            /// If the edge is a ray, it's the point where the ray originates.
+            /// If the edge is a line segment, it's one of the two endpoints.
             /// </summary>
-            readonly public int Vert0;
+            public readonly int Vert0;
 
             /// <summary>
-            /// The second vertex of the voronoi edge. 
+            /// The second vertex of the voronoi edge.
             ///
             /// Only defined for segment edge types, otherwise equal to -1
             /// </summary>
-            readonly public int Vert1;
+            public readonly int Vert1;
 
             /// <summary>
-            /// The direction vector of a line or ray segment. Not normalized. 
+            /// The direction vector of a line or ray segment. Not normalized.
             ///
             /// For segment edge types this is equal to a vector with both
-            /// components equal to NaN. 
+            /// components equal to NaN.
             /// </summary>
             public Vector2 Direction;
 
             /// <summary>
-            /// Construct the edge. 
+            /// Construct the edge.
             /// </summary>
             public Edge(EdgeType type, int site, int vert0, int vert1, Vector2 direction)
             {
@@ -151,7 +129,7 @@ namespace GK
             }
 
             /// <summary>
-            /// For debugging purposes. 
+            /// For debugging purposes.
             /// </summary>
             public override string ToString()
             {
@@ -171,6 +149,24 @@ namespace GK
                             Site, Vert0, Direction.x, Direction.y);
                 }
             }
+        }
+
+        internal VoronoiDiagram()
+        {
+            Triangulation = new DelaunayTriangulation();
+            Sites = Triangulation.Vertices;
+            Vertices = new List<Vector2>();
+            Edges = new List<Edge>();
+            FirstEdgeBySite = new List<int>();
+        }
+
+        internal void Clear()
+        {
+            Triangulation.Clear();
+            Sites.Clear();
+            Vertices.Clear();
+            Edges.Clear();
+            FirstEdgeBySite.Clear();
         }
     }
 }

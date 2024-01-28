@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: SurfaceBiomePlains
   m_EditorClassIdentifier: 
   colorRange:
-  - {r: 0.21698111, g: 0.17634231, b: 0.14021893, a: 1}
-  - {r: 0.49056602, g: 0.38493913, b: 0.26610893, a: 1}
+  - {r: 0.2830189, g: 0.24859008, b: 0.21760415, a: 1}
+  - {r: 0.6226415, g: 0.54890764, b: 0.4669811, a: 1}
   energyMaxNoise:
     valueRange:
     - 40
@@ -34,7 +34,7 @@ MonoBehaviour:
     feature: {fileID: 5738692934614858331, guid: 4370251ad19ded443876dcbd596a451a, type: 3}
   terrainRules:
   - isGuaranteed: 0
-    averagePer100: 1.5
+    averagePer100: 3
     minDistance: 15
     feature: {fileID: 2022025293066536358, guid: 46b5024162834b34d847fd4dc278df89, type: 3}
   foregroundRules:

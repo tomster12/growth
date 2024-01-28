@@ -3,27 +3,15 @@ using UnityEngine;
 
 public class SpriteSet : MonoBehaviour
 {
-    public static SpriteSet Instance { get; private set; }
+    public static Sprite GetSprite(string name) => spriteMap[name];
 
-    public Sprite GetSprite(string name)
+    [SerializeField] private Sprite[] sprites;
+
+    private static Dictionary<string, Sprite> spriteMap = new Dictionary<string, Sprite>();
+
+    private void OnValidate()
     {
-        if (!isInitialized) Initialize();
-        return sprites[name];
-    }
-
-    [SerializeField] private Sprite[] spriteList;
-
-    private bool isInitialized = false;
-    private Dictionary<string, Sprite> sprites = new Dictionary<string, Sprite>();
-
-    private void Awake()
-    {
-        Instance = this;
-    }
-
-    // TODO: Why cant we initialize in Awake
-    private void Initialize()
-    {
-        foreach (Sprite sprite in spriteList) sprites[sprite.name] = sprite;
+        if (spriteMap == null) spriteMap = new Dictionary<string, Sprite>();
+        foreach (Sprite sprite in sprites) spriteMap[sprite.name] = sprite;
     }
 }

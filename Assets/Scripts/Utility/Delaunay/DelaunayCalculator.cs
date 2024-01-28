@@ -22,22 +22,14 @@
  * NOTICE: This file has been modified compared to the original.
  */
 
-
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-
 
 namespace GK
 {
     public class DelaunayCalculator
     {
-        int highest = -1;
-        IList<Vector2> verts;
-
-        List<int> indices;
-        List<TriangleNode> triangles;
-
         /// <summary>
         /// Creates a new Delaunay triangulation calculator
         /// </summary>
@@ -97,12 +89,18 @@ namespace GK
             this.verts = null;
         }
 
-        bool Higher(int pi0, int pi1)
+        private int highest = -1;
+        private IList<Vector2> verts;
+
+        private List<int> indices;
+        private List<TriangleNode> triangles;
+
+        private bool Higher(int pi0, int pi1)
         {
             if (pi0 == -2) return false;
-            else if (pi0 == -1) return true; 
+            else if (pi0 == -1) return true;
             else if (pi1 == -2) return true;
-            else if (pi1 == -1) return false; 
+            else if (pi1 == -1) return false;
             else
             {
                 var p0 = verts[pi0];
@@ -117,7 +115,7 @@ namespace GK
         /// <summary>
         /// Run the algorithm
         /// </summary>
-        void RunBowyerWatson()
+        private void RunBowyerWatson()
         {
             // For each point, find the containing triangle, split it into three
             // new triangles, call LegalizeEdge on all edges opposite the newly
@@ -148,7 +146,6 @@ namespace GK
                 var nt0 = new TriangleNode(pi, p0, p1);
                 var nt1 = new TriangleNode(pi, p1, p2);
                 var nt2 = new TriangleNode(pi, p2, p0);
-
 
                 // Setting the adjacency triangle references.  Only way to make
                 // sure you do this right is by drawing the triangles up on a
@@ -185,7 +182,7 @@ namespace GK
         /// <summary>
         /// Filter the points array and triangle tree into a readable result.
         /// </summary>
-        void GenerateResult(ref DelaunayTriangulation result)
+        private void GenerateResult(ref DelaunayTriangulation result)
         {
             result ??= new DelaunayTriangulation();
             result.Clear();
@@ -206,14 +203,13 @@ namespace GK
                     result.Triangles.Add(t.P2);
                 }
             }
-
         }
 
         /// <summary>
         /// Shuffle the indices array. Optimal runtime depends on shuffled
         /// input.
         /// </summary>
-        void ShuffleIndices()
+        private void ShuffleIndices()
         {
             indices.Clear();
             indices.Capacity = verts.Count;
@@ -242,7 +238,7 @@ namespace GK
         /// If they aren't, they're going to be the ancestor of the correct
         /// leaf, so this method goes down the tree finding the right leaf.
         /// </summary>
-        int LeafWithEdge(int ti, int e0, int e1)
+        private int LeafWithEdge(int ti, int e0, int e1)
         {
             Debug.Assert(triangles[ti].HasEdge(e0, e1));
 
@@ -275,7 +271,7 @@ namespace GK
         /// <summary>
         /// Is the edge legal, or does it need to be flipped?
         /// </summary>
-        bool LegalEdge(int k, int l, int i, int j)
+        private bool LegalEdge(int k, int l, int i, int j)
         {
             Debug.Assert(k != highest && k >= 0);
 
@@ -337,7 +333,7 @@ namespace GK
         /// creates two new triangles, and recurses to check if the newly
         /// created triangles need flipping.
         /// <summary>
-        void LegalizeEdge(int ti0, int ti1, int pi, int li0, int li1)
+        private void LegalizeEdge(int ti0, int ti1, int pi, int li0, int li1)
         {
             // ti1 might not be a leaf node (ti0 is guaranteed to be, it was
             // just created), so find the current correct leaf.
@@ -353,7 +349,6 @@ namespace GK
             Debug.Assert(t1.IsLeaf);
             Debug.Assert(t0.P0 == pi || t0.P1 == pi || t0.P2 == pi);
             Debug.Assert(t1.P0 == qi || t1.P1 == qi || t1.P2 == qi);
-
 
             //var p = points[pi];
             //var q = points[qi];
@@ -399,7 +394,7 @@ namespace GK
         /// <summary>
         /// Find the leaf triangle in the triangle tree containing a certain point.
         /// </summary>
-        int FindTriangleNode(int pi)
+        private int FindTriangleNode(int pi)
         {
             var curr = 0;
 
@@ -427,7 +422,7 @@ namespace GK
         /// <summary>
         /// Convenience method to check if a point is inside a certain triangle.
         /// </summary>
-        bool PointInTriangle(int pi, int ti)
+        private bool PointInTriangle(int pi, int ti)
         {
             var t = triangles[ti];
             return ToTheLeft(pi, t.P0, t.P1)
@@ -438,7 +433,7 @@ namespace GK
         /// <summary>
         /// Is the point to the left of the edge?
         /// </summary>
-        bool ToTheLeft(int pi, int li0, int li1)
+        private bool ToTheLeft(int pi, int li0, int li1)
         {
             if (li0 == -2)
             {
@@ -470,7 +465,7 @@ namespace GK
         ///
         /// All parameters are indexes.
         /// </summary>
-        struct TriangleNode
+        private struct TriangleNode
         {
             // The points of the triangle
             public int P0;
@@ -495,6 +490,21 @@ namespace GK
             public int A1;
             public int A2;
 
+            public TriangleNode(int P0, int P1, int P2)
+            {
+                this.P0 = P0;
+                this.P1 = P1;
+                this.P2 = P2;
+
+                this.C0 = -1;
+                this.C1 = -1;
+                this.C2 = -1;
+
+                this.A0 = -1;
+                this.A1 = -1;
+                this.A2 = -1;
+            }
+
             // Is this a leaf triangle?
             public bool IsLeaf
             {
@@ -516,22 +526,6 @@ namespace GK
                 }
             }
 
-            public TriangleNode(int P0, int P1, int P2)
-            {
-                this.P0 = P0;
-                this.P1 = P1;
-                this.P2 = P2;
-
-                this.C0 = -1;
-                this.C1 = -1;
-                this.C2 = -1;
-
-                this.A0 = -1;
-                this.A1 = -1;
-                this.A2 = -1;
-            }
-
-
             /// <summary>
             /// Does this triangle contain this edge?
             /// </summary>
@@ -552,7 +546,6 @@ namespace GK
 
                 return false;
             }
-
 
             /// <summary>
             /// Assuming p0 and p1 are one of P0 and P1, return the third point.
@@ -580,7 +573,6 @@ namespace GK
 
                 throw new ArgumentException("p0 and p1 not on triangle");
             }
-
 
             /// <summary>
             /// Get the triangle opposite a certain point.

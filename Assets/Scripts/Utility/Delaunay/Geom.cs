@@ -22,10 +22,8 @@
  * NOTICE: This file has been modified compared to the original.
  */
 
-
 using System.Collections.Generic;
 using UnityEngine;
-
 
 namespace GK
 {
@@ -104,9 +102,9 @@ namespace GK
         /// direction vector (v0 and v1 for the two lines). The returned value
         /// indicates whether the lines intersect. m0 and m1 are the
         /// coefficients of how much you have to multiply the direction vectors
-        /// to get to the intersection. 
+        /// to get to the intersection.
         ///
-        /// In other words, if the intersection is located at X, then: 
+        /// In other words, if the intersection is located at X, then:
         ///
         ///     X = p0 + m0 * v0
         ///     X = p1 + m1 * v1
@@ -145,7 +143,7 @@ namespace GK
 
         /// <summary>
         /// Returns the intersections of two lines. p0/p1 are points on the
-        /// line, v0/v1 are the direction vectors for the lines. 
+        /// line, v0/v1 are the direction vectors for the lines.
         ///
         /// If there are no intersections, returns a NaN vector
         /// <summary>
@@ -172,15 +170,15 @@ namespace GK
 
             var v0 = RotateRightAngle(c0 - c1);
             var v1 = RotateRightAngle(c1 - c2);
-            
-			Geom.LineLineIntersection(mp0, v0, mp1, v1, out float m0, out _);
+
+            Geom.LineLineIntersection(mp0, v0, mp1, v1, out float m0, out _);
 
             return mp0 + m0 * v0;
         }
 
         /// <summary>
         /// Returns the triangle centroid for triangle defined by points c0, c1
-        /// and c2. 
+        /// and c2.
         /// </summary>
         public static Vector2 TriangleCentroid(Vector2 c0, Vector2 c1, Vector2 c2)
         {

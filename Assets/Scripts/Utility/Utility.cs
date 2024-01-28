@@ -26,32 +26,32 @@ public static class Utility
         if (!useCached)
         {
             Mesh mesh = polygon.CreateMesh(true, false);
-            RandomInPolygon_tris = mesh.triangles;
-            RandomInPolygon_verts = mesh.vertices;
-            RandomInPolygon_triCount = RandomInPolygon_tris.Length / 3;
-            RandomInPolygon_triangleAreas = new float[RandomInPolygon_triCount];
-            RandomInPolygon_totalArea = 0.0f;
-            for (int i = 0; i < RandomInPolygon_triCount; i++)
+            cacheRandomInPolygonTris = mesh.triangles;
+            cacheRandomInPolygonVerts = mesh.vertices;
+            cacheRandomInPolygonTriCount = cacheRandomInPolygonTris.Length / 3;
+            cacheRandomInPolygonTriAreas = new float[cacheRandomInPolygonTriCount];
+            cacheRandomInPolygonTotalArea = 0.0f;
+            for (int i = 0; i < cacheRandomInPolygonTriCount; i++)
             {
-                RandomInPolygon_triangleAreas[i] = AreaOfTriangle(
-                    RandomInPolygon_verts[RandomInPolygon_tris[i * 3]],
-                    RandomInPolygon_verts[RandomInPolygon_tris[i * 3 + 1]],
-                    RandomInPolygon_verts[RandomInPolygon_tris[i * 3 + 2]]);
-                RandomInPolygon_totalArea += RandomInPolygon_triangleAreas[i];
+                cacheRandomInPolygonTriAreas[i] = AreaOfTriangle(
+                    cacheRandomInPolygonVerts[cacheRandomInPolygonTris[i * 3]],
+                    cacheRandomInPolygonVerts[cacheRandomInPolygonTris[i * 3 + 1]],
+                    cacheRandomInPolygonVerts[cacheRandomInPolygonTris[i * 3 + 2]]);
+                cacheRandomInPolygonTotalArea += cacheRandomInPolygonTriAreas[i];
             }
         }
 
         // Error check mesh has valid triangles
-        if (RandomInPolygon_triCount == 0) { Debug.LogError("triangleCount == 0"); return Vector2.zero; }
-        if (RandomInPolygon_totalArea == 0.0f) { Debug.LogError("Area == 0.0f"); return Vector2.zero; }
+        if (cacheRandomInPolygonTriCount == 0) { Debug.LogError("triangleCount == 0"); return Vector2.zero; }
+        if (cacheRandomInPolygonTotalArea == 0.0f) { Debug.LogError("Area == 0.0f"); return Vector2.zero; }
 
         // Pick a random triangle weighted by area
         int triangle = -1;
-        float r = UnityEngine.Random.Range(0.0f, RandomInPolygon_totalArea);
-        for (int i = 0; i < RandomInPolygon_triCount && triangle == -1; i++)
+        float r = UnityEngine.Random.Range(0.0f, cacheRandomInPolygonTotalArea);
+        for (int i = 0; i < cacheRandomInPolygonTriCount && triangle == -1; i++)
         {
-            if (r < RandomInPolygon_triangleAreas[i]) triangle = i;
-            else r -= RandomInPolygon_triangleAreas[i];
+            if (r < cacheRandomInPolygonTriAreas[i]) triangle = i;
+            else r -= cacheRandomInPolygonTriAreas[i];
         }
 
         // Error check picked a triangle
@@ -59,9 +59,9 @@ public static class Utility
 
         // Pick a random point within the triangle
         return RandomInTriangle(
-            RandomInPolygon_verts[RandomInPolygon_tris[triangle * 3]],
-            RandomInPolygon_verts[RandomInPolygon_tris[triangle * 3 + 1]],
-            RandomInPolygon_verts[RandomInPolygon_tris[triangle * 3 + 2]]
+            cacheRandomInPolygonVerts[cacheRandomInPolygonTris[triangle * 3]],
+            cacheRandomInPolygonVerts[cacheRandomInPolygonTris[triangle * 3 + 1]],
+            cacheRandomInPolygonVerts[cacheRandomInPolygonTris[triangle * 3 + 2]]
         );
     }
 
@@ -142,17 +142,20 @@ public static class Utility
 
     public static class Easing
     {
-        public static float EaseOutSine(float x) => Mathf.Sin((x * Mathf.PI) / 2);
+        // https://easings.net/
 
         public static float EaseInSine(float x) => 1 - Mathf.Cos((x * Mathf.PI) / 2);
 
+        public static float EaseOutSine(float x) => Mathf.Sin((x * Mathf.PI) / 2);
+
         public static float EaseInExpo(float x) => x == 0 ? 0 : Mathf.Pow(2, 10 * x - 10);
+
+        public static float EaseOutExpo(float x) => x == 1 ? 1 : 1 - Mathf.Pow(2, -10 * x);
     }
 
-    // TODO: Rename with cache
-    private static int[] RandomInPolygon_tris;
-    private static Vector3[] RandomInPolygon_verts;
-    private static int RandomInPolygon_triCount;
-    private static float[] RandomInPolygon_triangleAreas;
-    private static float RandomInPolygon_totalArea;
+    private static int[] cacheRandomInPolygonTris;
+    private static Vector3[] cacheRandomInPolygonVerts;
+    private static int cacheRandomInPolygonTriCount;
+    private static float[] cacheRandomInPolygonTriAreas;
+    private static float cacheRandomInPolygonTotalArea;
 }

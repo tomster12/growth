@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c0db50292402394d98c567e945b105f, type: 3}
+  m_Name: SurfaceBiomeRocky
+  m_EditorClassIdentifier: 
+  colorRange:
+  - {r: 0.23584908, g: 0.23584908, b: 0.23584908, a: 1}
+  - {r: 0.509434, g: 0.509434, b: 0.509434, a: 1}
+  energyMaxNoise:
+    valueRange:
+    - 40
+    - 200
+    noiseScale: 0.1
+  energyPctNoise:
+    valueRange:
+    - 0.25
+    - 1
+    noiseScale: 1
+  deadspotChance: 0.02
+  deadspotPct: 0.15
+  frontDecorRules: []
+  terrainRules:
+  - isGuaranteed: 0
+    averagePer100: 6.5
+    minDistance: 15
+    feature: {fileID: 2022025293066536358, guid: 46b5024162834b34d847fd4dc278df89, type: 3}
+  foregroundRules:
+  - isGuaranteed: 0
+    averagePer100: 8
+    minDistance: 5
+    feature: {fileID: 3338917768004317453, guid: 0bfe27a21aa41e942b02087c7c49f160, type: 3}
+  backgroundRules: []
+  backDecorRules:
+  - isGuaranteed: 0
+    averagePer100: 3
+    minDistance: 15
+    feature: {fileID: 6099407925653884417, guid: f81494f42fc45274f98cc9bd8c13ae95, type: 3}

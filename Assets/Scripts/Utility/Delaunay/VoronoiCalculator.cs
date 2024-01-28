@@ -22,9 +22,7 @@
  * NOTICE: This file has been modified compared to the original.
  */
 
-
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -33,10 +31,6 @@ namespace GK
 {
     public class VoronoiCalculator
     {
-        DelaunayCalculator delCalc;
-        PTComparer cmp;
-        List<PointTriangle> pts;
-
         /// <summary>
         /// Create new Voronoi calculator.
         /// </summary>
@@ -48,7 +42,7 @@ namespace GK
         }
 
         /// <summary>
-        /// Calculate a voronoi diagram and return it. 
+        /// Calculate a voronoi diagram and return it.
         /// </summary>
         public VoronoiDiagram CalculateDiagram(IList<Vector2> inputVertices)
         {
@@ -62,7 +56,7 @@ namespace GK
         ///
         /// I guess it's not strictly true that it generates NO garbage, because
         /// it might if it has to resize internal buffers, but all buffers are
-        /// reused from invocation to invocation. 
+        /// reused from invocation to invocation.
         /// </summary>
         public void CalculateDiagram(IList<Vector2> inputVertices, ref VoronoiDiagram result)
         {
@@ -95,7 +89,6 @@ namespace GK
             if (tris.Count > pts.Capacity) { pts.Capacity = tris.Count; }
             if (tris.Count > edges.Capacity) { edges.Capacity = tris.Count; }
 
-
             for (int ti = 0; ti < tris.Count; ti += 3)
             {
                 var p0 = verts[tris[ti]];
@@ -109,7 +102,6 @@ namespace GK
 
                 centers.Add(c);
             }
-
 
             for (int ti = 0; ti < tris.Count; ti += 3)
             {
@@ -184,7 +176,6 @@ namespace GK
                     }
                     else if (count == 1)
                     {
-
                         var cCurr = Geom.TriangleCentroid(verts[tris[tiCurr]], verts[tris[tiCurr + 1]], verts[tris[tiCurr + 2]]);
                         var cNext = Geom.TriangleCentroid(verts[tris[tiNext]], verts[tris[tiNext + 1]], verts[tris[tiNext + 2]]);
 
@@ -260,11 +251,15 @@ namespace GK
             }
         }
 
+        private DelaunayCalculator delCalc;
+        private PTComparer cmp;
+        private List<PointTriangle> pts;
+
         /// <summary>
         /// Assuming ti0 and ti1 shares an edge, which point of ti0 is not on
         /// ti1?
         /// <summary>
-        static int NonSharedPoint(List<int> tris, int ti0, int ti1)
+        private static int NonSharedPoint(List<int> tris, int ti0, int ti1)
         {
             Debug.Assert(SharesEdge(tris, ti0, ti1));
 
@@ -284,7 +279,7 @@ namespace GK
             return -1;
         }
 
-        static bool SharesEdge(List<int> tris, int ti0, int ti1)
+        private static bool SharesEdge(List<int> tris, int ti0, int ti1)
         {
             var x0 = tris[ti0];
             var x1 = tris[ti0 + 1];
@@ -305,7 +300,7 @@ namespace GK
             return n >= 2;
         }
 
-        readonly struct PointTriangle
+        private readonly struct PointTriangle
         {
             public readonly int Point;
             public readonly int Triangle;
@@ -322,8 +317,7 @@ namespace GK
             }
         }
 
-
-        class PTComparer : IComparer<PointTriangle>
+        private class PTComparer : IComparer<PointTriangle>
         {
             public List<Vector2> verts;
             public List<int> tris;
@@ -349,7 +343,7 @@ namespace GK
                 }
             }
 
-            int CompareAngles(PointTriangle pt0, PointTriangle pt1)
+            private int CompareAngles(PointTriangle pt0, PointTriangle pt1)
             {
                 Debug.Assert(pt0.Point == pt1.Point);
 
@@ -386,7 +380,6 @@ namespace GK
                 }
                 else
                 {
-
                     // if q0 != q1, q1 is true, then p0 is in quadrants 1 or 2,
                     // and p1 is in quadrants 3 or 4. Hence, pt0 < pt1. If q1
                     // is not true, vice versa.
@@ -394,7 +387,7 @@ namespace GK
                 }
             }
 
-            Vector2 TriangleCentroid(PointTriangle pt)
+            private Vector2 TriangleCentroid(PointTriangle pt)
             {
                 var ti = pt.Triangle;
                 return Geom.TriangleCentroid(verts[tris[ti]], verts[tris[ti + 1]], verts[tris[ti + 2]]);
