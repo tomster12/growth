@@ -75,18 +75,18 @@ public class WorldBiomeGenerator : Generator
             return (index + genEdges.Length + change) % genEdges.Length;
         };
 
-        bool PlaceBiome(BiomeRequirement req, int startIndex)
+        bool PlaceBiome(BiomeGenEdge[] genEdges, BiomeRequirement req, int startIndex)
         {
             if (debugLog) Debug.Log("PlaceBiome(" + startIndex + ", " + req.minimumSize + ")");
 
-            int index = startIndex;
             List<BiomeGenEdge> biomeEdges = new();
 
             // Place biomes along edge until required amount reach
+            int index = startIndex;
             float biomeLength = 0.0f;
             while (biomeLength < req.minimumSize)
             {
-                if (genEdges[index].IsAssigned) throw new Exception("PlaceBiome tried to place on an edge with a biome! " + biomeLength + " placed / " + req.minimumSize + " minimum at index " + index + ".");
+                if (genEdges[index].GetIsAssigned()) throw new Exception("PlaceBiome tried to place on an edge with a biome! " + biomeLength + " placed / " + req.minimumSize + " minimum at index " + index + ".");
                 biomeLength += genEdges[index].length;
                 genEdges[index].req = req;
                 biomeEdges.Add(genEdges[index]);
@@ -105,7 +105,7 @@ public class WorldBiomeGenerator : Generator
             for (int o = startIndex; ;)
             {
                 o = modAdd(o, -1);
-                if (genEdges[o].IsAssigned) break;
+                if (genEdges[o].GetIsAssigned()) break;
                 genEdges[o].lengthToBiomeStart = genEdges[modAdd(o, 1)].lengthToBiomeStart + genEdges[o].length;
             }
 
@@ -116,20 +116,20 @@ public class WorldBiomeGenerator : Generator
             return true;
         }
 
-        bool MakeSpace(int index, int capIndex, float length)
+        void MakeSpace(int index, int capIndex, float length)
         {
             if (debugLog) Debug.Log("MakeSpace(" + index + ", " + capIndex + ", " + length + ")");
             float lengthLeft = length;
 
             // Loop through until found an edge with a biome
             int startIndex = index;
-            while (lengthLeft > 0.0f && !genEdges[index].IsAssigned)
+            while (lengthLeft > 0.0f && !genEdges[index].GetIsAssigned())
             {
                 lengthLeft -= genEdges[index].length;
                 index = modAdd(index, 1);
                 if (index == startIndex) throw new Exception("Something gone wrong!");
             }
-            if (lengthLeft < 0.0f) return true;
+            if (lengthLeft <= 0.0f) return;
 
             if (debugLog) Debug.Log("Biome at " + index + " needs to be moved by " + lengthLeft);
 
@@ -150,15 +150,14 @@ public class WorldBiomeGenerator : Generator
             {
                 if (newEndIndex == capIndex)
                 {
-                    if (debugLog) Debug.Log("Cannot move biome into cap at index " + newEndIndex + ", " + (startPushedLength - endPushedLength) + " left to move.");
-                    return false;
+                    if (debugLog) throw new Exception("Cannot move biome into cap at index " + newEndIndex + ", " + (startPushedLength - endPushedLength) + " left to move.");
                 }
+
                 // Recurse and push biome if hit another
-                if (genEdges[newEndIndex].IsAssigned)
+                if (genEdges[newEndIndex].GetIsAssigned())
                 {
                     if (debugLog) Debug.Log(newEndIndex + " is another biome so recursing down to move by " + (startPushedLength - endPushedLength));
-                    bool moveNext = MakeSpace(newEndIndex, capIndex, startPushedLength - endPushedLength);
-                    if (!moveNext) return false;
+                    MakeSpace(newEndIndex, capIndex, startPushedLength - endPushedLength);
                     if (debugLog) Debug.Log("Successfully moved next biome");
                 }
 
@@ -192,21 +191,19 @@ public class WorldBiomeGenerator : Generator
             for (int o = newStartIndex; ;)
             {
                 o = modAdd(o, -1);
-                if (genEdges[o].IsAssigned) break;
+                if (genEdges[o].GetIsAssigned()) break;
                 genEdges[o].lengthToBiomeStart = genEdges[modAdd(o, 1)].lengthToBiomeStart + genEdges[o].length;
             }
 
-            return true;
+            totalLengthLeft += (startPushedLength - endPushedLength);
         };
 
-        bool PushAndPlaceBiome(BiomeRequirement req, int index, float lengthRequired)
+        void PushAndPlaceBiome(BiomeRequirement req, int index, float lengthRequired)
         {
             if (debugLog) Debug.Log("PushAndPlaceBiome(" + index + ", " + lengthRequired + ")");
-
             BiomeGenEdge edge = genEdges[index];
-            if (!MakeSpace(index, index, lengthRequired)) return false;
-            PlaceBiome(req, index);
-            return true;
+            MakeSpace(index, index, lengthRequired);
+            PlaceBiome(genEdges, req, index);
         };
 
         void PrintInfo()
@@ -215,7 +212,7 @@ public class WorldBiomeGenerator : Generator
             Debug.Log("Length Left: " + totalLengthLeft + " / " + totalEdgeLength + " (" + requiredLengthLeft + " required left)");
             Debug.Log("Assigned " + assignedBiomeCount + " biomes.");
             string output = "\n";
-            for (int i = 0; i < genEdges.Length; i++) output += genEdges[i].IsAssigned ? "O" : " ";
+            for (int i = 0; i < genEdges.Length; i++) output += genEdges[i].GetIsAssigned() ? "O" : " ";
             output += "\n";
             for (int i = 0; i < genEdges.Length; i++) output += "-";
             Debug.Log(output);
@@ -244,21 +241,21 @@ public class WorldBiomeGenerator : Generator
 
             // Find unassigned edges, and then viable edges
             // Viable edges are ones where there is enough space from start -> next biome
-            int[] openEdgesIdx = genEdges.Select((e, i) => i).Where(i => !genEdges[i].IsAssigned).ToArray();
+            int[] openEdgesIdx = genEdges.Select((e, i) => i).Where(i => !genEdges[i].GetIsAssigned()).ToArray();
             int[] viableEdgesIdx = openEdgesIdx.Where(i => genEdges[i].lengthToBiomeStart > req.minimumSize).ToArray();
 
             // Place requirement into a random viable edge
             if (viableEdgesIdx.Length > 0)
             {
                 int index = viableEdgesIdx[UnityEngine.Random.Range(0, viableEdgesIdx.Length)];
-                PlaceBiome(req, index);
+                PlaceBiome(genEdges, req, index);
             }
             // Force requirement into a random open edge
             // This is allowed because we know there is enough space somewhere
             else
             {
                 int index = openEdgesIdx[UnityEngine.Random.Range(0, openEdgesIdx.Length)];
-                PushAndPlaceBiome(req, (index + 1) % edgeCount, req.minimumSize);
+                PushAndPlaceBiome(req, index, req.minimumSize);
             }
 
             // ERROR: Biomes left to place but no space
@@ -282,7 +279,7 @@ public class WorldBiomeGenerator : Generator
         Biome currentBiome = null;
         for (int i = 0; i != fillStart;)
         {
-            if (genEdges[i].IsAssigned)
+            if (genEdges[i].GetIsAssigned())
             {
                 if (fillStart == -1) fillStart = i;
                 currentBiome = genEdges[i].req.biome;
@@ -428,7 +425,10 @@ public class WorldBiomeGenerator : Generator
             this.biomeEndNextIndex = 0;
         }
 
-        public bool IsAssigned => req != null;
+        public bool GetIsAssigned()
+        {
+            return req != null;
+        }
     };
 
     [Serializable]
