@@ -38,17 +38,16 @@ public class PartControllable : Part
         this.CanControl = canControl;
     }
 
-    public bool SetControlled(bool isControlled)
+    public void SetControlled(bool isControlled)
     {
-        if (isControlled == this.IsControlled) return false;
-        if (isControlled && !CanControl) return false;
+        if (isControlled == this.IsControlled) return;
+        Assert.IsFalse(isControlled && !CanControl);
 
         // Update variables
         this.IsControlled = isControlled;
         Physical.RB.drag = IsControlled ? controlDrag : idleDrag;
         Physical.RB.angularDrag = IsControlled ? controlAngularDrag : idleAngularDrag;
         Physical.GRO.IsEnabled = !IsControlled;
-        return true;
     }
 
     public void StartControl() => SetControlled(true);

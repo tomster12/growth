@@ -2,9 +2,9 @@ using UnityEngine;
 
 public interface IOrganiserChild
 {
-    bool GetVisible();
+    bool IsVisible { get; }
 
-    Transform GetTransform();
+    Transform Transform { get; }
 
-    float GetHeight();
+    float GetOrganiserChildHeight();
 }

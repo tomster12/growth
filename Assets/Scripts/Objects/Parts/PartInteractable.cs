@@ -4,7 +4,7 @@ using static PlayerInteractor;
 
 public class PartInteractable : Part
 {
-    public List<PlayerInteraction> Interactions { get; protected set; } = new List<PlayerInteraction>();
+    public List<Interaction> Interactions { get; protected set; } = new List<Interaction>();
     public bool CanInteract => Interactions.Where(i => i.IsEnabled && i.CanInteract).Count() > 0;
 
     public override void InitPart(CompositeObject composable)
@@ -17,8 +17,11 @@ public class PartInteractable : Part
         base.DeinitPart();
     }
 
-    public void UpdateInteracting()
+    private void Update()
     {
-        foreach (PlayerInteraction interaction in Interactions) interaction.Update();
+        foreach (var interaction in Interactions)
+        {
+            interaction.Update();
+        }
     }
 }

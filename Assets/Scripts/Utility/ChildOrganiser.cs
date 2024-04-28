@@ -9,16 +9,16 @@ public class ChildOrganiser : MonoBehaviour
 
     public void UpdateChildren()
     {
-        IOrganiserChild[] activeChildren = children.Where(child => child.GetVisible()).ToArray();
+        IOrganiserChild[] activeChildren = children.Where(child => child.IsVisible).ToArray();
 
-        float totalHeight = activeChildren.Sum(child => child.GetHeight());
+        float totalHeight = activeChildren.Sum(child => child.GetOrganiserChildHeight());
 
         float cumsum = 0.0f;
         for (int i = 0; i < activeChildren.Length; i++)
         {
             float dy = -totalHeight / 2.0f + cumsum;
-            activeChildren[i].GetTransform().localPosition = Vector3.up * dy;
-            cumsum += activeChildren[i].GetHeight();
+            activeChildren[i].Transform.localPosition = Vector3.up * dy;
+            cumsum += activeChildren[i].GetOrganiserChildHeight();
         }
     }
 
@@ -31,7 +31,7 @@ public class ChildOrganiser : MonoBehaviour
     public void AddChild(IOrganiserChild newChild)
     {
         children.Add(newChild);
-        newChild.GetTransform().parent = transform;
+        newChild.Transform.parent = transform;
     }
 
     private List<IOrganiserChild> children = new List<IOrganiserChild>();
