@@ -157,8 +157,13 @@ public partial class PlayerInteractor : MonoBehaviour
             }
 
             // Update with new target, can be null
-            SetTarget(hovered);
-            state = hovered ? InteractorState.Hovering : InteractorState.Idle;
+            if (hovered != target)
+            {
+                if (TargetHighlightable) TargetHighlightable.Highlighted = false;
+                SetTarget(hovered);
+                state = hovered ? InteractorState.Hovering : InteractorState.Idle;
+                if (TargetHighlightable) TargetHighlightable.Highlighted = true;
+            }
         }
     }
 
@@ -239,6 +244,7 @@ public partial class PlayerInteractor : MonoBehaviour
 
     private void UpdateIndicating()
     {
+        // Show indicators on tab press of nearby objects
         if (Input.GetKeyDown(KeyCode.Tab))
         {
             IEnumerator showIndicator(PartIndicatable part, float wait, float time)
@@ -299,7 +305,7 @@ public partial class PlayerInteractor : MonoBehaviour
 
     private void LateUpdateCursor()
     {
-        // Targetting object so surround with cursor
+        // Targeting object so surround with cursor
         if (target != null)
         {
             Bounds b = target.Bounds;
@@ -348,8 +354,11 @@ public partial class PlayerInteractor : MonoBehaviour
         promptOrganiser.transform.localPosition = Vector3.right * promptOffset;
     }
 
-    private void UpdateInteractionsList()
+    private void SetTarget(CompositeObject newTarget)
     {
+        // Update target composable
+        target = newTarget;
+
         // Clear organiser, add all children, update organiser
         promptOrganiser.Clear();
         if (TargetInteractable != null)
@@ -363,15 +372,6 @@ public partial class PlayerInteractor : MonoBehaviour
             }
             promptOrganiser.UpdateChildren();
         }
-    }
-
-    private void SetTarget(CompositeObject newTarget)
-    {
-        // Update target composable
-        if (TargetHighlightable) TargetHighlightable.Highlighted = false;
-        target = newTarget;
-        if (TargetHighlightable) TargetHighlightable.Highlighted = true;
-        UpdateInteractionsList();
     }
 
     private bool SetTargetControlled(bool toControl)
