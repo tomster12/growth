@@ -10,7 +10,6 @@ public class PartControllable : Part
     {
         base.InitPart(composable);
         composable.RequirePart<PartPhysical>();
-        Assert.AreEqual(IsControlled, false);
         Physical.RB.drag = idleDrag;
         Physical.RB.angularDrag = idleAngularDrag;
     }

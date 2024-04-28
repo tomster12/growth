@@ -289,10 +289,10 @@ public partial class WorldGenerator : Generator
     private void OnValidate()
     {
         Containers ??= new Dictionary<GameLayer, Transform>();
-        Containers[GameLayer.FRONT_DECOR] = frontDecorContainer;
-        Containers[GameLayer.TERRAIN] = terrainContainer;
-        Containers[GameLayer.FOREGROUND] = foregroundContainer;
-        Containers[GameLayer.BACKGROUND] = backgroundContainer;
-        Containers[GameLayer.BACK_DECOR] = backDecorContainer;
+        Containers[GameLayer.FrontDecor] = frontDecorContainer;
+        Containers[GameLayer.Terrain] = terrainContainer;
+        Containers[GameLayer.Foreground] = foregroundContainer;
+        Containers[GameLayer.Background] = backgroundContainer;
+        Containers[GameLayer.BackDecor] = backDecorContainer;
     }
 }

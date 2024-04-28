@@ -354,7 +354,7 @@ public class WorldBiomeGenerator : Generator
 
     private void StepSetColors()
     {
-        // Update colours of the mesh with energy
+        // Update colors of the mesh with energy
         Color[] meshColors = new Color[worldGenerator.Mesh.vertexCount];
         foreach (WorldSite site in worldGenerator.Sites)
         {

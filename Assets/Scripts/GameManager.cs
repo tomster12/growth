@@ -8,7 +8,7 @@ public class GameManager : MonoBehaviour
     public static bool IsPaused { get; private set; }
     public static Action<bool> onIsPausedChange = delegate { };
 
-    [SerializeField] private PlayerController playerController;
+    [SerializeField] private PlayerMovement playerMovement;
     [SerializeField] private GameObject menu;
 
     private void Awake()

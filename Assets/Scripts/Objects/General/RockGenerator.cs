@@ -51,7 +51,7 @@ public class RockGenerator : Generator
             foreach (int i in meshSite.meshVerticesIdx) colors[i] = col;
         }
 
-        // Update mesh colours
+        // Update mesh colors
         mesh.colors = colors;
     }
 }

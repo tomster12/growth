@@ -13,13 +13,13 @@ public interface IFollowable
 public class PlayerCamera : MonoBehaviour
 {
     public enum CameraMode
-    { FREE, FOLLOW };
+    { Free, Follow }
 
     public CameraMode CameraModeState { get; private set; }
 
     public void SetModeFollow(IFollowable follow, bool set = false)
     {
-        CameraModeState = CameraMode.FOLLOW;
+        CameraModeState = CameraMode.Follow;
         this.follow = follow;
 
         // Set values
@@ -33,7 +33,7 @@ public class PlayerCamera : MonoBehaviour
 
     public void SetModeFree()
     {
-        CameraModeState = CameraMode.FREE;
+        CameraModeState = CameraMode.Free;
     }
 
     [Header("References")]
@@ -81,8 +81,8 @@ public class PlayerCamera : MonoBehaviour
     private void FixedUpdate()
     {
         if (GameManager.IsPaused) return;
-        if (CameraModeState == CameraMode.FREE) FixedUpdateMovementFree();
-        else if (CameraModeState == CameraMode.FOLLOW) FixedUpdateMovementFollow();
+        if (CameraModeState == CameraMode.Free) FixedUpdateMovementFree();
+        else if (CameraModeState == CameraMode.Follow) FixedUpdateMovementFollow();
         FixedUpdateInputZoom();
     }
 

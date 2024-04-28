@@ -25,7 +25,7 @@ public partial class PlayerInteractor
         }
 
         public enum Visibility
-        { HIDDEN, INPUT, ICON, TEXT }
+        { Hidden, Input, Icon, Text }
 
         public bool IsEnabled { get; protected set; }
         public bool IsActive { get; protected set; }
@@ -56,12 +56,12 @@ public partial class PlayerInteractor
         }
 
         protected PlayerInteractor PlayerInteractor => PlayerInteractor.Instance;
-        protected PlayerController PlayerController => PlayerInteractor.playerController;
+        protected PlayerMovement PlayerController => PlayerInteractor.playerMovement;
         protected PlayerLegs PlayerLegs => PlayerInteractor.playerLegs;
-        protected CompositeObject TargetComposable => PlayerInteractor.targetComposable;
+        protected CompositeObject TargetComposable => PlayerInteractor.target;
         protected LineHelper TargetDirLH => PlayerInteractor.targetDirLH;
         protected Color LegDirInteractColor => PlayerInteractor.legDirInteractColor;
-        protected float InteractSlowdown => PlayerInteractor.interactSlowdown;
+        protected float InteractSlowdown => PlayerInteractor.interactCharacterSlowdown;
 
         protected virtual void OnHold()
         { }

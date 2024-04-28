@@ -2,18 +2,25 @@ using UnityEngine;
 
 public class PlayerLegs : MonoBehaviour
 {
-    public bool IsPointing { get; set; } = false;
-    public int PointingLeg { get; set; } = -1;
-    public Vector2 PointingPos { get; set; }
-
     public Vector2 GetLegEnd(int legIndex)
     {
         if (legIndex < 0 || legIndex > 3) return Vector2.zero;
         return legIK[legIndex].Bones[legIK[legIndex].BoneCount - 1].position;
     }
 
+    public void SetOverrideLeg(int legIndex, Vector2 pos)
+    {
+        overrideLegs[legIndex] = true;
+        overrideLegPos[legIndex] = pos;
+    }
+
+    public void UnsetOverrideLeg(int legIndex)
+    {
+        overrideLegs[legIndex] = false;
+    }
+
     [Header("References")]
-    [SerializeField] private PlayerController playerController;
+    [SerializeField] private PlayerMovement playerMovement;
     [SerializeField] private Color[] gizmoLegColors;
     [SerializeField] private float[] walkOffsets;
 
@@ -33,6 +40,8 @@ public class PlayerLegs : MonoBehaviour
     [SerializeField] private int walkDir = 0;
     [SerializeField] private bool drawGizmos = false;
 
+    private bool[] overrideLegs = new bool[4];
+    private Vector2[] overrideLegPos = new Vector2[4];
     private bool legCurrentInit;
     private bool[] legGrounded = new bool[4];
     private Vector2[] legTargets = new Vector2[4];
@@ -41,70 +50,81 @@ public class PlayerLegs : MonoBehaviour
 
     private void Update()
     {
-        float walkPct = Vector2.Dot(playerController.RB.velocity, playerController.RightDir.normalized);
+        // Calculate how much player is walking
+        float walkPct = Vector2.Dot(playerMovement.RB.velocity, playerMovement.RightDir.normalized);
         walkDir = (walkPct < -isWalkingThreshold) ? -1 : (walkPct > isWalkingThreshold) ? 1 : 0;
 
         for (int i = 0; i < 4; i++)
         {
-            // Check idle leg position for ground
-            GetLegEndRaycast(i, 0, out Transform idleTransform, out Vector2 idlePos, out bool idleIsTouching);
-
-            // If grounded calculate walking position
-            if (idleIsTouching)
+            // Overidden leg logic
+            if (overrideLegs[i])
             {
-                if (walkDir != 0)
-                {
-                    GetLegEndRaycast(i, walkDir, out Transform frontTransform, out Vector2 frontPos, out bool frontIsTouching);
+                legTargets[i] = overrideLegPos[i];
+                haveStepped[i] = false;
+            }
 
-                    // Move leg if over walking threshold
-                    float pct = (frontPos - legTargets[i]).magnitude / (stepSize - stepThreshold);
-                    int offsetIndex = (walkDir < 0) ? (3 - i) : i;
-                    if (!haveStepped[i]) pct += walkOffsets[offsetIndex];
-                    if (pct > 1.0f)
+            // Standard walking logic
+            else
+            {
+                // Check if idle position is grounded
+                GetLegEndRaycast(i, 0, out Transform idleTransform, out Vector2 idlePos, out bool idleIsTouching);
+                if (idleIsTouching)
+                {
+                    // Walking so check forward position
+                    if (walkDir != 0)
                     {
+                        // Front is touching so check if need to step
+                        GetLegEndRaycast(i, walkDir, out Transform frontTransform, out Vector2 frontPos, out bool frontIsTouching);
                         if (frontIsTouching)
                         {
-                            legTargets[i] = frontPos;
-                            GenerateStepParticles(frontTransform, legTargets[i]);
+                            float pct = (frontPos - legTargets[i]).magnitude / (stepSize - stepThreshold);
+                            int offsetIndex = (walkDir < 0) ? (3 - i) : i;
+                            if (!haveStepped[i]) pct += walkOffsets[offsetIndex];
+                            if (pct > 1.0f)
+                            {
+                                legTargets[i] = frontPos;
+                                haveStepped[i] = true;
+                                GenerateStepParticles(frontTransform, legTargets[i]);
+                            }
                         }
+
+                        // Front leg not touching so move back to idle
                         else
                         {
                             legTargets[i] = idlePos;
                             GenerateStepParticles(idleTransform, legTargets[i]);
                         }
-                        haveStepped[i] = legGrounded[i];
+                    }
+
+                    // Not walking so reset to idle position
+                    else
+                    {
+                        legTargets[i] = idlePos;
+                        haveStepped[i] = false;
                     }
                 }
 
-                // Not walking so idle position
+                // Not grounded so free float
                 else
                 {
-                    legTargets[i] = idlePos;
+                    Vector2 dir = legTargets[i] - (Vector2)playerMovement.Transform.position;
+                    dir = Vector2.ClampMagnitude(dir, legIK[i].TotalLength);
+                    legTargets[i] = (Vector2)playerMovement.Transform.position + dir;
                     haveStepped[i] = false;
                 }
+
+                legGrounded[i] = idleIsTouching;
             }
 
-            // Otherwise free float
-            else
-            {
-                Vector2 dir = legTargets[i] - (Vector2)playerController.Transform.position;
-                dir = Vector2.ClampMagnitude(dir, legIK[i].TotalLength);
-                legTargets[i] = (Vector2)playerController.Transform.position + dir;
-                haveStepped[i] = false;
-            }
-
-            // lerp leg current
-            Vector2 target = legTargets[i];
-            if (IsPointing && PointingLeg == i) target = PointingPos;
-            if (!legCurrentInit) legCurrent[i] = target;
-            else legCurrent[i] = Vector2.Lerp(legCurrent[i], target, Time.deltaTime * walkFootLerp);
+            // lerp leg current to target
+            if (!legCurrentInit) legCurrent[i] = legTargets[i];
+            else legCurrent[i] = Vector2.Lerp(legCurrent[i], legTargets[i], Time.deltaTime * walkFootLerp);
 
             // Update IK variables
             legIK[i].TargetPos = legCurrent[i];
             legIK[i].TargetRot = Quaternion.identity;
             legIK[i].PolePos = GetLegPole(i);
             legIK[i].PoleRot = Quaternion.identity;
-            legGrounded[i] = idleIsTouching;
         }
 
         legCurrentInit = true;
@@ -113,7 +133,7 @@ public class PlayerLegs : MonoBehaviour
     private void GenerateStepParticles(Transform transform, Vector2 pos)
     {
         // Only produce steps on world
-        if (transform != playerController.ClosestWorld.WorldGenerator.WorldTransform) return;
+        if (transform != playerMovement.ClosestWorld.WorldGenerator.WorldTransform) return;
         GameObject particleGO = Instantiate(stepParticlePfb);
         particleGO.transform.position = pos;
     }
@@ -124,16 +144,16 @@ public class PlayerLegs : MonoBehaviour
         int terrainMask = 1 << LayerMask.NameToLayer("Terrain");
 
         // Raycast sideways
-        Vector2 sideFrom = playerController.Transform.position;
-        Vector2 sideDir = playerController.RightDir.normalized;
+        Vector2 sideFrom = playerMovement.Transform.position;
+        Vector2 sideDir = playerMovement.RightDir.normalized;
         float sideDistMax = horizontalMult * legGap + walkDir * stepSize * 0.5f;
         RaycastHit2D sideHit = Physics2D.Raycast(sideFrom, sideDir, sideDistMax, terrainMask);
         float sideDist = (sideHit.collider != null) ? sideHit.distance : sideDistMax;
 
         // Raycast downwards
         Vector2 downFrom = sideFrom + sideDir * sideDist;
-        Vector2 downDir = playerController.GroundDir.normalized;
-        float downDistMax = playerController.GroundedHeight;
+        Vector2 downDir = playerMovement.GroundDir.normalized;
+        float downDistMax = playerMovement.GroundedHeight;
         RaycastHit2D downHit = Physics2D.Raycast(downFrom, downDir, downDistMax, terrainMask);
 
         // Update out variables
@@ -153,9 +173,9 @@ public class PlayerLegs : MonoBehaviour
     private Vector2 GetLegPole(int legIndex)
     {
         float horizontalMult = (legIndex <= 1) ? (-2 + legIndex) : (-1 + legIndex);
-        return (Vector2)playerController.Transform.position
-            + (playerController.RightDir.normalized * horizontalMult * legGap)
-            + (playerController.UpDir.normalized * kneeHeight * 2);
+        return (Vector2)playerMovement.Transform.position
+            + (playerMovement.RightDir.normalized * horizontalMult * legGap)
+            + (playerMovement.UpDir.normalized * kneeHeight * 2);
     }
 
     [ContextMenu("Set Leg Lengths")]
@@ -167,18 +187,18 @@ public class PlayerLegs : MonoBehaviour
             float horizontalMult = (i <= 1) ? (-2 + i) : (-1 + i);
             legIK[i].InitBones();
 
-            Vector2 bone0Pos = (Vector2)playerController.Transform.position
-                + ((Vector2)playerController.Transform.right * Mathf.Sign(horizontalMult) * legOffset);
+            Vector2 bone0Pos = (Vector2)playerMovement.Transform.position
+                + ((Vector2)playerMovement.Transform.right * Mathf.Sign(horizontalMult) * legOffset);
             Vector2 bone1Pos = bone0Pos
-                + ((Vector2)playerController.Transform.right * horizontalMult * legGap * 0.5f)
-                + ((Vector2)playerController.Transform.up * kneeHeight);
+                + ((Vector2)playerMovement.Transform.right * horizontalMult * legGap * 0.5f)
+                + ((Vector2)playerMovement.Transform.up * kneeHeight);
             Vector2 bone2Pos = bone0Pos
-                + ((Vector2)playerController.Transform.right * horizontalMult * legGap)
-                - ((Vector2)playerController.Transform.up * playerController.FeetHeight);
+                + ((Vector2)playerMovement.Transform.right * horizontalMult * legGap)
+                - ((Vector2)playerMovement.Transform.up * playerMovement.FeetHeight);
 
             legIK[i].Bones[0].up = bone1Pos - bone0Pos;
             legIK[i].Bones[1].up = bone2Pos - bone1Pos;
-            legIK[i].Bones[2].up = playerController.Transform.up;
+            legIK[i].Bones[2].up = playerMovement.Transform.up;
 
             legIK[i].Bones[0].position = bone0Pos;
             legIK[i].Bones[1].position = bone1Pos;
@@ -199,10 +219,10 @@ public class PlayerLegs : MonoBehaviour
     {
         if (!drawGizmos) return;
 
-        if (playerController != null)
+        if (playerMovement != null)
         {
             Gizmos.color = Color.grey;
-            Gizmos.DrawSphere(playerController.GroundPosition, 0.1f);
+            Gizmos.DrawSphere(playerMovement.GroundPosition, 0.1f);
 
             if (legTargets != null)
             {

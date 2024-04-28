@@ -25,11 +25,11 @@ public class SurfaceBiome : Biome
     private void OnValidate()
     {
         Rules ??= new Dictionary<GameLayer, FeatureRule[]>();
-        Rules[GameLayer.FRONT_DECOR] = frontDecorRules;
-        Rules[GameLayer.TERRAIN] = terrainRules;
-        Rules[GameLayer.FOREGROUND] = foregroundRules;
-        Rules[GameLayer.BACKGROUND] = backgroundRules;
-        Rules[GameLayer.BACK_DECOR] = backDecorRules;
+        Rules[GameLayer.FrontDecor] = frontDecorRules;
+        Rules[GameLayer.Terrain] = terrainRules;
+        Rules[GameLayer.Foreground] = foregroundRules;
+        Rules[GameLayer.Background] = backgroundRules;
+        Rules[GameLayer.BackDecor] = backDecorRules;
     }
 
     public Dictionary<GameLayer, FeatureRule[]> Rules { get; private set; }

@@ -9,7 +9,6 @@ public class OutlineController : MonoBehaviour
     private Renderer[] renderers;
     private Material outlineMask, outlineFill;
     private bool isInitialized;
-    private bool needsUpdate;
 
     private void Awake() => InitializeController();
 
@@ -30,7 +29,6 @@ public class OutlineController : MonoBehaviour
         outlineMask.name = "OutlineMask (Instance)";
         outlineFill.name = "OutlineFill (Instance)";
         isInitialized = true;
-        needsUpdate = true;
     }
 
     [ContextMenu("Add Materials")]

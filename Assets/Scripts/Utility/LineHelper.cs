@@ -1,14 +1,14 @@
 using UnityEngine;
 
 public enum LineFill
-{ NONE, SOLID, DOTTED }
+{ None, Solid, Dotted }
 
 public class LineHelper : MonoBehaviour
 {
     public float repeatMult = 0.8f;
-    public LineFill CurrentLineFill { get; private set; } = LineFill.NONE;
+    public LineFill CurrentLineFill { get; private set; } = LineFill.None;
 
-    public void DrawCircle(Vector3 centre, float radius, Color color, float width = 0.1f, LineFill lineFill = LineFill.SOLID)
+    public void DrawCircle(Vector3 centre, float radius, Color color, float width = 0.1f, LineFill lineFill = LineFill.Solid)
     {
         SetFill(lineFill);
 
@@ -28,14 +28,14 @@ public class LineHelper : MonoBehaviour
         }
 
         // Set repeats
-        if (CurrentLineFill == LineFill.DOTTED)
+        if (CurrentLineFill == LineFill.Dotted)
         {
             float length = 2 * radius * Mathf.PI;
             materialDotted.SetFloat("_Rep", length * repeatMult);
         }
     }
 
-    public void DrawLine(Vector3 from, Vector3 to, Color color, float width = 0.1f, LineFill lineFill = LineFill.SOLID)
+    public void DrawLine(Vector3 from, Vector3 to, Color color, float width = 0.1f, LineFill lineFill = LineFill.Solid)
     {
         SetFill(lineFill);
 
@@ -51,14 +51,14 @@ public class LineHelper : MonoBehaviour
         lineRenderer.SetPosition(1, to);
 
         // Set repeats
-        if (CurrentLineFill == LineFill.DOTTED)
+        if (CurrentLineFill == LineFill.Dotted)
         {
             float length = (to - from).magnitude;
             materialDotted.SetFloat("_Rep", length * repeatMult);
         }
     }
 
-    public void DrawCurve(Vector3 from, Vector3 to, Vector3 control, Color color, float width = 0.1f, int segmentCount = 20, LineFill lineFill = LineFill.SOLID)
+    public void DrawCurve(Vector3 from, Vector3 to, Vector3 control, Color color, float width = 0.1f, int segmentCount = 20, LineFill lineFill = LineFill.Solid)
     {
         SetFill(lineFill);
 
@@ -78,7 +78,7 @@ public class LineHelper : MonoBehaviour
         }
 
         // Set repeats
-        if (CurrentLineFill == LineFill.DOTTED)
+        if (CurrentLineFill == LineFill.Dotted)
         {
             float length = Utility.CalculateBezierLength(from, control, to, segmentCount);
             materialDotted.SetFloat("_Rep", length * repeatMult);
@@ -109,11 +109,11 @@ public class LineHelper : MonoBehaviour
         CurrentLineFill = lineFill;
 
         // Mode specific initialization
-        if (CurrentLineFill == LineFill.SOLID)
+        if (CurrentLineFill == LineFill.Solid)
         {
             lineRenderer.material = materialSolid;
         }
-        else if (CurrentLineFill == LineFill.DOTTED)
+        else if (CurrentLineFill == LineFill.Dotted)
         {
             lineRenderer.material = materialDotted;
         }

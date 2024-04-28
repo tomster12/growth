@@ -5,7 +5,7 @@ using static PlayerInteractor;
 [Serializable]
 internal class InteractionPluck : PlayerInteraction
 {
-    public InteractionPluck(Action onPluck, float pluckTimerMax) : base("Pluck", InteractionInput.LMB, Visibility.ICON, "up")
+    public InteractionPluck(Action onPluck, float pluckTimerMax) : base("Pluck", InteractionInput.LMB, Visibility.Icon, "up")
     {
         this.onPluck = onPluck;
         this.pluckTimerMax = pluckTimerMax;
@@ -35,8 +35,8 @@ internal class InteractionPluck : PlayerInteraction
         if (!PlayerInteractor.StartInteracting(this)) return;
         IsActive = true;
         PlayerController.MovementSlowdown = InteractSlowdown;
-        PlayerLegs.IsPointing = true;
-        PlayerLegs.PointingLeg = rightPct > 0.0f ? 2 : 1;
+        //PlayerLegs.IsPointing = true; TODO
+        //PlayerLegs.PointingLeg = rightPct > 0.0f ? 2 : 1; TODO
         TargetDirLH.SetActive(true);
         pluckTimer = 0.0f;
     }
@@ -48,11 +48,11 @@ internal class InteractionPluck : PlayerInteraction
             // Decrease timer and update player
             pluckTimer = Mathf.Min(pluckTimer + Time.deltaTime, pluckTimerMax);
             PlayerInteractor.InteractionEmphasis = 0.8f * pluckTimer / pluckTimerMax;
-            PlayerController.OverrideLean = pluckTimer / pluckTimerMax;
+            PlayerController.OverrideVerticalLean = pluckTimer / pluckTimerMax;
 
             // Point and draw line
             float upAmount = 0.2f + 0.2f * Utility.Easing.EaseOutSine(pluckTimer / pluckTimerMax);
-            Vector2 pathStartRaw = PlayerLegs.GetLegEnd(PlayerLegs.PointingLeg);
+            Vector2 pathStartRaw = TargetComposable.Position; // PlayerLegs.GetLegEnd(PlayerLegs.PointingLeg); TODO
             Vector2 pathEndRaw = TargetComposable.Position;
             Vector3 pathStart = new Vector3(pathStartRaw.x, pathStartRaw.y, PlayerController.Transform.position.z + 0.1f);
             Vector3 pathEnd = new Vector3(pathEndRaw.x, pathEndRaw.y, PlayerController.Transform.position.z + 0.1f);
@@ -61,7 +61,7 @@ internal class InteractionPluck : PlayerInteraction
             Vector3 controlUp = PlayerController.UpDir.normalized * (pathEnd - pathStart).magnitude * upAmount;
             Vector3 controlPoint = controlStart + controlDir * 0.75f + controlUp;
             TargetDirLH.DrawCurve(pathStart, pathEnd, controlPoint, LegDirInteractColor);
-            PlayerLegs.PointingPos = controlPoint;
+            //PlayerLegs.PointingPos = controlPoint; TODO
 
             // Pluck when done
             if (pluckTimer >= pluckTimerMax) CompletePluck();
@@ -75,10 +75,10 @@ internal class InteractionPluck : PlayerInteraction
 
         // Reset variables to stopped
         IsActive = false;
-        PlayerLegs.IsPointing = false;
+        //PlayerLegs.IsPointing = false; TODO
         PlayerInteractor.InteractionEmphasis = 0.0f;
         PlayerController.MovementSlowdown = 0.0f;
-        PlayerController.OverrideLean = 0.0f;
+        PlayerController.OverrideVerticalLean = 0.0f;
         TargetDirLH.SetActive(false);
         pluckTimer = 0.0f;
     }
@@ -92,10 +92,10 @@ internal class InteractionPluck : PlayerInteraction
         IsEnabled = false;
         IsActive = false;
         IsPlucked = true;
-        PlayerLegs.IsPointing = false;
+        //PlayerLegs.IsPointing = false; TODO
         PlayerInteractor.InteractionEmphasis = 0.0f;
         PlayerController.MovementSlowdown = 0.0f;
-        PlayerController.OverrideLean = 0.0f;
+        PlayerController.OverrideVerticalLean = 0.0f;
         TargetDirLH.SetActive(false);
         pluckTimer = 0.0f;
         onPluck();

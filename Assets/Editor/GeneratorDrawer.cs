@@ -17,7 +17,7 @@ public class GeneratorDrawer : PropertyDrawer
         if (generator == null) return inspector;
         generatorSO ??= new SerializedObject(generator);
 
-        string path = generator.IsComposite ? "GeneratorCompositeDrawerXUML" : "GeneratorDrawerXUML";
+        string path = generator.IsComposite ? "GeneratorDrawerCompositeXUML" : "GeneratorDrawerXUML";
         compositeXUML ??= AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/Editor/" + path + ".uxml");
         if (compositeXUML == null) return inspector;
         compositeXUML.CloneTree(inspector);

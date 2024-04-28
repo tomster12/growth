@@ -5,11 +5,12 @@ public class PluckableStoneComposite : CompositeObject
     public Vector2 PopDir { get; set; }
     public bool IsPlucked { get; private set; }
 
-    protected void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         AddPart<PartInteractable>();
         AddPart<PartHighlightable>();
-        AddPart<PartIndicatable>();
+        partIndicatable = AddPart<PartIndicatable>();
     }
 
     protected void Start()
@@ -22,7 +23,8 @@ public class PluckableStoneComposite : CompositeObject
         }
 
         // Initialize indicator
-        GetPart<PartIndicatable>().Init("indicator", PopDir);
+        partIndicatable.SetIcon(PartIndicatable.IconType.Resource);
+        partIndicatable.SetOffset(PopDir);
 
         // Initialize interaction
         interactionPluck = new InteractionPluck(OnPluck, pluckTimerMax);
@@ -42,26 +44,32 @@ public class PluckableStoneComposite : CompositeObject
     [SerializeField] private float pluckTimerMax = 2.0f;
     [SerializeField] private float pluckVelocity = 12.5f;
     [SerializeField] private GameObject pluckPsysPfb;
+
+    private PartIndicatable partIndicatable;
     private InteractionPluck interactionPluck;
 
     private void OnPluck()
     {
         // Become physical and controllable
-        AddPart<PartPhysical>();
-        AddPart<PartControllable>();
-        GetPart<PartControllable>().SetCanControl(true);
-        GetPart<PartPhysical>().InitMass(density);
+        var physical = AddPart<PartPhysical>();
+        var controllable = AddPart<PartControllable>();
+        physical.InitMass(density);
+        controllable.SetCanControl(true);
 
         // Move out of ground
-        GetPart<PartPhysical>().RB.transform.position += (Vector3)(PopDir.normalized * CL.bounds.extents * 1.5f);
+        physical.RB.transform.position += (Vector3)(PopDir.normalized * CL.bounds.extents * 1.5f);
 
         // Pop in a direction (ignore mass)
-        GetPart<PartPhysical>().RB.AddForce(GetPart<PartPhysical>().RB.mass * pluckVelocity * PopDir.normalized, ForceMode2D.Impulse);
+        physical.RB.AddForce(physical.RB.mass * pluckVelocity * PopDir.normalized, ForceMode2D.Impulse);
 
         // Produce particles
         GameObject particlesGO = Instantiate(pluckPsysPfb);
-        particlesGO.transform.position = GetPart<PartPhysical>().RB.transform.position;
+        particlesGO.transform.position = physical.RB.transform.position;
         particlesGO.transform.up = PopDir.normalized;
         IsPlucked = true;
+
+        // Add ingredient part and change indicator accordingly
+        AddPart<PartIngredient>();
+        partIndicatable.SetIcon(PartIndicatable.IconType.Ingredient);
     }
 }

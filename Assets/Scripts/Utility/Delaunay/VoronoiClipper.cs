@@ -39,7 +39,7 @@ namespace GK
         { }
 
         public enum VertexType
-        { SITE_VERTEX, POLYGON, POLYGON_INTERSECTION }
+        { SiteVertex, Polygon, PolygonIntersection }
 
         /// <summary>
         /// Clip all sites of a voronoi diagram iteratively.
@@ -69,7 +69,7 @@ namespace GK
 
             public static ClippedVertex NewPolygonVertex(Vector2 vertex, int vertexUID)
             {
-                return new ClippedVertex(vertex, VertexType.POLYGON)
+                return new ClippedVertex(vertex, VertexType.Polygon)
                 {
                     vertexUID = vertexUID,
                     intersectionFromUID = vertexUID,
@@ -79,7 +79,7 @@ namespace GK
 
             public static ClippedVertex NewPolygonIntersectionVertex(Vector2 vertex, int vertexUID, int intersectionFromUID, int intersectionToUID)
             {
-                return new ClippedVertex(vertex, VertexType.POLYGON_INTERSECTION)
+                return new ClippedVertex(vertex, VertexType.PolygonIntersection)
                 {
                     vertexUID = vertexUID,
                     intersectionFromUID = intersectionFromUID,
@@ -89,7 +89,7 @@ namespace GK
 
             public static ClippedVertex NewSiteVertex(Vector2 vertex, int vertexUID)
             {
-                return new ClippedVertex(vertex, VertexType.SITE_VERTEX)
+                return new ClippedVertex(vertex, VertexType.SiteVertex)
                 {
                     vertexUID = vertexUID
                 };
@@ -212,7 +212,7 @@ namespace GK
 
                         // - Intersecting an outer edge
                         if (
-                            cv0.type == VertexType.POLYGON || cv1.type == VertexType.POLYGON
+                            cv0.type == VertexType.Polygon || cv1.type == VertexType.Polygon
                             || (cv0.intersectionFromUID == cv1.intersectionFromUID && cv0.intersectionFromUID != -1)
                         )
                         {

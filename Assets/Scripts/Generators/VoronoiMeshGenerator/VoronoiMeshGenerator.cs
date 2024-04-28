@@ -282,10 +282,10 @@ public partial class VoronoiMeshGenerator : Generator
                 MeshSiteVertex v0 = meshSite.vertices[i];
                 MeshSiteVertex v1 = meshSite.vertices[nextI];
                 edge.isOutside = (
-                    (v0.type == VertexType.POLYGON && v1.type == VertexType.POLYGON)
-                    || (v0.type == VertexType.POLYGON_INTERSECTION && v1.type == VertexType.POLYGON && v0.intersectionToUID == v1.vertexUID)
-                    || (v0.type == VertexType.POLYGON && v1.type == VertexType.POLYGON_INTERSECTION && v0.vertexUID == v1.intersectionFromUID)
-                    || (v0.type == VertexType.POLYGON_INTERSECTION && v1.type == VertexType.POLYGON_INTERSECTION && v0.intersectionFromUID == v1.intersectionFromUID));
+                    (v0.type == VertexType.Polygon && v1.type == VertexType.Polygon)
+                    || (v0.type == VertexType.PolygonIntersection && v1.type == VertexType.Polygon && v0.intersectionToUID == v1.vertexUID)
+                    || (v0.type == VertexType.Polygon && v1.type == VertexType.PolygonIntersection && v0.vertexUID == v1.intersectionFromUID)
+                    || (v0.type == VertexType.PolygonIntersection && v1.type == VertexType.PolygonIntersection && v0.intersectionFromUID == v1.intersectionFromUID));
                 meshSite.isOutside |= edge.isOutside;
 
                 // Inside so find touching edge
@@ -441,9 +441,9 @@ public partial class VoronoiMeshGenerator : Generator
                 foreach (var vertex in clippedSite.clippedVertices)
                 {
                     Vector2 vertexWorld = transform.TransformPoint(vertex.vertex);
-                    if (vertex.type == VoronoiClipper.VertexType.POLYGON) Gizmos.color = Color.black;
-                    else if (vertex.type == VoronoiClipper.VertexType.POLYGON_INTERSECTION) Gizmos.color = Color.magenta;
-                    else if (vertex.type == VoronoiClipper.VertexType.SITE_VERTEX) Gizmos.color = Color.green;
+                    if (vertex.type == VoronoiClipper.VertexType.Polygon) Gizmos.color = Color.black;
+                    else if (vertex.type == VoronoiClipper.VertexType.PolygonIntersection) Gizmos.color = Color.magenta;
+                    else if (vertex.type == VoronoiClipper.VertexType.SiteVertex) Gizmos.color = Color.green;
                     Gizmos.DrawCube(vertexWorld, Vector3.one * 0.04f);
                 }
             }
