@@ -20,20 +20,50 @@ public class GravityAttractor : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // Attract all objects
+        // Attract active all objects
         foreach (GravityObject obj in GravityObject.gravityObjects)
         {
             if (!obj.IsEnabled) continue;
             if (!obj.RB.simulated) continue;
+
+            // If within gravity radius
             Vector2 centreDir = Centre - obj.Centre;
             if (centreDir.magnitude < gravityRadius)
             {
+                // On the surface for some reason
                 Vector2 surface = ClosestPoint(obj.Centre);
                 Vector2 surfaceDir = surface - obj.Centre;
                 if (surfaceDir.magnitude == 0) continue;
+
                 float cleanMagnitude = Mathf.Max(surfaceDir.magnitude, minimumDistance);
                 float force = gravityForce * (RB.mass * obj.RB.mass) / cleanMagnitude;
                 obj.AddForce(surfaceDir.normalized * force);
+            }
+        }
+    }
+
+    private void OnDrawGizmos()
+    {
+        // Draw arrows for centre dir and surface dir for each object
+        foreach (GravityObject obj in GravityObject.gravityObjects)
+        {
+            if (!obj) continue;
+            if (!obj.IsEnabled) continue;
+            if (!obj.RB.simulated) continue;
+
+            // If within gravity radius
+            Vector2 centreDir = Centre - obj.Centre;
+            if (centreDir.magnitude < gravityRadius)
+            {
+                // On the surface for some reason
+                Vector2 surface = ClosestPoint(obj.Centre);
+                Vector2 surfaceDir = surface - obj.Centre;
+                if (surfaceDir.magnitude == 0) continue;
+
+                Gizmos.color = Color.green;
+                Gizmos.DrawLine(obj.Centre, obj.Centre + surfaceDir);
+                Gizmos.color = Color.red;
+                Gizmos.DrawLine(obj.Centre, obj.Centre + centreDir);
             }
         }
     }

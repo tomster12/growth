@@ -35,10 +35,9 @@ public class Interaction
         IsActive = true;
     }
 
-    public virtual void StopInteracting(IInteractor interactor)
+    public virtual void StopInteracting()
     {
         Assert.IsTrue(IsActive);
-        Assert.AreEqual(this.interactor, interactor);
         this.interactor = null;
         IsActive = false;
     }

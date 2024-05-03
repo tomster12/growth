@@ -1,15 +1,17 @@
 using System;
-using System.Net;
+using UnityEditorInternal;
 using UnityEngine;
-using static PlayerInteractor;
 
 [Serializable]
-internal class InteractionPluck : Interaction
+public class InteractionPluck : Interaction
 {
-    public InteractionPluck(Action onPluck, float pluckTimerMax) : base("Pluck", InteractionInput.Mouse(0), "up")
+    private static float INTERACTOR_SLOWDOWN = 0.85f;
+
+    public InteractionPluck(CompositeObject targetCO, Action onPluck, float pluckTimerDuration) : base("Pluck", InteractionInput.Mouse(0), "up")
     {
+        this.targetCO = targetCO;
         this.onPluck = onPluck;
-        this.pluckTimerMax = pluckTimerMax;
+        this.pluckTimerDuration = pluckTimerDuration;
         IsEnabled = true;
     }
 
@@ -20,84 +22,50 @@ internal class InteractionPluck : Interaction
     {
         if (!IsActive) return;
 
-        // Decrease timer and update player
-        pluckTimer = Mathf.Min(pluckTimer + Time.deltaTime, pluckTimerMax);
+        // Decrease timer
+        pluckTimer = Mathf.Min(pluckTimer + Time.deltaTime, pluckTimerDuration);
+        if (pluckTimer >= pluckTimerDuration)
+        {
+            CompletePluck();
+            return;
+        }
 
-        // Pluck when done
-        if (pluckTimer >= pluckTimerMax) CompletePluck();
-
-        /* TODO: Update interactor
-        PlayerInteractor.InteractionEmphasis = 0.8f * pluckTimer / pluckTimerMax;
-        PlayerController.OverrideVerticalLean = pluckTimer / pluckTimerMax;
-        // Point and draw line
-        float upAmount = 0.2f + 0.2f * Utility.Easing.EaseOutSine(pluckTimer / pluckTimerMax);
-        Vector2 pathStartRaw = TargetComposable.Position; // PlayerLegs.GetLegEnd(PlayerLegs.PointingLeg); TODO
-        Vector2 pathEndRaw = TargetComposable.Position;
-        Vector3 pathStart = new Vector3(pathStartRaw.x, pathStartRaw.y, PlayerController.Transform.position.z + 0.1f);
-        Vector3 pathEnd = new Vector3(pathEndRaw.x, pathEndRaw.y, PlayerController.Transform.position.z + 0.1f);
-        Vector3 controlStart = PlayerController.Transform.position;
-        Vector3 controlDir = pathEnd - controlStart;
-        Vector3 controlUp = PlayerController.UpDir.normalized * (pathEnd - pathStart).magnitude * upAmount;
-        Vector3 controlPoint = controlStart + controlDir * 0.75f + controlUp;
-        TargetDirLH.DrawCurve(pathStart, pathEnd, controlPoint, LegDirInteractColor);
-        //PlayerLegs.PointingPos = controlPoint; TODO
-        */
+        // Update interactor
+        float t = pluckTimer / pluckTimerDuration;
+        interactor.SetInteractionEmphasis(0.8f * t);
+        interactor.SetInteractionPulling(targetCO.Position, t);
     }
 
     public override void StartInteracting(IInteractor interactor)
     {
         base.StartInteracting(interactor);
 
-        // Initialize pluck timer
+        // Reset variables
         pluckTimer = 0.0f;
-
-        /* TODO: Update interactor
-        // Calculate direction of target
-        float rightPct = Vector2.Dot(PlayerController.RightDir, TargetComposable.Position - (Vector2)PlayerController.Transform.position);
-        PlayerController.MovementSlowdown = InteractSlowdown;
-        //PlayerLegs.IsPointing = true; TODO
-        //PlayerLegs.PointingLeg = rightPct > 0.0f ? 2 : 1; TODO
-        TargetDirLH.SetActive(true);
-        */
+        interactor.SetInteractionSlowdown(INTERACTOR_SLOWDOWN);
     }
 
-    public override void StopInteracting(IInteractor interactor)
+    public override void StopInteracting()
     {
-        base.StopInteracting(interactor);
+        base.StopInteracting();
 
-        // Reset pluck timer
+        // Reset variables
         pluckTimer = 0.0f;
-
-        /* TODO: Update interactor
-        // Reset variables to stopped
-        //PlayerLegs.IsPointing = false; TODO
-        PlayerInteractor.InteractionEmphasis = 0.0f;
-        PlayerController.MovementSlowdown = 0.0f;
-        PlayerController.OverrideVerticalLean = 0.0f;
-        TargetDirLH.SetActive(false);
-        */
     }
 
+    private CompositeObject targetCO;
     private Action onPluck;
-    private float pluckTimerMax;
+    private float pluckTimerDuration;
     private float pluckTimer;
 
     private void CompletePluck()
     {
-        // Finished so update variables
+        base.StopInteracting();
+
+        // Reset variables call callback
         IsEnabled = false;
-        IsActive = false;
         IsPlucked = true;
         pluckTimer = 0.0f;
         onPluck();
-
-        /* TODO: Update interactor
-        // Reset variables to finished
-        //PlayerLegs.IsPointing = false; TODO
-        PlayerInteractor.InteractionEmphasis = 0.0f;
-        PlayerController.MovementSlowdown = 0.0f;
-        PlayerController.OverrideVerticalLean = 0.0f;
-        TargetDirLH.SetActive(false);
-        */
     }
 }

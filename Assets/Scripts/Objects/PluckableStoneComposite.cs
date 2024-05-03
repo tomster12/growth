@@ -27,7 +27,7 @@ public class PluckableStoneComposite : CompositeObject
         partIndicatable.SetOffset(PopDir);
 
         // Initialize interaction
-        interactionPluck = new InteractionPluck(OnPluck, pluckTimerMax);
+        interactionPluck = new InteractionPluck(this, OnPluck, pluckTimerMax);
         GetPart<PartInteractable>().Interactions.Add(interactionPluck);
     }
 

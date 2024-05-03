@@ -51,7 +51,7 @@ public class PlayerLegs : MonoBehaviour
     private void Update()
     {
         // Calculate how much player is walking
-        float walkPct = Vector2.Dot(playerMovement.RB.velocity, playerMovement.RightDir.normalized);
+        float walkPct = Vector2.Dot(playerMovement.RB.velocity, playerMovement.GroundRightDir.normalized);
         walkDir = (walkPct < -isWalkingThreshold) ? -1 : (walkPct > isWalkingThreshold) ? 1 : 0;
 
         for (int i = 0; i < 4; i++)
@@ -145,15 +145,15 @@ public class PlayerLegs : MonoBehaviour
 
         // Raycast sideways
         Vector2 sideFrom = playerMovement.Transform.position;
-        Vector2 sideDir = playerMovement.RightDir.normalized;
+        Vector2 sideDir = playerMovement.GroundRightDir.normalized;
         float sideDistMax = horizontalMult * legGap + walkDir * stepSize * 0.5f;
         RaycastHit2D sideHit = Physics2D.Raycast(sideFrom, sideDir, sideDistMax, terrainMask);
         float sideDist = (sideHit.collider != null) ? sideHit.distance : sideDistMax;
 
         // Raycast downwards
         Vector2 downFrom = sideFrom + sideDir * sideDist;
-        Vector2 downDir = playerMovement.GroundDir.normalized;
-        float downDistMax = playerMovement.GroundedHeight;
+        Vector2 downDir = -playerMovement.GroundUpDir.normalized;
+        float downDistMax = playerMovement.GroundedBodyHeight;
         RaycastHit2D downHit = Physics2D.Raycast(downFrom, downDir, downDistMax, terrainMask);
 
         // Update out variables
@@ -174,8 +174,8 @@ public class PlayerLegs : MonoBehaviour
     {
         float horizontalMult = (legIndex <= 1) ? (-2 + legIndex) : (-1 + legIndex);
         return (Vector2)playerMovement.Transform.position
-            + (playerMovement.RightDir.normalized * horizontalMult * legGap)
-            + (playerMovement.UpDir.normalized * kneeHeight * 2);
+            + (playerMovement.GroundRightDir.normalized * horizontalMult * legGap)
+            + (playerMovement.GroundUpDir.normalized * kneeHeight * 2);
     }
 
     [ContextMenu("Set Leg Lengths")]
@@ -194,7 +194,7 @@ public class PlayerLegs : MonoBehaviour
                 + ((Vector2)playerMovement.Transform.up * kneeHeight);
             Vector2 bone2Pos = bone0Pos
                 + ((Vector2)playerMovement.Transform.right * horizontalMult * legGap)
-                - ((Vector2)playerMovement.Transform.up * playerMovement.FeetHeight);
+                - ((Vector2)playerMovement.Transform.up * playerMovement.TargetBodyHeight);
 
             legIK[i].Bones[0].up = bone1Pos - bone0Pos;
             legIK[i].Bones[1].up = bone2Pos - bone1Pos;
@@ -222,7 +222,7 @@ public class PlayerLegs : MonoBehaviour
         if (playerMovement != null)
         {
             Gizmos.color = Color.grey;
-            Gizmos.DrawSphere(playerMovement.GroundPosition, 0.1f);
+            Gizmos.DrawSphere(playerMovement.GroundPos, 0.1f);
 
             if (legTargets != null)
             {
