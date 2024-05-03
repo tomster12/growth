@@ -4,8 +4,8 @@ using UnityEngine.Assertions;
 
 public partial class PlayerInteractor : MonoBehaviour, IInteractor
 {
-    public enum InteractorState
-    { Idle, Hovering, Controlling, Interacting }
+    public enum TargetState
+    { None, Hovering, Controlling, Interacting }
 
     public static PlayerInteractor Instance { get; private set; }
 
@@ -53,20 +53,21 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
     [SerializeField] private float indicateTimerMax = 3.0f;
     [SerializeField] private float promptOffset = 1.0f;
 
-    private LineHelper controlLimitLH;
-    private LineHelper targetDirLH;
-    private Color controlLimitClearColor;
-    private Color controlLimitCurrentColor;
     private Vector2 inputMousePos;
     private float inputMouseDistance;
-    private InteractorState state;
+
+    private TargetState targetState;
     private CompositeObject target;
-    private Interaction currentInteraction;
     private float targetDistance;
+    private LineHelper targetDirLH;
+    private LineHelper targetControlLimitLH;
     private int targetControllingLeg;
+    private Color targetControlLimitColor;
     private Vector2 targetLimitedControlDir;
     private Vector2 targetLimitedControlPos;
     private float targetControlDropTimer;
+    private Interaction currentInteraction;
+
     private float CursorSqueeze => interactionCursorSqueeze;
     private PartControllable TargetControllable => target?.GetPart<PartControllable>();
     private PartInteractable TargetInteractable => target?.GetPart<PartInteractable>();
@@ -80,7 +81,7 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
         // Initialize line helpers
         GameObject controlLimitLHGO = new GameObject();
         controlLimitLHGO.transform.parent = transform;
-        controlLimitLH = controlLimitLHGO.AddComponent<LineHelper>();
+        targetControlLimitLH = controlLimitLHGO.AddComponent<LineHelper>();
 
         GameObject controlDirLHGO = new GameObject();
         controlDirLHGO.transform.parent = transform;
@@ -89,8 +90,6 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
         GameObject interactionPullingLHGO = new GameObject();
         interactionPullingLHGO.transform.parent = transform;
         interactionPullingLH = interactionPullingLHGO.AddComponent<LineHelper>();
-
-        controlLimitClearColor = new Color(controlLimitColorWarning.r, controlLimitColorWarning.g, controlLimitColorWarning.b, 0.0f);
     }
 
     private void Start()
@@ -111,9 +110,9 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
     {
         if (GameManager.IsPaused) return;
         UpdateHandleInput();
-        UpdateHovering();
-        UpdateControlling();
-        UpdateInteracting();
+        UpdateTargetHovering();
+        UpdateTargetControlling();
+        UpdateTargetInteracting();
         UpdateIndicating();
     }
 
@@ -123,9 +122,9 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
         inputMouseDistance = (inputMousePos - (Vector2)playerMovement.Transform.position).magnitude;
     }
 
-    private void UpdateHovering()
+    private void UpdateTargetHovering()
     {
-        if (state == InteractorState.Idle || state == InteractorState.Hovering)
+        if (targetState == TargetState.None || targetState == TargetState.Hovering)
         {
             CompositeObject hovered = null;
 
@@ -148,16 +147,16 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
             {
                 if (TargetHighlightable) TargetHighlightable.Highlighted = false;
                 SetTarget(hovered);
-                state = hovered ? InteractorState.Hovering : InteractorState.Idle;
+                targetState = hovered ? TargetState.Hovering : TargetState.None;
                 if (TargetHighlightable) TargetHighlightable.Highlighted = true;
                 if (TargetIndicatable) TargetIndicatable.Hide();
             }
         }
     }
 
-    private void UpdateControlling()
+    private void UpdateTargetControlling()
     {
-        if (state == InteractorState.Controlling)
+        if (targetState == TargetState.Controlling)
         {
             // Drop on mouse click
             if (Input.GetMouseButtonDown(0))
@@ -187,14 +186,14 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
                 if (targetBoundaryPct == 1.0f) targetLimitColor = controlLimitColorOutside;
                 else targetLimitColor = new Color(controlLimitColorWarning.r, controlLimitColorWarning.g, controlLimitColorWarning.b, controlLimitColorWarning.a * maxBoundaryPct);
             }
-            else targetLimitColor = controlLimitClearColor;
-            controlLimitCurrentColor = Color.Lerp(controlLimitCurrentColor, targetLimitColor, controlLimitColorLerpSpeed * Time.deltaTime);
-            controlLimitLH.DrawCircle(playerMovement.Transform.position, maxControlDistance, controlLimitCurrentColor, lineFill: LineFill.Dotted);
+            else targetLimitColor = new Color(controlLimitColorWarning.r, controlLimitColorWarning.g, controlLimitColorWarning.b, 0.0f);
+            targetControlLimitColor = Color.Lerp(targetControlLimitColor, targetLimitColor, controlLimitColorLerpSpeed * Time.deltaTime);
+            targetControlLimitLH.DrawCircle(playerMovement.Transform.position, maxControlDistance, targetControlLimitColor, lineFill: LineFill.Dotted);
 
             // Draw control line and point
-            playerLegs.SetOverrideLeg(targetControllingLeg, target.Position);
+            playerLegs.SetOverrideFoot(targetControllingLeg, target.Position);
             targetDirLH.SetActive(true);
-            Vector2 pathStart = playerLegs.GetLegEnd(targetControllingLeg);
+            Vector2 pathStart = playerLegs.GetFootPos(targetControllingLeg);
             Vector2 pathEnd = target.Position;
             Vector3 pathStartFixed = new Vector3(pathStart.x, pathStart.y, playerMovement.Transform.position.z + 0.1f);
             Vector3 pathEndFixed = new Vector3(pathEnd.x, pathEnd.y, playerMovement.Transform.position.z + 0.1f);
@@ -219,7 +218,7 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
         }
 
         // If not controlling then check for control input
-        else if (state == InteractorState.Hovering
+        else if (targetState == TargetState.Hovering
             && TargetControllable != null
             && TargetControllable.CanControl
             && Input.GetMouseButtonDown(0))
@@ -228,10 +227,10 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
         }
     }
 
-    private void UpdateInteracting()
+    private void UpdateTargetInteracting()
     {
         // Currently interacting so update
-        if (state == InteractorState.Interacting)
+        if (targetState == TargetState.Interacting)
         {
             if (currentInteraction.IsActive && (PollInput(currentInteraction.Input) == InputEvent.Inactive))
             {
@@ -239,20 +238,20 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
             }
             if (!currentInteraction.IsActive)
             {
-                state = InteractorState.Hovering;
+                targetState = TargetState.Hovering;
                 OnInteractionFinished();
             }
         }
 
         // Hovering interactable object so check for interaction
-        else if (state == InteractorState.Hovering && TargetInteractable != null)
+        else if (targetState == TargetState.Hovering && TargetInteractable != null)
         {
             foreach (Interaction interaction in TargetInteractable.Interactions)
             {
                 // Can interact and input polled down so begin interaction
                 if (interaction.CanInteract && (PollInput(interaction.Input) == InputEvent.Active))
                 {
-                    state = InteractorState.Interacting;
+                    targetState = TargetState.Interacting;
                     currentInteraction = interaction;
                     interaction.StartInteracting(this);
                     break;
@@ -292,7 +291,7 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
     private void FixedUpdateCursor()
     {
         // Idle: Lerp to base square
-        if (state == InteractorState.Idle)
+        if (targetState == TargetState.None)
         {
             cursorContainer.position = new Vector2(Mathf.Round(inputMousePos.x * 12) / 12, Mathf.Round(inputMousePos.y * 12) / 12);
             cursorCornerTL.transform.localPosition = Vector2.Lerp(cursorCornerTL.transform.localPosition, new Vector2(-cursorIdleSize, cursorIdleSize), Time.fixedDeltaTime * cursorIdleMovementSpeed);
@@ -302,7 +301,7 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
         }
 
         // Controlling: Update needed indicators to mouse position
-        if (state == InteractorState.Controlling)
+        if (targetState == TargetState.Controlling)
         {
             centreIndicator.gameObject.SetActive(true);
             centreIndicator.transform.position = new Vector2(inputMousePos.x, inputMousePos.y);
@@ -333,14 +332,14 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
         {
             Bounds b = target.Bounds;
             Vector2 targetPos = b.center;
-            float gap = state == InteractorState.Controlling ? cursorControlGap : (cursorHoverGap * (1.0f - CursorSqueeze));
+            float gap = targetState == TargetState.Controlling ? cursorControlGap : (cursorHoverGap * (1.0f - CursorSqueeze));
             Vector2 targetTLPos = new Vector2(b.center.x - b.extents.x - gap, b.center.y + b.extents.y + gap);
             Vector2 targetTRPos = new Vector2(b.center.x + b.extents.x + gap, b.center.y + b.extents.y + gap);
             Vector2 targetBLPos = new Vector2(b.center.x - b.extents.x - gap, b.center.y - b.extents.y - gap);
             Vector2 targetBRPos = new Vector2(b.center.x + b.extents.x + gap, b.center.y - b.extents.y - gap);
 
             // Controlling: Set positions for snappiness
-            if (state == InteractorState.Controlling)
+            if (targetState == TargetState.Controlling)
             {
                 cursorContainer.position = targetPos;
                 cursorCornerTL.transform.position = targetTLPos;
@@ -362,9 +361,9 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
 
         // Calculate cursor colour and lerp
         Color cursorColor =
-            (state == InteractorState.Interacting) ? cursorColorInteracting
+            (targetState == TargetState.Interacting) ? cursorColorInteracting
             : (TargetInteractable != null ? TargetInteractable.CanInteract : false) ? cursorColorInteractable
-            : (state == InteractorState.Controlling) ? cursorColorControl
+            : (targetState == TargetState.Controlling) ? cursorColorControl
             : (inputMouseDistance > maxHoverDistance) ? cursorColorFar
             : (target != null) ? cursorColorHover
             : cursorColorIdle;
@@ -399,7 +398,7 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
 
     private void SetTargetControlled(bool toControl)
     {
-        if (toControl == (state == InteractorState.Controlling)) return;
+        if (toControl == (targetState == TargetState.Controlling)) return;
         Assert.IsNotNull(TargetControllable);
 
         // Begin controlling
@@ -407,10 +406,10 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
         {
             Assert.IsTrue(TargetControllable.CanControl);
             TargetControllable.SetControlled(true);
-            state = InteractorState.Controlling;
+            targetState = TargetState.Controlling;
             TargetControllable.SetControlPosition(target.Position, controlForce);
-            controlLimitCurrentColor = controlLimitClearColor;
-            controlLimitLH.SetActive(true);
+            targetControlLimitColor = new Color(controlLimitColorWarning.r, controlLimitColorWarning.g, controlLimitColorWarning.b, 0.0f);
+            targetControlLimitLH.SetActive(true);
 
             // Set controlling leg
             Vector2 targetDir = target.Position - (Vector2)playerMovement.Transform.position;
@@ -422,12 +421,12 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
         else
         {
             TargetControllable.SetControlled(false);
-            state = InteractorState.Hovering;
-            controlLimitLH.SetActive(false);
+            targetState = TargetState.Hovering;
+            targetControlLimitLH.SetActive(false);
             targetDirLH.SetActive(false);
-            playerLegs.UnsetOverrideLeg(targetControllingLeg);
+            playerLegs.UnsetOverrideFoot(targetControllingLeg);
             targetControlDropTimer = 0.0f;
-            UpdateHovering();
+            UpdateTargetHovering();
         }
     }
 
@@ -484,7 +483,7 @@ public partial class PlayerInteractor // IInteractor
         }
 
         // Calculate pulling line positions then draw
-        Vector2 start2 = playerLegs.GetLegEnd(interactionPullingLeg);
+        Vector2 start2 = playerLegs.GetFootPos(interactionPullingLeg);
         Vector2 controlDir2 = target - player2;
         float controlUpAmount2 = 0.2f + 0.2f * Utility.Easing.EaseOutCubic(amount);
         Vector2 controlUp2 = playerMovement.GroundUpDir.normalized * (target - player2).magnitude * controlUpAmount2;
@@ -495,7 +494,7 @@ public partial class PlayerInteractor // IInteractor
         interactionPullingLH.DrawCurve(pathStart, pathEnd, controlPoint, legDirInteractColor);
 
         // Set leg to override and point to control point
-        playerLegs.SetOverrideLeg(interactionPullingLeg, controlPoint);
+        playerLegs.SetOverrideFoot(interactionPullingLeg, controlPoint);
 
         // Lean as to show strength of pull
         playerMovement.SetVerticalLean = 1.0f;
@@ -511,7 +510,7 @@ public partial class PlayerInteractor // IInteractor
         {
             interactionIsPulling = false;
             interactionPullingLH.SetActive(false);
-            playerLegs.UnsetOverrideLeg(interactionPullingLeg);
+            playerLegs.UnsetOverrideFoot(interactionPullingLeg);
             playerMovement.SetVerticalLean = 0;
         }
     }
