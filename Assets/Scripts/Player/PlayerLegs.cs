@@ -10,16 +10,9 @@ public class PlayerLegs : MonoBehaviour
         return legIK[footIndex].Bones[legIK[footIndex].BoneCount - 1].position;
     }
 
-    public void SetOverrideFoot(int footIndex, Vector2 pos)
-    {
-        overrideFoot[footIndex] = true;
-        overrideFootPos[footIndex] = pos;
-    }
+    public void SetOverrideFoot(int footIndex, Vector2 pos) => footOverridePos[footIndex] = pos;
 
-    public void UnsetOverrideFoot(int footIndex)
-    {
-        overrideFoot[footIndex] = false;
-    }
+    public void UnsetOverrideFoot(int footIndex) => footOverridePos[footIndex] = Vector2.zero;
 
     [Header("References")]
     [SerializeField] private PlayerMovement playerMovement;
@@ -40,147 +33,194 @@ public class PlayerLegs : MonoBehaviour
     [SerializeField] private float footLerpSpeed = 2.0f;
     [SerializeField] private float isWalkingThreshold = 0.1f;
     [SerializeField] private bool drawGizmos = false;
+    [SerializeField] private int gizmoLeg = -1;
 
-    private int walkDir = 0;
-    private float walkPct = 0.0f;
-    private bool[] legIsIdle = new bool[4];
-    private bool[] legIsStepping = new bool[4];
-    private Vector2[] footPosA = new Vector2[4];
-    private Vector2[] footPosB = new Vector2[4];
-    private Vector2[] footTarget = new Vector2[4];
-    private Vector2[] footCurrent = new Vector2[4];
-    private bool[] overrideFoot = new bool[4];
-    private Vector2[] overrideFootPos = new Vector2[4];
+    private float[] legLengths = new float[4];
+    private int walkingDirection = 0;
+    private float walkingTime = 0.0f;
+    private FootState[] footState = new FootState[4];
+    private Vector2[] footStepA = new Vector2[4];
+    private Vector2[] footStepB = new Vector2[4];
+    private Transform[] footStepBTfm = new Transform[4];
+    private Vector2[] footTargetPos = new Vector2[4];
+    private Vector2[] footCurrentPos = new Vector2[4];
+    private Vector2[] footOverridePos = new Vector2[4];
+
+    private enum FootState
+    { None, Air, Override, Idle, WalkingA, WalkingB };
 
     private void Start()
     {
+        // Initialize IK and foot positions
+        SetLegLengths();
         for (int i = 0; i < 4; i++)
         {
-            footTarget[i] = playerMovement.Transform.position;
-            footCurrent[i] = playerMovement.Transform.position;
+            footTargetPos[i] = GetFootPos(i);
+            footCurrentPos[i] = footTargetPos[i];
         }
     }
 
     private void Update()
     {
-        // Update walking direction and percent
-        float walkAmount = Vector2.Dot(playerMovement.RB.velocity, playerMovement.GroundRightDir.normalized);
-        int newWalkDir = (walkAmount < -isWalkingThreshold) ? -1 : (walkAmount > isWalkingThreshold) ? 1 : 0;
-        if (newWalkDir != walkDir) { walkDir = newWalkDir; walkPct = 0.0f; }
-        walkPct = walkDir == 0 ? 0 : (walkPct + Mathf.Abs(walkAmount * walkSpeed * Time.deltaTime)) % 1;
+        // Update walking direction and time
+        if (playerMovement.IsGrounded)
+        {
+            float walkAmount = Vector2.Dot(playerMovement.RB.velocity, playerMovement.GroundRightDir.normalized);
+            int newWalkDirection = (walkAmount < -isWalkingThreshold) ? -1 : (walkAmount > isWalkingThreshold) ? 1 : 0;
+            walkingTime = newWalkDirection == 0 ? 0.0f : (walkingTime + Mathf.Abs(walkAmount * walkSpeed * Time.deltaTime)) % 1;
 
+            // Changed direction so reset variables
+            if (newWalkDirection != walkingDirection)
+            {
+                walkingDirection = newWalkDirection;
+                walkingTime = 0.0f;
+
+                if (walkingDirection != 0)
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        footStepA[i] = Vector2.zero;
+                        footStepB[i] = Vector2.zero;
+                        if (footState[i] == FootState.Idle) footState[i] = FootState.None;
+                    }
+                }
+            }
+        }
+
+        // Otherwise reset variables
+        else
+        {
+            walkingDirection = 0;
+            walkingTime = 0.0f;
+        }
+
+        // Update each foot
         for (int i = 0; i < 4; i++)
         {
-            bool legPositionSet = false;
+            FootState newFootState = FootState.None;
 
-            // Foot position is overwritten
-            if (overrideFoot[i])
+            // Foot: Override
+            if (footOverridePos[i] != Vector2.zero)
             {
-                footTarget[i] = overrideFootPos[i];
-                legPositionSet = true;
+                footTargetPos[i] = footOverridePos[i];
+                newFootState = FootState.Override;
             }
 
-            // Currently walking so try step each leg
-            if (!legPositionSet && walkDir != 0)
+            // Check either walking or idle
+            if (newFootState == FootState.None && playerMovement.IsGrounded)
             {
-                float legPct = GetLegPct(walkPct, i);
-
-                // 0 -> 0.5 | Leg currently at A
-                if (legPct <= 0.5f)
+                // State: Walking
+                if (newFootState == FootState.None && walkingDirection != 0)
                 {
-                    // Standard Case: Just stepped through onto B
-                    if (legIsStepping[i])
+                    float legPct = GetLegPct(walkingTime, i);
+
+                    // 0 -> 0.5 | Leg currently at A
+                    if (legPct <= 0.5f)
                     {
-                        footPosA[i] = footPosB[i];
-                        footPosB[i] = Vector2.zero;
-                        legIsStepping[i] = false;
+                        // Standard Case: Just stepped through onto B
+                        if (footState[i] == FootState.WalkingB)
+                        {
+                            footStepA[i] = footStepB[i];
+                            footStepB[i] = Vector2.zero;
+                            newFootState = FootState.WalkingA;
+
+                            GenerateStepParticles(footStepBTfm[i], footStepA[i]);
+                        }
+
+                        // Initial Case: Try initialize position A
+                        if (footStepA[i] == Vector2.zero)
+                        {
+                            // 0 -> 0.5 === (walkDir -> -walkDir)
+                            float stepPct = walkingDirection * (1.0f - legPct * 4.0f);
+                            GetLegEndRaycast(i, stepPct, out _, out Vector2 calcFootStepB, out bool footStepATouching);
+                            if (footStepATouching) footStepA[i] = calcFootStepB;
+                        }
+
+                        // Foot pos A is grounded so set
+                        if (footStepA[i] != Vector2.zero)
+                        {
+                            footTargetPos[i] = footStepA[i];
+                            newFootState = FootState.WalkingA;
+                        }
                     }
-                    // Initial Case: Initialize position A
-                    if (footPosA[i] == Vector2.zero)
+
+                    // 0.5 -> 1.0 | Leg stepping from A to B
+                    else
                     {
-                        // 0 -> 0.5 === (walkDir -> -walkDir)
-                        float stepPct = walkDir * (1.0f - legPct * 4.0f);
-                        GetLegEndRaycast(i, stepPct, out _, out Vector2 footPosACheck, out bool footPosATouching);
-                        if (footPosATouching) footPosA[i] = footPosACheck;
-                    }
-                    // Have found foot position
-                    if (footPosA[i] != Vector2.zero)
-                    {
-                        footTarget[i] = footPosA[i];
-                        legPositionSet = true;
+                        // Initial case: Initialize position A
+                        if (footStepA[i] == Vector2.zero)
+                        {
+                            // 0.5 -> 1.0 === (-walkDir -> -2 * walkDir)
+                            float stepPct = -walkingDirection * (1.0f + 1.0f * ((legPct - 0.5f) / 0.5f));
+                            GetLegEndRaycast(i, stepPct, out _, out Vector2 footStepACheck, out bool footStepATouching);
+                            if (footStepATouching) footStepA[i] = footStepACheck;
+                        }
+
+                        // Standard Case: Find where foot B should be
+                        if (footStepB[i] == Vector2.zero)
+                        {
+                            // 0.5 -> 1.0 === (2 * walkDir -> walkDir)
+                            float stepPct = walkingDirection * (2.0f - ((legPct - 0.5f) / 0.5f));
+                            GetLegEndRaycast(i, stepPct, out Transform calcFootStepBTfm, out Vector2 calcFootStepB, out bool footStepBTouching);
+                            if (footStepBTouching)
+                            {
+                                footStepB[i] = calcFootStepB;
+                                footStepBTfm[i] = calcFootStepBTfm;
+                            }
+                        }
+
+                        // Have found foot position
+                        if (footStepA[i] != Vector2.zero && footStepB[i] != Vector2.zero)
+                        {
+                            Vector3 center = (Vector3)((footStepA[i] + footStepB[i]) * 0.5f) - new Vector3(0, 1, 0);
+                            float lerpPct = (legPct - 0.5f) * 2.0f;
+                            footTargetPos[i] = center + Vector3.Slerp((Vector3)footStepA[i] - center, (Vector3)footStepB[i] - center, lerpPct);
+                            newFootState = FootState.WalkingB;
+                        }
                     }
                 }
 
-                // 0.5 -> 1.0 | Leg stepping from A to B
-                else
+                // State: Idle
+                if (newFootState == FootState.None && walkingDirection == 0)
                 {
-                    // Initial case: Initialize position A
-                    if (footPosA[i] == Vector2.zero)
+                    if (footState[i] != FootState.Idle)
                     {
-                        // 0.5 -> 1.0 === (-walkDir -> -2 * walkDir)
-                        float stepPct = -walkDir * (1.0f + 1.0f * ((legPct - 0.5f) / 0.5f));
-                        GetLegEndRaycast(i, stepPct, out _, out Vector2 footPosACheck, out bool footPosATouching);
-                        if (footPosATouching) footPosA[i] = footPosACheck;
+                        GetLegEndRaycast(i, 0, out _, out Vector2 footIdle, out bool footIdleTouching);
+                        if (footIdleTouching)
+                        {
+                            footTargetPos[i] = footIdle;
+                            newFootState = FootState.Idle;
+                        }
                     }
-                    // Standard Case: Find where foot B should be
-                    if (footPosB[i] == Vector2.zero)
-                    {
-                        // 0.5 -> 1.0 === (2 * walkDir -> walkDir)
-                        float stepPct = walkDir * (2.0f - ((legPct - 0.5f) / 0.5f));
-                        GetLegEndRaycast(i, stepPct, out _, out Vector2 footPosBCheck, out bool footPosBTouching);
-                        if (footPosBTouching) footPosB[i] = footPosBCheck;
-                    }
-                    // Have found foot position
-                    if (footPosA[i] != Vector2.zero && footPosB[i] != Vector2.zero)
-                    {
-                        Vector3 center = (Vector3)((footPosA[i] + footPosB[i]) * 0.5f) - new Vector3(0, 1, 0);
-                        float lerpPct = (legPct - 0.5f) * 2.0f;
-                        footTarget[i] = center + Vector3.Slerp((Vector3)footPosA[i] - center, (Vector3)footPosB[i] - center, lerpPct);
-                        legIsStepping[i] = true;
-                        legPositionSet = true;
-                    }
-                }
-
-                // If didnt find then clear variables
-                if (!legPositionSet)
-                {
-                    footPosA[i] = Vector2.zero;
-                    footPosB[i] = Vector2.zero;
-                    legIsStepping[i] = false;
+                    else newFootState = FootState.Idle;
                 }
             }
-            else
-            {
-                footPosA[i] = Vector2.zero;
-                footPosB[i] = Vector2.zero;
-                legIsStepping[i] = false;
-            }
 
-            // Not set so try idle position
-            if (!legPositionSet && playerMovement.IsGrounded)
+            // State: Air
+            if (newFootState == FootState.None)
             {
-                if (!legIsIdle[i])
-                {
-                    GetLegEndRaycast(i, 0, out _, out Vector2 footIdle, out legIsIdle[i]);
-                    if (legIsIdle[i]) footTarget[i] = footIdle;
-                }
-                if (legIsIdle[i]) legPositionSet = true;
-            }
-            else legIsIdle[i] = false;
-
-            // Nothing worked so free float
-            if (!legPositionSet)
-            {
-                Vector2 dir = footTarget[i] - (Vector2)playerMovement.Transform.position;
+                Vector2 dir = footTargetPos[i] - (Vector2)playerMovement.Transform.position;
                 dir = Vector2.ClampMagnitude(dir, legIK[i].TotalLength);
-                footTarget[i] = (Vector2)playerMovement.Transform.position + dir;
+                footTargetPos[i] = (Vector2)playerMovement.Transform.position + dir;
+                newFootState = FootState.Air;
+            }
+
+            // ------------------------------
+
+            // Clear walking variables if no longer walking
+            if ((footState[i] == FootState.WalkingA || footState[i] == FootState.WalkingB)
+                && newFootState != FootState.WalkingA && newFootState != FootState.WalkingB)
+            {
+                footStepA[i] = Vector2.zero;
+                footStepB[i] = Vector2.zero;
             }
 
             // Lerp foot current to target
-            footCurrent[i] = Vector2.Lerp(footCurrent[i], footTarget[i], Time.deltaTime * footLerpSpeed);
+            footCurrentPos[i] = Vector2.Lerp(footCurrentPos[i], footTargetPos[i], Time.deltaTime * footLerpSpeed);
+            footState[i] = newFootState;
 
             // Update IK variables
-            legIK[i].TargetPos = footCurrent[i];
+            legIK[i].TargetPos = footCurrentPos[i];
             legIK[i].TargetRot = Quaternion.identity;
             legIK[i].PolePos = GetLegPole(i);
             legIK[i].PoleRot = Quaternion.identity;
@@ -195,6 +235,7 @@ public class PlayerLegs : MonoBehaviour
     private void GenerateStepParticles(Transform transform, Vector2 pos)
     {
         // Only produce steps on world
+        // TODO: Change colour based on material
         if (transform != playerMovement.ClosestWorld.WorldGenerator.WorldTransform) return;
         GameObject particleGO = Instantiate(stepParticlePfb);
         particleGO.transform.position = pos;
@@ -215,7 +256,7 @@ public class PlayerLegs : MonoBehaviour
         // Raycast downwards
         Vector2 downFrom = sideFrom + sideDir * sideDist;
         Vector2 downDir = -playerMovement.GroundUpDir.normalized;
-        float downDistMax = playerMovement.GroundedBodyHeight;
+        float downDistMax = playerMovement.GroundedBodyHeight + stepSize * 0.5f;
         RaycastHit2D downHit = Physics2D.Raycast(downFrom, downDir, downDistMax, terrainMask);
 
         // Update out variables
@@ -275,6 +316,8 @@ public class PlayerLegs : MonoBehaviour
 
             legIK[i].Bones[1].GetChild(1).position = (legIK[i].Bones[1].position + legIK[i].Bones[2].position) / 2.0f;
             legIK[i].Bones[1].GetChild(1).localScale = new Vector3(legWidth, (bone2Pos - bone1Pos).magnitude, 1.0f);
+
+            legLengths[i] = (bone2Pos - bone1Pos).magnitude + (bone1Pos - bone0Pos).magnitude;
         }
     }
 
@@ -287,12 +330,22 @@ public class PlayerLegs : MonoBehaviour
             Gizmos.color = Color.grey;
             Gizmos.DrawSphere(playerMovement.GroundPos, 0.1f);
 
-            if (footTarget != null)
+            if (footTargetPos != null)
             {
                 for (int i = 0; i < 4; i++)
                 {
+                    if (gizmoLeg != -1 && i != gizmoLeg) continue;
+
                     Gizmos.color = gizmoLegColors[i];
-                    Gizmos.DrawSphere(footTarget[i], 0.1f);
+                    Gizmos.DrawSphere(footTargetPos[i], 0.1f);
+
+                    if (gizmoLeg != -1)
+                    {
+                        Gizmos.color = Color.red;
+                        Gizmos.DrawSphere(footStepA[i], 0.1f);
+                        Gizmos.color = Color.green;
+                        Gizmos.DrawSphere(footStepB[i], 0.1f);
+                    }
                 }
             }
         }
