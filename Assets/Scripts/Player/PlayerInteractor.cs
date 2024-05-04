@@ -12,29 +12,13 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
     [Header("References")]
     [SerializeField] private PlayerMovement playerMovement;
     [SerializeField] private PlayerLegs playerLegs;
-    [SerializeField] private Transform cursorContainer;
-    [SerializeField] private SpriteRenderer cursorCornerTL, cursorCornerTR, cursorCornerBL, cursorCornerBR;
-    [SerializeField] private SpriteRenderer centreIndicator;
-    [SerializeField] private SpriteRenderer limitedCentreIndicator;
+    [SerializeField] private PlayerCursor playerCursor;
     [SerializeField] private ChildOrganiser promptOrganiser;
 
     [Header("Prefabs")]
     [SerializeField] private GameObject promptPfb;
     [SerializeField] private GameObject dropPsysPfb;
 
-    [Header("Cursor Config")]
-    [SerializeField] private float cursorIdleMovementSpeed = 50.0f;
-    [SerializeField] private float cursorHoverMovementSpeed = 20.0f;
-    [SerializeField] private float cursorIdleSize = 0.75f;
-    [SerializeField] private float cursorHoverGap = 0.2f;
-    [SerializeField] private float cursorControlGap = 0.05f;
-    [SerializeField] private float cursorColorLerpSpeed = 25.0f;
-    [SerializeField] private Color cursorColorFar = new Color(0.6f, 0.6f, 0.6f);
-    [SerializeField] private Color cursorColorIdle = new Color(0.8f, 0.8f, 0.8f);
-    [SerializeField] private Color cursorColorHover = new Color(0.9f, 0.9f, 0.9f);
-    [SerializeField] private Color cursorColorControl = new Color(1.0f, 1.0f, 1.0f);
-    [SerializeField] private Color cursorColorInteractable = new Color(1.0f, 0.3f, 0.3f);
-    [SerializeField] private Color cursorColorInteracting = new Color(0.5f, 0.5f, 0.5f);
     [Header("Controlling Config")]
     [SerializeField] private float controlForce = 25.0f;
     [SerializeField] private float maxHoverDistance = 15.0f;
@@ -96,14 +80,7 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
     {
         // Move cursor to mouse pos immediately
         inputMousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        cursorContainer.position = new Vector2(inputMousePos.x, inputMousePos.y);
-
-        // Hide centre indicators
-        centreIndicator.gameObject.SetActive(false);
-        limitedCentreIndicator.gameObject.SetActive(false);
-
-        // Subscribe pause event
-        GameManager.onIsPausedChange += OnGameManagerIsPausedChange;
+        playerCursor.SetPosition(inputMousePos);
     }
 
     private void Update()
@@ -282,100 +259,6 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
         }
     }
 
-    private void FixedUpdate()
-    {
-        if (GameManager.IsPaused) return;
-        FixedUpdateCursor();
-    }
-
-    private void FixedUpdateCursor()
-    {
-        // Idle: Lerp to base square
-        if (targetState == TargetState.None)
-        {
-            cursorContainer.position = new Vector2(Mathf.Round(inputMousePos.x * 12) / 12, Mathf.Round(inputMousePos.y * 12) / 12);
-            cursorCornerTL.transform.localPosition = Vector2.Lerp(cursorCornerTL.transform.localPosition, new Vector2(-cursorIdleSize, cursorIdleSize), Time.fixedDeltaTime * cursorIdleMovementSpeed);
-            cursorCornerTR.transform.localPosition = Vector2.Lerp(cursorCornerTR.transform.localPosition, new Vector2(cursorIdleSize, cursorIdleSize), Time.fixedDeltaTime * cursorIdleMovementSpeed);
-            cursorCornerBL.transform.localPosition = Vector2.Lerp(cursorCornerBL.transform.localPosition, new Vector2(-cursorIdleSize, -cursorIdleSize), Time.fixedDeltaTime * cursorIdleMovementSpeed);
-            cursorCornerBR.transform.localPosition = Vector2.Lerp(cursorCornerBR.transform.localPosition, new Vector2(cursorIdleSize, -cursorIdleSize), Time.fixedDeltaTime * cursorIdleMovementSpeed);
-        }
-
-        // Controlling: Update needed indicators to mouse position
-        if (targetState == TargetState.Controlling)
-        {
-            centreIndicator.gameObject.SetActive(true);
-            centreIndicator.transform.position = new Vector2(inputMousePos.x, inputMousePos.y);
-            if (inputMouseDistance > maxControlDistance)
-            {
-                limitedCentreIndicator.gameObject.SetActive(true);
-                limitedCentreIndicator.transform.position = targetLimitedControlPos;
-            }
-            else limitedCentreIndicator.gameObject.SetActive(false);
-        }
-        else
-        {
-            centreIndicator.gameObject.SetActive(false);
-            limitedCentreIndicator.gameObject.SetActive(false);
-        }
-    }
-
-    private void LateUpdate()
-    {
-        if (GameManager.IsPaused) return;
-        LateUpdateCursor();
-    }
-
-    private void LateUpdateCursor()
-    {
-        // Targeting object so surround with cursor
-        if (target != null)
-        {
-            Bounds b = target.Bounds;
-            Vector2 targetPos = b.center;
-            float gap = targetState == TargetState.Controlling ? cursorControlGap : (cursorHoverGap * (1.0f - CursorSqueeze));
-            Vector2 targetTLPos = new Vector2(b.center.x - b.extents.x - gap, b.center.y + b.extents.y + gap);
-            Vector2 targetTRPos = new Vector2(b.center.x + b.extents.x + gap, b.center.y + b.extents.y + gap);
-            Vector2 targetBLPos = new Vector2(b.center.x - b.extents.x - gap, b.center.y - b.extents.y - gap);
-            Vector2 targetBRPos = new Vector2(b.center.x + b.extents.x + gap, b.center.y - b.extents.y - gap);
-
-            // Controlling: Set positions for snappiness
-            if (targetState == TargetState.Controlling)
-            {
-                cursorContainer.position = targetPos;
-                cursorCornerTL.transform.position = targetTLPos;
-                cursorCornerTR.transform.position = targetTRPos;
-                cursorCornerBL.transform.position = targetBLPos;
-                cursorCornerBR.transform.position = targetBRPos;
-            }
-
-            // Hovering: Lerp around target
-            else
-            {
-                cursorContainer.position = targetPos;
-                cursorCornerTL.transform.position = Vector2.Lerp(cursorCornerTL.transform.position, targetTLPos, Time.deltaTime * cursorHoverMovementSpeed);
-                cursorCornerTR.transform.position = Vector2.Lerp(cursorCornerTR.transform.position, targetTRPos, Time.deltaTime * cursorHoverMovementSpeed);
-                cursorCornerBL.transform.position = Vector2.Lerp(cursorCornerBL.transform.position, targetBLPos, Time.deltaTime * cursorHoverMovementSpeed);
-                cursorCornerBR.transform.position = Vector2.Lerp(cursorCornerBR.transform.position, targetBRPos, Time.deltaTime * cursorHoverMovementSpeed);
-            }
-        }
-
-        // Calculate cursor colour and lerp
-        Color cursorColor =
-            (targetState == TargetState.Interacting) ? cursorColorInteracting
-            : (TargetInteractable != null ? TargetInteractable.CanInteract : false) ? cursorColorInteractable
-            : (targetState == TargetState.Controlling) ? cursorColorControl
-            : (inputMouseDistance > maxHoverDistance) ? cursorColorFar
-            : (target != null) ? cursorColorHover
-            : cursorColorIdle;
-        cursorCornerTL.color = Color.Lerp(cursorCornerTL.color, cursorColor, Time.deltaTime * cursorColorLerpSpeed);
-        cursorCornerTR.color = Color.Lerp(cursorCornerTR.color, cursorColor, Time.deltaTime * cursorColorLerpSpeed);
-        cursorCornerBL.color = Color.Lerp(cursorCornerBL.color, cursorColor, Time.deltaTime * cursorColorLerpSpeed);
-        cursorCornerBR.color = Color.Lerp(cursorCornerBR.color, cursorColor, Time.deltaTime * cursorColorLerpSpeed);
-
-        // Move prompt organiser based on cursor
-        promptOrganiser.transform.localPosition = Vector3.right * promptOffset;
-    }
-
     private void SetTarget(CompositeObject newTarget)
     {
         // Update target composable
@@ -427,16 +310,6 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
             playerLegs.UnsetOverrideFoot(targetControllingLeg);
             targetControlDropTimer = 0.0f;
             UpdateTargetHovering();
-        }
-    }
-
-    private void OnGameManagerIsPausedChange(bool isPaused)
-    {
-        cursorContainer.gameObject.SetActive(!isPaused);
-        if (!isPaused)
-        {
-            FixedUpdateCursor();
-            LateUpdateCursor();
         }
     }
 }
