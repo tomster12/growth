@@ -1,122 +1,102 @@
-using System.Runtime.CompilerServices;
 using UnityEngine;
-using static PlayerInteractor;
-using static UnityEngine.GraphicsBuffer;
 
 public class PlayerCursor : MonoBehaviour
 {
-    public void SetPosition(Vector2 position) => this.targetPos = position;
-
-    public void SetSurround(Bounds bounds, float gap, bool snap = false)
+    public void InitIndicators(int count)
     {
-        this.surroundBounds = bounds;
-        this.surroundGap = gap;
-        this.surroundSnap = snap;
+        indicators = new Indicator[count];
+        for (int i = 0; i < count; i++)
+        {
+            // Create object and struct
+            GameObject indicatorObj = Instantiate(indicatorPfb);
+            indicators[i] = new Indicator
+            {
+                sr = indicatorObj.GetComponent<SpriteRenderer>(),
+                show = false,
+                pos = Vector2.zero,
+                color = Color.white
+            };
+
+            // Set to default configuration
+            indicators[i].sr.gameObject.SetActive(indicators[i].show);
+            indicators[i].sr.transform.position = indicators[i].pos;
+            indicators[i].sr.color = indicators[i].color;
+        }
     }
 
-    public void SetShowCentreIndicator(bool enabled) => showCentreIndicator = enabled;
+    public void SetTargetPosition(Vector2 pos, bool snap = false)
+    {
+        targetType = TargetType.Position;
+        targetPos = pos;
+        snapCornerPos = snap;
+        if (snapCornerPos) LerpCornersPosition(0);
+    }
 
-    public void SetLimitedIndicator(Vector2 pos) => limitedIndicatorPos = pos;
+    public void SetTargetBounds(Bounds bounds, float gap, bool snap = false)
+    {
+        targetType = TargetType.Bounds;
+        targetBounds = bounds;
+        targetBoundsGap = gap;
+        snapCornerPos = snap;
+        if (snapCornerPos) LerpCornersBounds(0);
+    }
 
-    public void SetColor(Color color) => cursorColor = color;
+    public void SetIndicator(int index, bool show, Vector2 pos = default)
+    {
+        indicators[index].show = show;
+        indicators[index].pos = pos;
+    }
+
+    public void SetCornerColor(Color color) => cornerColor = color;
+
+    public void SetIndicatorColor(int index, Color color) => indicators[index].color = color;
+
+    private static Vector2[] CORNER_OFFSETS = new Vector2[] { new Vector2(-1, 1), new Vector2(1, 1), new Vector2(-1, -1), new Vector2(1, -1) };
 
     [Header("References")]
     [SerializeField] private Transform cursorContainer;
     [SerializeField] private SpriteRenderer[] cursorCorners;
-    [SerializeField] private SpriteRenderer centreIndicator;
-    [SerializeField] private SpriteRenderer limitedCentreIndicator;
+    [SerializeField] private GameObject indicatorPfb;
 
     [Header("Cursor Config")]
-    [SerializeField] private float idleMoveSpeed = 50.0f;
-    [SerializeField] private float surroundMoveSpeed = 20.0f;
-    [SerializeField] private float cursorIdleGap = 0.75f;
-    [SerializeField] private float cursorColorLerpSpeed = 25.0f;
+    [SerializeField] private float positionMoveSpeed = 50.0f;
+    [SerializeField] private float boundsMoveSpeed = 20.0f;
+    [SerializeField] private float idleCornerGap = 0.75f;
+    [SerializeField] private float colorLerpSpeed = 25.0f;
 
-    private Vector2[] cornerOffsets;
-
+    private Indicator[] indicators;
+    private TargetType targetType;
     private Vector2 targetPos;
-    private Bounds surroundBounds;
-    private float surroundGap;
-    private bool surroundSnap;
-    private bool showCentreIndicator;
-    private Vector2 limitedIndicatorPos;
-    private Color cursorColor;
+    private Bounds targetBounds;
+    private float targetBoundsGap;
+    private bool snapCornerPos;
+    private Color cornerColor;
 
-    private bool ToSurroundTarget => surroundBounds != null;
-    private bool ShowLimitedIndicator => limitedIndicatorPos != Vector2.zero;
-
-    private void Awake()
-    {
-        cornerOffsets = new Vector2[4];
-        cornerOffsets[0] = new Vector2(-1, 1);
-        cornerOffsets[1] = new Vector2(1, 1);
-        cornerOffsets[2] = new Vector2(-1, -1);
-        cornerOffsets[3] = new Vector2(1, -1);
-    }
+    private enum TargetType
+    { Position, Bounds }
 
     private void Start()
     {
-        // Hide indicators
-        centreIndicator.gameObject.SetActive(false);
-        limitedCentreIndicator.gameObject.SetActive(false);
+        // Set corner colors
+        cornerColor = Color.white;
+        for (int i = 0; i < cursorCorners.Length; i++) cursorCorners[i].color = cornerColor;
 
         // Subscribe pause event
-        GameManager.onIsPausedChange += OnGameManagerIsPausedChange;
+        GameManager.OnIsPausedChange += OnGameManagerIsPausedChange;
     }
 
-    private void FixedUpdate()
-    {
-        if (GameManager.IsPaused) return;
-        FixedUpdateCursor();
-    }
-
-    private void FixedUpdateCursor()
-    {
-        UpdateIndicators();
-        LerpCursorPosIdle(Time.fixedDeltaTime);
-    }
-
-    private void LateUpdate()
-    {
-        if (GameManager.IsPaused) return;
-        LateUpdateCursor();
-    }
+    private void LateUpdate() => LateUpdateCursor();
 
     private void LateUpdateCursor()
     {
-        /*
-        // Move prompt organiser based on cursor
-        promptOrganiser.transform.localPosition = Vector3.right * promptOffset;
-        */
+        if (GameManager.IsPaused) return;
+        if (targetType == TargetType.Bounds) LerpCornersBounds(Time.deltaTime);
+        if (targetType == TargetType.Position) LerpCornersPosition(Time.deltaTime);
+        LerpCornersColors(Time.deltaTime);
+        UpdateIndicators();
     }
 
-    private void UpdateIndicators()
-    {
-        // Update centre indicator
-        centreIndicator.gameObject.SetActive(showCentreIndicator);
-        if (showCentreIndicator) centreIndicator.transform.position = targetPos;
-
-        // Update limited centre indicator
-        limitedCentreIndicator.gameObject.SetActive(ShowLimitedIndicator);
-        if (ShowLimitedIndicator) limitedCentreIndicator.transform.position = limitedIndicatorPos;
-    }
-
-    private void LerpCursorSurround(float dt)
-    {
-        for (int i = 0; i < 4; i++)
-        {
-            // Target based on bounds and gap
-            Vector2 target = new Vector2(
-                surroundBounds.center.x + (surroundBounds.extents.x + surroundGap) * cornerOffsets[i].x,
-                surroundBounds.center.y + (surroundBounds.extents.y + surroundGap) * cornerOffsets[i].y
-            );
-
-            // Snap or lerp to target
-            cursorCorners[i].transform.position = surroundSnap ? target : Vector2.Lerp(cursorCorners[i].transform.position, target, dt * surroundMoveSpeed);
-        }
-    }
-
-    private void LerpCursorPosIdle(float dt)
+    private void LerpCornersPosition(float dt)
     {
         // Set container to position
         cursorContainer.position = new Vector2(Mathf.Round(targetPos.x * 12) / 12, Mathf.Round(targetPos.y * 12) / 12);
@@ -124,26 +104,66 @@ public class PlayerCursor : MonoBehaviour
         // Lerp corners to idle offsets
         for (int i = 0; i < cursorCorners.Length; i++)
         {
-            cursorCorners[i].transform.localPosition = Vector2.Lerp(cursorCorners[i].transform.localPosition, cornerOffsets[i] * cursorIdleGap, dt * idleMoveSpeed);
+            if (snapCornerPos) cursorCorners[i].transform.localPosition = CORNER_OFFSETS[i] * idleCornerGap;
+            else cursorCorners[i].transform.localPosition = Vector2.Lerp(cursorCorners[i].transform.localPosition, CORNER_OFFSETS[i] * idleCornerGap, dt * positionMoveSpeed);
         }
     }
 
-    private void LerpCursorColour(float dt)
+    private void LerpCornersBounds(float dt)
+    {
+        // Set container to centre
+        cursorContainer.position = new Vector2(Mathf.Round(targetBounds.center.x * 12) / 12, Mathf.Round(targetBounds.center.y * 12) / 12);
+
+        for (int i = 0; i < 4; i++)
+        {
+            // Target based on bounds and gap
+            Vector2 target = new Vector2(
+                targetBounds.center.x + (targetBounds.extents.x + targetBoundsGap) * CORNER_OFFSETS[i].x,
+                targetBounds.center.y + (targetBounds.extents.y + targetBoundsGap) * CORNER_OFFSETS[i].y
+            );
+
+            // Lerp corners to their targets
+            if (snapCornerPos) cursorCorners[i].transform.position = target;
+            else cursorCorners[i].transform.position = Vector2.Lerp(cursorCorners[i].transform.position, target, dt * boundsMoveSpeed);
+        }
+    }
+
+    private void LerpCornersColors(float dt)
     {
         // Lerp each corners colour
         for (int i = 0; i < cursorCorners.Length; i++)
         {
-            cursorCorners[i].color = Color.Lerp(cursorCorners[i].color, cursorColor, dt * cursorColorLerpSpeed);
+            cursorCorners[i].color = Color.Lerp(cursorCorners[i].color, cornerColor, dt * colorLerpSpeed);
+        }
+    }
+
+    private void UpdateIndicators()
+    {
+        // Update all indicators
+        for (int i = 0; i < indicators.Length; i++)
+        {
+            indicators[i].sr.gameObject.SetActive(indicators[i].show);
+
+            // Set position and color
+            if (indicators[i].show)
+            {
+                indicators[i].sr.transform.position = indicators[i].pos;
+                indicators[i].sr.color = indicators[i].color;
+            }
         }
     }
 
     private void OnGameManagerIsPausedChange(bool isPaused)
     {
         cursorContainer.gameObject.SetActive(!isPaused);
-        if (!isPaused)
-        {
-            FixedUpdateCursor();
-            LateUpdateCursor();
-        }
+        if (!isPaused) LateUpdateCursor();
+    }
+
+    private struct Indicator
+    {
+        public SpriteRenderer sr;
+        public bool show;
+        public Vector2 pos;
+        public Color color;
     }
 }

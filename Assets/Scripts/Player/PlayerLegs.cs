@@ -4,15 +4,15 @@ using UnityEngine.TerrainUtils;
 
 public class PlayerLegs : MonoBehaviour
 {
-    public Vector2 GetFootPos(int footIndex)
+    public Vector2 GetFootPos(int legIndex)
     {
-        if (footIndex < 0 || footIndex > 3) return Vector2.zero;
-        return legIK[footIndex].Bones[legIK[footIndex].BoneCount - 1].position;
+        if (legIndex < 0 || legIndex > 3) return Vector2.zero;
+        return legIK[legIndex].Bones[legIK[legIndex].BoneCount - 1].position;
     }
 
-    public void SetOverrideFoot(int footIndex, Vector2 pos) => footOverridePos[footIndex] = pos;
+    public void SetOverrideLeg(int legIndex, Vector2 pos) => footOverridePos[legIndex] = pos;
 
-    public void UnsetOverrideFoot(int footIndex) => footOverridePos[footIndex] = Vector2.zero;
+    public void UnsetOverrideLeg(int legIndex) => footOverridePos[legIndex] = Vector2.zero;
 
     [Header("References")]
     [SerializeField] private PlayerMovement playerMovement;

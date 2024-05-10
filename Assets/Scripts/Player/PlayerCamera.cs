@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering.Universal;
 
@@ -12,6 +13,8 @@ public interface IFollowable
 
 public class PlayerCamera : MonoBehaviour
 {
+    public static Action<float> OnZoomChange = delegate { };
+
     public enum CameraMode
     { Free, Follow }
 
@@ -48,6 +51,7 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private float freeMovementDamping = 0.75f;
     [SerializeField] private float freeMovementMaxSpeed = 3.0f;
     [SerializeField] private float followRotationSpeed = 3.0f;
+
     private IFollowable follow;
     private Vector3 movementVelocity = Vector3.zero;
 
@@ -58,7 +62,9 @@ public class PlayerCamera : MonoBehaviour
 
     private void Start()
     {
-        FixedUpdateInputZoom();
+        // Set initial zoom level
+        pixelPerfectCamera.refResolutionX = 2 * Mathf.FloorToInt(0.5f * Screen.width / zoomLevel);
+        pixelPerfectCamera.refResolutionY = 2 * Mathf.FloorToInt(0.5f * Screen.height / zoomLevel);
     }
 
     private void Update()
@@ -69,12 +75,15 @@ public class PlayerCamera : MonoBehaviour
 
     private void HandleInput()
     {
-        // Handle scrolling
+        // Handle scrolling and update zoom level
         var scrollWheelInput = Input.GetAxis("Mouse ScrollWheel");
         if (scrollWheelInput != 0)
         {
             zoomLevel += Mathf.RoundToInt(scrollWheelInput * 10);
             zoomLevel = Mathf.Clamp(zoomLevel, zoomLevelMin, zoomLevelMax);
+            pixelPerfectCamera.refResolutionX = 2 * Mathf.FloorToInt(0.5f * Screen.width / zoomLevel);
+            pixelPerfectCamera.refResolutionY = 2 * Mathf.FloorToInt(0.5f * Screen.height / zoomLevel);
+            OnZoomChange(zoomLevel);
         }
     }
 
@@ -83,7 +92,6 @@ public class PlayerCamera : MonoBehaviour
         if (GameManager.IsPaused) return;
         if (CameraModeState == CameraMode.Free) FixedUpdateMovementFree();
         else if (CameraModeState == CameraMode.Follow) FixedUpdateMovementFollow();
-        FixedUpdateInputZoom();
     }
 
     private void FixedUpdateMovementFree()
@@ -108,12 +116,5 @@ public class PlayerCamera : MonoBehaviour
 
         // Follow object rotation
         controlledTransform.up = Vector2.Lerp(controlledTransform.up, follow.GetFollowUpwards(), Time.deltaTime * followRotationSpeed);
-    }
-
-    private void FixedUpdateInputZoom()
-    {
-        // Set the zoom using zoom level
-        pixelPerfectCamera.refResolutionX = 2 * Mathf.FloorToInt(0.5f * Screen.width / zoomLevel);
-        pixelPerfectCamera.refResolutionY = 2 * Mathf.FloorToInt(0.5f * Screen.height / zoomLevel);
     }
 }

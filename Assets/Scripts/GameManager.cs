@@ -6,7 +6,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
     public static bool IsMouseLocked => Cursor.visible;
     public static bool IsPaused { get; private set; }
-    public static Action<bool> onIsPausedChange = delegate { };
+    public static Action<bool> OnIsPausedChange = delegate { };
 
     [SerializeField] private PlayerMovement playerMovement;
     [SerializeField] private GameObject menu;
@@ -47,6 +47,6 @@ public class GameManager : MonoBehaviour
         if (isPaused) UnlockMouse();
         else LockMouse();
         menu.SetActive(isPaused);
-        GameManager.onIsPausedChange?.Invoke(isPaused);
+        GameManager.OnIsPausedChange?.Invoke(isPaused);
     }
 };
