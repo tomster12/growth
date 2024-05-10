@@ -104,6 +104,7 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
         UpdateTargetHovering();
         UpdateTargetControlling();
         UpdateTargetInteracting();
+        UpdateHolding();
         UpdateIndicating();
         UpdateCursor();
     }
@@ -252,6 +253,9 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
         }
     }
 
+    private void UpdateHolding()
+    { }
+
     private void UpdateIndicating()
     {
         // Show indicators on tab press of nearby objects
@@ -283,8 +287,8 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
             playerCursor.SetIndicator(0, true, inputMousePos);
             playerCursor.SetIndicator(1, true, targetControlLimitedPos);
             playerCursor.SetCornerColor(cursorColorControl);
-            playerCursor.SetIndicatorColor(0, cursorColorControl);
-            playerCursor.SetIndicatorColor(1, cursorColorControl);
+            playerCursor.SetIndicatorColor(0, cursorColorIdle);
+            playerCursor.SetIndicatorColor(1, cursorColorFar);
         }
         if (targetState == TargetState.Hovering || targetState == TargetState.Interacting)
         {
@@ -377,16 +381,16 @@ public partial class PlayerInteractor : MonoBehaviour, IInteractor
         // Begin holding
         if (toHold)
         {
+            // TODO: Stop controlling first then equip
             holdingCO = targetCO;
             holdingLeg = targetControllingLeg;
-            playerLegs.SetOverrideLeg(holdingLeg, holdingCO.Position);
         }
 
         // Stop holding
         else
         {
+            // TODO: Stop equipping
             holdingCO = null;
-            playerLegs.UnsetOverrideLeg(holdingLeg);
         }
     }
 }
