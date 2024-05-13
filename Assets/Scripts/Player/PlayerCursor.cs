@@ -85,7 +85,10 @@ public class PlayerCursor : MonoBehaviour
         GameManager.OnIsPausedChange += OnGameManagerIsPausedChange;
     }
 
-    private void LateUpdate() => LateUpdateCursor();
+    private void LateUpdate()
+    {
+        LateUpdateCursor();
+    }
 
     private void LateUpdateCursor()
     {

@@ -1,0 +1,526 @@
+using System;
+using System.Collections;
+using UnityEngine;
+using UnityEngine.Assertions;
+
+public partial class PlayerController : MonoBehaviour, IInteractor
+{
+    public enum TargettingState
+    { None, Hovering, Controlling, Interacting }
+
+    public static PlayerController Instance { get; private set; }
+
+    public Action OnMoveEvent { get; private set; }
+
+    [Header("References")]
+    [SerializeField] private PlayerMovement playerMovement;
+    [SerializeField] private PlayerLegs playerLegs;
+    [SerializeField] private PlayerCursor playerCursor;
+    [SerializeField] private ChildOrganiser promptOrganiser;
+
+    [Header("Prefabs")]
+    [SerializeField] private GameObject promptPfb;
+    [SerializeField] private GameObject dropPsysPfb;
+
+    [Header("Controlling Config")]
+    [SerializeField] private float controlForce = 25.0f;
+    [SerializeField] private float maxHoverDistance = 15.0f;
+    [SerializeField] private float maxControlDistance = 9.0f;
+    [SerializeField] private float maxControlWarningThreshold = 2.0f;
+    [SerializeField] private float controlCharacterSlowdown = 0.4f;
+    [SerializeField] private float controlDropTimerDuration = 0.5f;
+    [SerializeField] private float controlLimitColorLerpSpeed = 10.0f;
+    [SerializeField] private Color controlLimitColorWarning = new Color(0.774f, 0.624f, 0.624f, 0.098f);
+    [SerializeField] private Color controlLimitColorOutside = new Color(0.9f, 0.2f, 0.2f, 0.184f);
+    [SerializeField] private Color legDirControlColor = new Color(1.0f, 1.0f, 1.0f, 0.1f);
+    [SerializeField] private Color legDirInteractColor = new Color(1.0f, 1.0f, 1.0f, 0.25f);
+
+    [Header("Prompts Config")]
+    [SerializeField] private float indicateDistance = 120.0f;
+    [SerializeField] private float indicateSpeed = 80.0f;
+    [SerializeField] private float indicateTimerMax = 3.0f;
+
+    [Header("Cursor Config")]
+    [SerializeField] private float cursorHoverGap = 0.2f;
+    [SerializeField] private float cursorControlGap = 0.05f;
+    [SerializeField] private Color cursorColorFar = new Color(0.6f, 0.6f, 0.6f);
+    [SerializeField] private Color cursorColorIdle = new Color(0.8f, 0.8f, 0.8f);
+    [SerializeField] private Color cursorColorHover = new Color(0.9f, 0.9f, 0.9f);
+    [SerializeField] private Color cursorColorControl = new Color(1.0f, 1.0f, 1.0f);
+    [SerializeField] private Color cursorColorInteractable = new Color(1.0f, 0.3f, 0.3f);
+    [SerializeField] private Color cursorColorInteracting = new Color(0.5f, 0.5f, 0.5f);
+
+    private Vector2 inputMousePos;
+    private float inputMouseDistance;
+    private TargettingState targetingState;
+    private CompositeObject targettingCO;
+    private float targetDistance;
+    private LineHelper targetControlLH;
+    private LineHelper targetControlLimitLH;
+    private int targetControlLeg;
+    private Color targetControlLimitColor;
+    private Vector2 targetControlLimitedDir;
+    private Vector2 targetControlLimitedPos;
+    private float targetControlDropTimer;
+    private Interaction currentInteraction;
+    private CompositeObject equippedCO;
+    private int equippedLeg;
+    private WaitForFixedUpdate afterFixedUpdateWait = new WaitForFixedUpdate();
+    private float CursorSqueeze => interactionCursorSqueeze;
+    private bool CanControl => IsTargeting && targettingCO.HasPart<PartControllable>() && targettingCO.GetPart<PartControllable>().CanControl;
+    private bool CanEquip => IsTargeting && targettingCO.HasPart<PartEquipable>() && targettingCO.GetPart<PartEquipable>().CanEquip;
+    private bool CanInteract => IsTargeting && targettingCO.HasPart<PartInteractable>() && targettingCO.GetPart<PartInteractable>().CanInteract;
+    private bool IsTargeting => targetingState != TargettingState.None;
+    private bool IsEquipped => equippedCO != null;
+
+    private void Awake()
+    {
+        Instance = this;
+
+        // Initialize line helpers
+        GameObject controlLimitLHGO = new GameObject();
+        controlLimitLHGO.transform.parent = transform;
+        targetControlLimitLH = controlLimitLHGO.AddComponent<LineHelper>();
+
+        GameObject controlDirLHGO = new GameObject();
+        controlDirLHGO.transform.parent = transform;
+        targetControlLH = controlDirLHGO.AddComponent<LineHelper>();
+
+        GameObject interactionPullingLHGO = new GameObject();
+        interactionPullingLHGO.transform.parent = transform;
+        interactionPullingLH = interactionPullingLHGO.AddComponent<LineHelper>();
+
+        // Init cursor, snap cursor to current mouse pos
+        playerCursor.InitIndicators(2);
+        inputMousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        playerCursor.SetTargetPosition(inputMousePos, true);
+
+        // Listen to zoom change and update cursor
+        PlayerCamera.OnZoomChangeEvent += (zoom) => { UpdateCursor(); };
+
+        // Start after fixed update coroutine loop
+        StartCoroutine(AfterFixedUpdate());
+    }
+
+    private void Update()
+    {
+        if (GameManager.IsPaused) return;
+        UpdateHandleInput();
+        UpdateTargetHovering();
+        UpdateTargetControlling();
+        UpdateTargetInteracting();
+        UpdateEquipped();
+        UpdateIndicating();
+        UpdateCursor();
+    }
+
+    private void UpdateHandleInput()
+    {
+        inputMousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        inputMouseDistance = (inputMousePos - (Vector2)playerMovement.Transform.position).magnitude;
+    }
+
+    private void UpdateTargetHovering()
+    {
+        // Handle retargetting if [None] or [Hovering]
+        if (targetingState == TargettingState.None || targetingState == TargettingState.Hovering)
+        {
+            CompositeObject hovered = null;
+
+            // Mouse within range to hover so raycast for new target
+            if (inputMouseDistance < maxHoverDistance)
+            {
+                RaycastHit2D[] hits = Physics2D.RaycastAll(inputMousePos, Vector2.zero);
+                foreach (RaycastHit2D hit in hits)
+                {
+                    if (hit.transform.TryGetComponent<CompositeObject>(out var hitComposable))
+                    {
+                        if (!CanHover(hitComposable)) continue;
+                        hovered = hitComposable;
+                        break;
+                    }
+                }
+            }
+
+            // Update with new target which can be null
+            if (hovered != targettingCO)
+            {
+                targettingCO?.GetPart<PartHighlightable>()?.SetHighlighted(false);
+                SetTarget(hovered);
+                targetingState = hovered ? TargettingState.Hovering : TargettingState.None;
+                targettingCO?.GetPart<PartHighlightable>()?.SetHighlighted(true);
+                targettingCO?.GetPart<PartIndicatable>()?.Hide();
+            }
+        }
+    }
+
+    private void UpdateTargetControlling()
+    {
+        // [Hovering] and LMB down so begin controlling
+        if (targetingState == TargettingState.Hovering && CanControl && Input.GetMouseButtonDown(0))
+        {
+            StartControlling();
+            return;
+        }
+
+        // Currently [Controlling] so update
+        else if (targetingState == TargettingState.Controlling)
+        {
+            // Drop on LMB click
+            if (Input.GetMouseButtonDown(0))
+            {
+                StopControlling();
+                return;
+            }
+
+            // Calculate distances
+            Vector2 targetDir = targettingCO.Position - (Vector2)playerMovement.Transform.position;
+            Vector2 mouseDir = inputMousePos - (Vector2)playerMovement.Transform.position;
+            targetDistance = targetDir.magnitude;
+            inputMouseDistance = mouseDir.magnitude;
+
+            // Limit control dir and set control position
+            targetControlLimitedDir = Vector2.ClampMagnitude(mouseDir, maxControlDistance - 0.1f);
+            targetControlLimitedPos = (Vector2)playerMovement.Transform.position + targetControlLimitedDir;
+            targettingCO.GetPart<PartControllable>().SetControlPosition(targetControlLimitedPos, controlForce);
+
+            // Mouse outside control length so show circle
+            float hoverBoundaryPct = Mathf.Min(1.0f, 1.0f - (maxControlDistance - inputMouseDistance) / maxControlWarningThreshold);
+            float targetBoundaryPct = Mathf.Min(1.0f, 1.0f - (maxControlDistance - targetDistance) / maxControlWarningThreshold);
+            float maxBoundaryPct = Mathf.Max(hoverBoundaryPct, targetBoundaryPct);
+            Color targetLimitColor;
+            if (maxBoundaryPct > 0.0f)
+            {
+                if (targetBoundaryPct == 1.0f) targetLimitColor = controlLimitColorOutside;
+                else targetLimitColor = new Color(controlLimitColorWarning.r, controlLimitColorWarning.g, controlLimitColorWarning.b, controlLimitColorWarning.a * maxBoundaryPct);
+            }
+            else targetLimitColor = new Color(controlLimitColorWarning.r, controlLimitColorWarning.g, controlLimitColorWarning.b, 0.0f);
+            targetControlLimitColor = Color.Lerp(targetControlLimitColor, targetLimitColor, controlLimitColorLerpSpeed * Time.deltaTime);
+            targetControlLimitLH.DrawCircle(playerMovement.Transform.position, maxControlDistance, targetControlLimitColor, lineFill: LineFill.Dotted);
+
+            // Draw control line and point
+            playerLegs.SetOverrideLeg(targetControlLeg, targettingCO.Position);
+            Vector2 pathStart = playerLegs.GetFootPos(targetControlLeg);
+            Vector2 pathEnd = targettingCO.Position;
+            Vector3 pathStartFixed = new Vector3(pathStart.x, pathStart.y, playerMovement.Transform.position.z + 0.1f);
+            Vector3 pathEndFixed = new Vector3(pathEnd.x, pathEnd.y, playerMovement.Transform.position.z + 0.1f);
+            Color col = legDirControlColor;
+            col.a *= 0.1f + 0.9f * Mathf.Max(1.0f - targetDistance / maxControlDistance, 0.0f);
+            targetControlLH.DrawLine(pathStartFixed, pathEndFixed, col);
+
+            // Drop on too far away timer finished
+            if (targetBoundaryPct == 1.0f)
+            {
+                targetControlDropTimer += Time.deltaTime;
+                if (targetControlDropTimer > controlDropTimerDuration)
+                {
+                    Vector3 dropPos = targettingCO.Position;
+                    GameObject particlesGO = Instantiate(dropPsysPfb);
+                    particlesGO.transform.position = dropPos;
+                    StopControlling();
+                    return;
+                }
+            }
+            else targetControlDropTimer = 0.0f;
+        }
+    }
+
+    private void UpdateTargetInteracting()
+    {
+        // Currently [Interacting] so check for finished
+        if (targetingState == TargettingState.Interacting)
+        {
+            if (currentInteraction.IsActive && (PollInput(currentInteraction.Input) == InputEvent.Inactive))
+            {
+                currentInteraction.StopInteracting();
+            }
+            if (!currentInteraction.IsActive)
+            {
+                targetingState = TargettingState.Hovering;
+                OnInteractionFinished();
+            }
+        }
+
+        // [Hovering] so check for interactions
+        else if (targetingState == TargettingState.Hovering && CanInteract)
+        {
+            foreach (Interaction interaction in targettingCO.GetPart<PartInteractable>().Interactions)
+            {
+                // Can interact and input polled down so begin interaction
+                if (interaction.CanInteract && (PollInput(interaction.Input) == InputEvent.Active))
+                {
+                    targetingState = TargettingState.Interacting;
+                    currentInteraction = interaction;
+                    interaction.StartInteracting(this);
+                    break;
+                }
+            }
+        }
+    }
+
+    private void UpdateEquipped()
+    {
+        // [Controlling] RMB down so equip
+        if (targetingState == TargettingState.Controlling && CanEquip && Input.GetMouseButtonDown(1))
+        {
+            StartEquipping();
+            return;
+        }
+
+        // [Equipped] So check for dropping
+        else if (IsEquipped && Input.GetMouseButtonDown(1))
+        {
+            StopEquipping();
+            return;
+        }
+
+        // [Equipped] So update
+        else if (IsEquipped)
+        {
+            Vector2 legTarget = inputMousePos;
+            playerLegs.SetOverrideLeg(equippedLeg, legTarget);
+        }
+    }
+
+    private void UpdateIndicating()
+    {
+        // Show indicators on tab press of nearby objects
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            IEnumerator showIndicator(PartIndicatable part, float wait, float time)
+            {
+                yield return new WaitForSeconds(wait);
+                part.Show(time);
+            }
+
+            // Find indicatable objects within indicate distance and show
+            var objects = CompositeObject.FindObjectsWithPart<PartIndicatable>();
+            foreach (var obj in objects)
+            {
+                var part = obj.GetPart<PartIndicatable>();
+                float dist = (obj.Position - (Vector2)playerMovement.Transform.position).magnitude;
+                if (dist < indicateDistance) StartCoroutine(showIndicator(part, dist / indicateSpeed, indicateTimerMax));
+            }
+        }
+    }
+
+    private void UpdateCursor()
+    {
+        // Follow controlled object in Update()
+        if (targetingState == TargettingState.Controlling)
+        {
+            playerCursor.SetTargetBounds(targettingCO.Bounds, cursorControlGap * (1.0f - CursorSqueeze), true);
+            playerCursor.SetIndicator(0, true, inputMousePos);
+            playerCursor.SetIndicator(1, true, targetControlLimitedPos);
+            playerCursor.SetCornerColor(cursorColorControl);
+            playerCursor.SetIndicatorColor(0, cursorColorIdle);
+            playerCursor.SetIndicatorColor(1, cursorColorFar);
+        }
+        if (targetingState == TargettingState.Hovering || targetingState == TargettingState.Interacting)
+        {
+            playerCursor.SetTargetBounds(targettingCO.Bounds, cursorHoverGap * (1.0f - CursorSqueeze), false);
+            playerCursor.SetIndicator(0, false);
+            playerCursor.SetIndicator(1, false);
+            if (targetingState == TargettingState.Interacting) playerCursor.SetCornerColor(cursorColorInteracting);
+            else if (CanInteract) playerCursor.SetCornerColor(cursorColorInteractable);
+            else playerCursor.SetCornerColor(cursorColorHover);
+        }
+    }
+
+    private void LateUpdate()
+    {
+        XUpdateEquippedGrip();
+        XUpdateCursor();
+    }
+
+    private IEnumerator AfterFixedUpdate()
+    {
+        while (true)
+        {
+            yield return afterFixedUpdateWait;
+            XUpdateEquippedGrip();
+            XUpdateCursor();
+        }
+    }
+
+    private void XUpdateEquippedGrip()
+    {
+        // [Equipped] Update grip position
+        // If the player is moving, the equipped object will lag behind
+        // The physics movement happens *after* the FixedUpdate
+        // We accomodate by setting the grip position in Update
+        if (IsEquipped)
+        {
+            Vector2 gripPos = playerLegs.GetFootPos(equippedLeg);
+            Vector2 gripDir = inputMousePos - gripPos;
+            equippedCO.GetPart<PartEquipable>().SetGrip(gripPos, gripDir);
+        }
+    }
+
+    private void XUpdateCursor()
+    {
+        if (targetingState == TargettingState.None)
+        {
+            playerCursor.SetTargetPosition(inputMousePos, true);
+            playerCursor.SetIndicator(0, false);
+            playerCursor.SetIndicator(1, false);
+            if (inputMouseDistance < maxHoverDistance) playerCursor.SetCornerColor(cursorColorIdle);
+            else playerCursor.SetCornerColor(cursorColorFar);
+        }
+    }
+
+    private void SetTarget(CompositeObject newTarget)
+    {
+        // Update target composable
+        targettingCO = newTarget;
+
+        // Update prompt organiser with new interactions
+        promptOrganiser.Clear();
+        if (targettingCO != null && targettingCO.HasPart<PartInteractable>())
+        {
+            foreach (Interaction interaction in targettingCO.GetPart<PartInteractable>().Interactions)
+            {
+                GameObject promptGO = Instantiate(promptPfb);
+                InteractionPrompt prompt = promptGO.GetComponent<InteractionPrompt>();
+                prompt.SetInteraction(interaction);
+                promptOrganiser.AddChild(prompt);
+            }
+            promptOrganiser.UpdateChildren();
+        }
+    }
+
+    private void StartControlling()
+    {
+        if (!CanControl) throw new System.Exception("Cannot control target.");
+        targetingState = TargettingState.Controlling;
+        targettingCO.GetPart<PartControllable>().SetControlled(true);
+        targettingCO.GetPart<PartControllable>().SetControlPosition(targettingCO.Position, controlForce);
+        targetControlLH.SetActive(true);
+        targetControlLimitLH.SetActive(true);
+        targetControlLimitColor = new Color(controlLimitColorWarning.r, controlLimitColorWarning.g, controlLimitColorWarning.b, 0.0f);
+
+        // Set controlling leg
+        Vector2 targetDir = targettingCO.Position - (Vector2)playerMovement.Transform.position;
+        float rightPct = Vector2.Dot(playerMovement.GroundRightDir, targetDir);
+        if (equippedCO != null) targetControlLeg = equippedLeg == 1 ? 2 : 1;
+        else targetControlLeg = rightPct > 0.0f ? 2 : 1;
+    }
+
+    private void StopControlling()
+    {
+        if (targetingState != TargettingState.Controlling) throw new System.Exception("Not controlling target.");
+        targetingState = TargettingState.Hovering;
+        targettingCO.GetPart<PartControllable>().SetControlled(false);
+        targetControlLH.SetActive(false);
+        targetControlLimitLH.SetActive(false);
+        playerLegs.UnsetOverrideLeg(targetControlLeg);
+        targetControlDropTimer = 0.0f;
+        UpdateTargetHovering();
+    }
+
+    private void StartEquipping()
+    {
+        if (!CanEquip) throw new System.Exception("Cannot equip target.");
+        equippedCO = targettingCO;
+        equippedLeg = targetControlLeg;
+        StopControlling();
+        equippedCO.GetPart<PartEquipable>().StartEquipping();
+    }
+
+    private void StopEquipping()
+    {
+        if (!IsEquipped) throw new System.Exception("No equipped object to unequip.");
+        equippedCO.GetPart<PartEquipable>().StopEquipping();
+        playerLegs.UnsetOverrideLeg(equippedLeg);
+        equippedCO = null;
+        equippedLeg = -1;
+    }
+
+    private bool CanHover(CompositeObject compositeObject)
+    {
+        if (equippedCO == compositeObject) return false;
+        return true;
+    }
+
+    private void OnDrawGizmos()
+    {
+        // Draw inputMousePosition
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(inputMousePos, 0.1f);
+    }
+}
+
+public partial class PlayerController // IInteractor
+{
+    public InputEvent PollInput(InteractionInput input)
+    {
+        switch (input.Type)
+        {
+            case InputType.Key:
+                if (Input.GetKey(input.Code)) return InputEvent.Active;
+                return InputEvent.Inactive;
+
+            case InputType.Mouse:
+                if (Input.GetMouseButton(input.MouseButton)) return InputEvent.Active;
+                return InputEvent.Inactive;
+
+            default:
+                return InputEvent.Inactive;
+        }
+    }
+
+    public void SetInteractionEmphasis(float amount) => interactionCursorSqueeze = amount;
+
+    public void SetInteractionSlowdown(float amount) => playerMovement.SetMovementSlowdown = amount;
+
+    public void SetInteractionPulling(Vector2 target, float amount)
+    {
+        Vector2 player2 = (Vector2)playerMovement.Transform.position;
+
+        // Not currently pulling so set variables
+        if (!interactionIsPulling)
+        {
+            interactionIsPulling = true;
+            float rightPct = Vector2.Dot(playerMovement.GroundRightDir, target - player2);
+            interactionPullingLeg = rightPct > 0.0f ? 2 : 1;
+            interactionPullingLH.SetActive(true);
+        }
+
+        // Calculate pulling line positions then draw
+        Vector2 start2 = playerLegs.GetFootPos(interactionPullingLeg);
+        Vector2 controlDir2 = target - player2;
+        float controlUpAmount2 = 0.2f + 0.2f * Utility.Easing.EaseOutCubic(amount);
+        Vector2 controlUp2 = playerMovement.GroundUpDir.normalized * (target - player2).magnitude * controlUpAmount2;
+        Vector2 controlPoint2 = player2 + controlDir2 * 0.75f + controlUp2;
+        Vector3 pathStart = new Vector3(start2.x, start2.y, playerMovement.Transform.position.z + 0.1f);
+        Vector3 pathEnd = new Vector3(target.x, target.y, playerMovement.Transform.position.z + 0.1f);
+        Vector3 controlPoint = new Vector3(controlPoint2.x, controlPoint2.y, playerMovement.Transform.position.z + 0.1f);
+        interactionPullingLH.DrawCurve(pathStart, pathEnd, controlPoint, legDirInteractColor);
+
+        // Set leg to override and point to control point
+        playerLegs.SetOverrideLeg(interactionPullingLeg, controlPoint);
+
+        // Lean as to show strength of pull
+        playerMovement.SetVerticalLean = 1.0f;
+    }
+
+    private float interactionCursorSqueeze = 0.0f;
+    private bool interactionIsPulling = false;
+    private LineHelper interactionPullingLH;
+    private int interactionPullingLeg = 0;
+
+    private void OnInteractionFinished()
+    {
+        // Clean up interaction variables
+        currentInteraction = null;
+        interactionCursorSqueeze = 0.0f;
+        playerMovement.SetMovementSlowdown = 0.0f;
+        if (interactionIsPulling)
+        {
+            interactionIsPulling = false;
+            interactionPullingLH.SetActive(false);
+            playerLegs.UnsetOverrideLeg(interactionPullingLeg);
+            playerMovement.SetVerticalLean = 0;
+        }
+    }
+}

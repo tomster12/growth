@@ -4,6 +4,8 @@ using UnityEngine.Experimental.Rendering.Universal;
 
 public interface IFollowable
 {
+    public Action OnMoveEvent { get; set; }
+
     public Transform GetFollowTransform();
 
     public Vector2 GetFollowPosition();
@@ -13,30 +15,38 @@ public interface IFollowable
 
 public class PlayerCamera : MonoBehaviour
 {
-    public static Action<float> OnZoomChange = delegate { };
+    public static Action<float> OnZoomChangeEvent = delegate { };
+
+    public static Action OnMoveEvent = delegate { };
 
     public enum CameraMode
     { Free, Follow }
 
     public CameraMode CameraModeState { get; private set; }
 
+    public void SetModeFree()
+    {
+        CameraModeState = CameraMode.Free;
+    }
+
     public void SetModeFollow(IFollowable follow, bool set = false)
     {
+        // Unsubscribe from previous follow
+        if (this.follow != null) this.follow.OnMoveEvent -= UpdateMovementFollow;
+
         CameraModeState = CameraMode.Follow;
         this.follow = follow;
 
-        // Set values
+        // Set position and rotation if set
         if (set)
         {
             Vector2 pos = follow.GetFollowTransform().position;
             controlledTransform.position = new Vector3(pos.x, pos.y, controlledTransform.position.z);
             controlledTransform.up = follow.GetFollowUpwards();
         }
-    }
 
-    public void SetModeFree()
-    {
-        CameraModeState = CameraMode.Free;
+        // Listen to OnMove
+        this.follow.OnMoveEvent += UpdateMovementFollow;
     }
 
     [Header("References")]
@@ -83,7 +93,7 @@ public class PlayerCamera : MonoBehaviour
             zoomLevel = Mathf.Clamp(zoomLevel, zoomLevelMin, zoomLevelMax);
             pixelPerfectCamera.refResolutionX = 2 * Mathf.FloorToInt(0.5f * Screen.width / zoomLevel);
             pixelPerfectCamera.refResolutionY = 2 * Mathf.FloorToInt(0.5f * Screen.height / zoomLevel);
-            OnZoomChange(zoomLevel);
+            OnZoomChangeEvent(zoomLevel);
         }
     }
 
@@ -91,11 +101,12 @@ public class PlayerCamera : MonoBehaviour
     {
         if (GameManager.IsPaused) return;
         if (CameraModeState == CameraMode.Free) FixedUpdateMovementFree();
-        else if (CameraModeState == CameraMode.Follow) FixedUpdateMovementFollow();
     }
 
     private void FixedUpdateMovementFree()
     {
+        if (CameraModeState != CameraMode.Free) return;
+
         // Handle camera movement
         float horz = Input.GetAxisRaw("Horizontal");
         float vert = Input.GetAxisRaw("Vertical");
@@ -106,15 +117,21 @@ public class PlayerCamera : MonoBehaviour
         movementVelocity = Vector2.ClampMagnitude(movementVelocity, freeMovementMaxSpeed / zoomLevel);
         movementVelocity *= freeMovementDamping;
         controlledTransform.position += movementVelocity;
+
+        OnMoveEvent();
     }
 
-    private void FixedUpdateMovementFollow()
+    private void UpdateMovementFollow()
     {
+        if (CameraModeState != CameraMode.Follow) return;
+
         // Follow object position
         Vector2 pos = follow.GetFollowPosition();
         controlledTransform.position = new Vector3(pos.x, pos.y, controlledTransform.position.z);
 
         // Follow object rotation
         controlledTransform.up = Vector2.Lerp(controlledTransform.up, follow.GetFollowUpwards(), Time.deltaTime * followRotationSpeed);
+
+        OnMoveEvent();
     }
 }

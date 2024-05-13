@@ -7,6 +7,7 @@ public class PartPhysical : Part
 
     public Rigidbody2D RB { get; protected set; } = null;
     public GravityObject GRO { get; protected set; } = null;
+    public bool IsEnabled { get; private set; } = true;
 
     public override void InitPart(CompositeObject composable)
     {
@@ -22,16 +23,18 @@ public class PartPhysical : Part
         InitMass(density);
     }
 
-    public override void DeinitPart()
-    {
-        base.DeinitPart();
-    }
-
     public void InitMass(float density)
     {
         this.density = density;
         RB.useAutoMass = true;
         RB.useAutoMass = false;
         RB.mass *= density;
+    }
+
+    public void SetEnabled(bool enabled)
+    {
+        IsEnabled = enabled;
+        RB.simulated = enabled;
+        GRO.IsEnabled = enabled;
     }
 }

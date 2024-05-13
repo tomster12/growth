@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using static PlayerInteractor;
 
 public class PartInteractable : Part
 {

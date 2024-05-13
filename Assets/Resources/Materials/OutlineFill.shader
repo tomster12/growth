@@ -63,14 +63,14 @@ Shader "Tom/OutlineFill"
             v2f vert (appdata v)
             {
                 v2f o;
-
+                
                 //    half3x3 m = (half3x3)UNITY_MATRIX_M;
                 //    half3 objectScale = half3(
                 //        length( half3( m[0][0], m[1][0], m[2][0] ) ),
                 //        length( half3( m[0][1], m[1][1], m[2][1] ) ),
                 //        length( half3( m[0][2], m[1][2], m[2][2] ) )
                 //    );
-
+                
                 o.position = UnityObjectToClipPos(v.position + (v.position / length(v.position)) * _OutlineWidth);
 
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);

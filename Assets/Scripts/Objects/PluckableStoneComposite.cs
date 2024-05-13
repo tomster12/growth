@@ -54,7 +54,6 @@ public class PluckableStoneComposite : CompositeObject
         var physical = AddPart<PartPhysical>();
         var controllable = AddPart<PartControllable>();
         physical.InitMass(density);
-        controllable.SetCanControl(true);
 
         // Move out of ground
         physical.RB.transform.position += (Vector3)(PopDir.normalized * CL.bounds.extents * 1.5f);

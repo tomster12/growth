@@ -75,25 +75,7 @@ public class IKFabrik : MonoBehaviour
         }
     }
 
-    [Header("References")]
-    [SerializeField] private Transform boneRoot;
-    [SerializeField] private Transform boneEnd;
-
-    [Header("Config")]
-    [SerializeField] private int iterations = 10;
-    [SerializeField] private float delta = 0.01f;
-    [SerializeField][Range(0, 1)] private float snapBackStrength = 1.0f;
-    private Vector2[] bonesPos_RS;
-    private Vector2[] initBoneDir_RS;
-    private Quaternion[] initBoneRot_RS;
-    private Vector2 initTargetPos_RS;
-    private Quaternion initTargetRot_RS;
-
-    private void Start() => InitIK();
-
-    private void LateUpdate() => ResolveIK();
-
-    private void ResolveIK()
+    public void UpdateIK()
     {
         // Get positions and rotations
         for (int i = 0; i < Bones.Length; i++) bonesPos_RS[i] = TransformPosition_WorldToRS(Bones[i].position);
@@ -177,6 +159,22 @@ public class IKFabrik : MonoBehaviour
             Bones[i].position = TransformPosition_RSToWorld(bonesPos_RS[i]);
         }
     }
+
+    [Header("References")]
+    [SerializeField] private Transform boneRoot;
+    [SerializeField] private Transform boneEnd;
+
+    [Header("Config")]
+    [SerializeField] private int iterations = 10;
+    [SerializeField] private float delta = 0.01f;
+    [SerializeField][Range(0, 1)] private float snapBackStrength = 1.0f;
+    private Vector2[] bonesPos_RS;
+    private Vector2[] initBoneDir_RS;
+    private Quaternion[] initBoneRot_RS;
+    private Vector2 initTargetPos_RS;
+    private Quaternion initTargetRot_RS;
+
+    private void Start() => InitIK();
 
     private Vector2 TransformPosition_WorldToRS(Vector2 worldPos) => Quaternion.Inverse(boneRoot.rotation) * (worldPos - (Vector2)boneRoot.position);
 

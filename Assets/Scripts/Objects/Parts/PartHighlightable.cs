@@ -16,4 +16,6 @@ public class PartHighlightable : Part
         if (HighlightOutline != null) DestroyImmediate(HighlightOutline);
         base.DeinitPart();
     }
+
+    public void SetHighlighted(bool highlighted) => Highlighted = highlighted;
 }

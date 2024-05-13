@@ -4,7 +4,7 @@ using UnityEngine.Assertions;
 public class PartControllable : Part
 {
     public bool IsControlled { get; private set; } = false;
-    public bool CanControl { get; private set; } = true;
+    public bool CanControl => canControl && !IsControlled;
 
     public override void InitPart(CompositeObject composable)
     {
@@ -20,22 +20,16 @@ public class PartControllable : Part
         base.DeinitPart();
     }
 
-    public void SetControlPosition(Vector3 controlPosition, float controlPositionForce)
+    public void SetControlPosition(Vector3 controlPosition, float controlPositionForce = 1.0f)
     {
         this.controlPosition = controlPosition;
         this.controlPositionForce = controlPositionForce;
     }
 
-    public void SetControlAngle(float controlAngle, float controlAngleForce)
+    public void SetControlAngle(float controlAngle, float controlAngleForce = 1.0f)
     {
         this.controlAngle = controlAngle;
         this.controlAngleForce = controlAngleForce;
-    }
-
-    public void SetCanControl(bool canControl)
-    {
-        // Update variables
-        this.CanControl = canControl;
     }
 
     public void SetControlled(bool isControlled)
@@ -50,33 +44,46 @@ public class PartControllable : Part
         Physical.GRO.IsEnabled = !IsControlled;
     }
 
+    public void SetCanControl(bool canControl) => this.canControl = canControl;
+
+    public void SetToSnap(bool toSnap) => this.toSnap = toSnap;
+
     public void StartControl() => SetControlled(true);
 
     public void StopControl() => SetControlled(false);
 
     [Header("Config")]
-    [SerializeField] protected float controlDrag = 10.0f;
-    [SerializeField] protected float controlAngularDrag = 1.0f;
-    [SerializeField] protected float idleDrag = 0.5f;
-    [SerializeField] protected float idleAngularDrag = 0.05f;
+    [SerializeField] private float controlDrag = 10.0f;
+    [SerializeField] private float controlAngularDrag = 1.0f;
+    [SerializeField] private float idleDrag = 0.5f;
+    [SerializeField] private float idleAngularDrag = 0.05f;
 
-    protected Vector2 controlPosition = Vector2.zero;
-    protected float controlPositionForce = 1.0f;
-    protected float controlAngle = 0.0f;
-    protected float controlAngleForce = 1.0f;
-    protected PartPhysical Physical => Composable.GetPart<PartPhysical>();
+    private Vector2 controlPosition = Vector2.zero;
+    private float controlPositionForce = 1.0f;
+    private float controlAngle = 0.0f;
+    private float controlAngleForce = 1.0f;
+    private bool canControl = true;
+    private bool toSnap = false;
+    private PartPhysical Physical => Composable.GetPart<PartPhysical>();
 
     private void FixedUpdate()
     {
-        if (IsControlled)
-        {
-            // Move towards target
-            Vector2 dir = controlPosition - (Vector2)Physical.RB.transform.position;
-            Physical.RB.AddForce(dir * controlPositionForce);
+        if (!IsControlled) return;
 
+        if (toSnap)
+        {
+            Physical.RB.position = controlPosition;
+            Physical.RB.rotation = controlAngle;
+        }
+        else
+        {
             // Angle towards desired
             float angleDelta = Mathf.DeltaAngle(Physical.RB.transform.eulerAngles.z, controlAngle);
             Physical.RB.AddTorque(controlAngleForce * angleDelta / 360.0f);
+
+            // Move towards target (purposefully not normalized)
+            Vector2 dir = controlPosition - Physical.RB.position;
+            Physical.RB.AddForce(dir * controlPositionForce);
         }
     }
 
@@ -87,6 +94,12 @@ public class PartControllable : Part
             Vector3 controlDir = Quaternion.AngleAxis(controlAngle, Vector3.forward) * Vector2.up;
             Gizmos.DrawRay(Physical.RB.transform.position, controlDir);
             Gizmos.DrawRay(Physical.RB.transform.position, transform.up);
+
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(controlPosition, 0.1f);
+
+            Gizmos.color = Color.blue;
+            Gizmos.DrawWireSphere(Physical.RB.position, 0.1f);
         }
     }
 }

@@ -1,9 +1,10 @@
+using System;
 using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.TerrainUtils;
 
 public class PlayerLegs : MonoBehaviour
 {
+    public Action OnUpdateEvent { get; set; } = delegate { };
+
     public Vector2 GetFootPos(int legIndex)
     {
         if (legIndex < 0 || legIndex > 3) return Vector2.zero;
@@ -58,9 +59,11 @@ public class PlayerLegs : MonoBehaviour
             footTargetPos[i] = GetFootPos(i);
             footCurrentPos[i] = footTargetPos[i];
         }
+
+        playerMovement.OnMoveEvent += UpdateLegs;
     }
 
-    private void Update()
+    private void UpdateLegs()
     {
         // Update walking direction and time
         if (playerMovement.IsGrounded)
@@ -219,12 +222,15 @@ public class PlayerLegs : MonoBehaviour
             footCurrentPos[i] = Vector2.Lerp(footCurrentPos[i], footTargetPos[i], Time.deltaTime * footLerpSpeed);
             footState[i] = newFootState;
 
-            // Update IK variables
+            // Update IK
             legIK[i].TargetPos = footCurrentPos[i];
             legIK[i].TargetRot = Quaternion.identity;
             legIK[i].PolePos = GetLegPole(i);
             legIK[i].PoleRot = Quaternion.identity;
+            legIK[i].UpdateIK();
         }
+
+        OnUpdateEvent();
     }
 
     private float GetLegPct(float walkPct, int footIndex)

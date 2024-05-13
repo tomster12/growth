@@ -1,18 +1,20 @@
+using System;
 using UnityEngine;
 
 public partial class PlayerMovement : MonoBehaviour, IFollowable
 {
-    public float TargetBodyHeight => baseFeetHeight + inputVerticalLean * verticalLeanHeight;
-    public float GroundedBodyHeight => TargetBodyHeight + groundedThreshold;
-    public Vector2 GroundRightDir => new Vector2(GroundUpDir.y, -GroundUpDir.x);
-    public Rigidbody2D RB => characterRB;
-    public Transform Transform => characterRB.transform;
     public World ClosestWorld { get; private set; }
     public Vector2 GroundPos { get; private set; }
     public Vector2 GroundUpDir { get; private set; }
     public bool IsGrounded { get; private set; }
     public float SetMovementSlowdown { get; set; }
     public float SetVerticalLean { get; set; }
+    public Action OnMoveEvent { get; set; } = delegate { };
+    public float TargetBodyHeight => baseFeetHeight + inputVerticalLean * verticalLeanHeight;
+    public float GroundedBodyHeight => TargetBodyHeight + groundedThreshold;
+    public Vector2 GroundRightDir => new Vector2(GroundUpDir.y, -GroundUpDir.x);
+    public Rigidbody2D RB => characterRB;
+    public Transform Transform => characterRB.transform;
 
     public Vector2 GetJumpDir()
     {
@@ -27,7 +29,7 @@ public partial class PlayerMovement : MonoBehaviour, IFollowable
 
     [Header("References")]
     [SerializeField] private PlayerCamera playerCamera;
-    [SerializeField] private PlayerInteractor playerInteractor;
+    [SerializeField] private PlayerController playerController;
     [SerializeField] private WorldGenerator world;
     [SerializeField] private GravityObject characterGravity;
     [SerializeField] private Rigidbody2D characterRB;
@@ -162,6 +164,9 @@ public partial class PlayerMovement : MonoBehaviour, IFollowable
             // Force with input
             characterRB.AddForce(inputDir.normalized * airMovementSpeed, ForceMode2D.Impulse);
         }
+
+        // Call OnMove
+        OnMoveEvent();
     }
 
     private void OnDrawGizmos()
