@@ -20,6 +20,7 @@ public class GameManager : MonoBehaviour
         }
         Instance = this;
         SetPaused(false);
+        Application.targetFrameRate = -1;
     }
 
     public void ExitGame()

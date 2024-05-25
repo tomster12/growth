@@ -141,6 +141,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 393151930b50a4746b478d53b1cda916, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   outsidePolygon: {fileID: 2022025293066536361}
   shapeInfo:
     vertexCount: 15
@@ -165,6 +167,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbccb01ab4dd69547985438101472567, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators: []
+  isGenerated: 0
   showGizmoSeedCentroids: 0
   showGizmoDelauneyMain: 0
   showGizmoDelauneyCentres: 0
@@ -190,6 +194,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90b8cd3c8f301c94ebb57b1d7abc5b1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  composedGenerators:
+  - {fileID: 8590085244700913471}
+  - {fileID: 2022025293066536359}
+  isGenerated: 0
   outsidePolygon: {fileID: 2022025293066536361}
   planetPolygonGenerator: {fileID: 8590085244700913471}
   voronoiMeshGenerator: {fileID: 2022025293066536359}
@@ -214,28 +222,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4f62e596a563874e8cbe44e7ec8d954, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  proxies:
-  - _IGenerator: {fileID: 1038379900535997443}
-    name: Rock Composite
-    isEnabled: 1
-    isGenerated: 0
-    isComposite: 1
-    compositeIGeneratorProxies:
-    - _IGenerator: {fileID: 8590085244700913471}
-      name: Poly. Planet
-      isEnabled: 0
-      isGenerated: 0
-      isComposite: 0
-      compositeIGeneratorProxies: []
-    - _IGenerator: {fileID: 2022025293066536359}
-      name: Voronoi Mesh
-      isEnabled: 0
-      isGenerated: 0
-      isComposite: 0
-      compositeIGeneratorProxies: []
-  seed: 0
-  setSeed: 0
-  randomizeSeed: 0
+  Seed: 0
+  ToRandomizeSeed: 0
+  ToOverwriteSeed: 0
+  generators:
+  - {fileID: 1038379900535997443}
 --- !u!114 &-4127655862778169444
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -249,3 +240,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   generator: {fileID: 2022025293066536377}
+  polyCollider: {fileID: 2022025293066536361}

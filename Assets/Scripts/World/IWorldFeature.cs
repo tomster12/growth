@@ -1,9 +1,10 @@
 using UnityEngine;
-using static WorldGenerator;
 
 public interface IWorldFeature
 {
-    void Spawn(WorldSurfaceEdge edge, Vector3 a, Vector3 b, float pct);
+    void Spawn(WorldSurfaceEdge edge, float pct);
 
-    Vector3 GetPosition();
+    Transform Transform { get; }
+    Vector3 Position { get; }
+    float BlockingRadius { get; }
 };

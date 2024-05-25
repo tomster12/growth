@@ -332,22 +332,26 @@ public class WorldBiomeGenerator : Generator
 
     private void StepPopulateBiomes()
     {
+        GameLayer[] order = new GameLayer[] { GameLayer.Terrain, GameLayer.FrontDecor, GameLayer.Foreground, GameLayer.Background, GameLayer.BackDecor };
+
         // For every surface edge
         for (int i = 0; i < worldGenerator.SurfaceEdges.Count; i++)
         {
             WorldSurfaceEdge edge = worldGenerator.SurfaceEdges[i];
-            SurfaceBiome biome = edge.biome;
-            float pct = (float)i / worldGenerator.SurfaceEdges.Count;
+            float edgePct = (float)i / worldGenerator.SurfaceEdges.Count;
 
-            // Spawn 1 feature for each layers rules
-            foreach (var pair in biome.Rules)
+            // For each GameLayer pick a rule and spawn
+            foreach (GameLayer layer in order)
             {
-                GameObject feature = SpawnFeature(edge, pair.Value, edge.a, edge.b, pct);
-                if (feature != null)
-                {
-                    feature.transform.parent = worldGenerator.Containers[pair.Key];
-                    feature.transform.position = new Vector3(feature.transform.position.x, feature.transform.position.y, worldGenerator.Containers[pair.Key].position.z);
-                }
+                FeatureRule rule = PickRule(edge.biome.Rules[layer], edge);
+                if (rule == null) continue;
+
+                GameObject featureObj = Instantiate(rule.feature);
+                featureObj.transform.parent = worldGenerator.Containers[layer];
+                IWorldFeature feature = featureObj.GetComponent<IWorldFeature>();
+                feature?.Spawn(edge, edgePct);
+                GameLayers.SetLayer(featureObj.transform, layer);
+                ruleInstances.Add(new RuleInstance(edge, layer, rule, feature));
             }
         }
     }
@@ -367,44 +371,45 @@ public class WorldBiomeGenerator : Generator
         worldGenerator.Mesh.colors = meshColors;
     }
 
-    private GameObject SpawnFeature(WorldSurfaceEdge edge, FeatureRule[] rules, Vector3 a, Vector3 b, float edgePct)
+    private FeatureRule PickRule(FeatureRule[] rules, WorldSurfaceEdge edge)
     {
-        // Pick rule
-        float r = UnityEngine.Random.value;
-        FeatureRule rule = PickRule(rules, edge, r);
-        if (rule == null) return null;
+        Vector3 centre = (edge.a + edge.b) / 2.0f;
 
-        // Ensure distance
+        // Pick a random rule from the options
+        float r = UnityEngine.Random.value;
+        float length = edge.length;
+        List<FeatureRule> availableRules = new();
+        for (int i = 0; i < rules.Length; i++)
+        {
+            if (rules[i].everyEdge) availableRules.Add(rules[i]);
+            else if (r < (rules[i].averagePer100 * (length / 100.0f))) availableRules.Add(rules[i]);
+        }
+        if (availableRules.Count == 0) return null;
+        FeatureRule rule = availableRules[UnityEngine.Random.Range(0, availableRules.Count)];
+
+        // Ensure distance between features
         if (rule.minDistance != 0.0f)
         {
-            Vector3 centre = (a + b) / 2.0f;
             RuleInstance[] matchingInstances = ruleInstances.Where(i => i.rule == rule).ToArray();
             foreach (RuleInstance instance in matchingInstances)
             {
-                float dst = Vector3.Distance(centre, instance.IWorldFeature.GetPosition());
+                float dst = Vector3.Distance(centre, instance.centre);
                 if (dst < rule.minDistance) return null;
             }
         }
 
-        // Spawn feature
-        GameObject feature = Instantiate(rule.feature);
-        IWorldFeature IWorldFeature = feature.GetComponent<IWorldFeature>();
-        IWorldFeature?.Spawn(edge, edge.a, edge.b, edgePct);
-        ruleInstances.Add(new RuleInstance(rule, IWorldFeature));
-        return feature;
-    }
-
-    private FeatureRule PickRule(FeatureRule[] rules, WorldSurfaceEdge edge, float r)
-    {
-        float length = edge.length;
-        List<FeatureRule> hitRules = new();
-        for (int i = 0; i < rules.Length; i++)
+        // Ensure not overlapping terrain
+        if (!rule.canOverlapTerrain)
         {
-            if (rules[i].isGuaranteed) hitRules.Add(rules[i]);
-            else if (r < (rules[i].averagePer100 * (length / 100.0f))) hitRules.Add(rules[i]);
+            RuleInstance[] matchingInstances = ruleInstances.Where(i => i.layer == GameLayer.Terrain).ToArray();
+            foreach (RuleInstance instance in matchingInstances)
+            {
+                float dst = Vector3.Distance(centre, instance.centre);
+                if (dst < instance.feature.BlockingRadius) return null;
+            }
         }
-        if (hitRules.Count > 0) return hitRules[UnityEngine.Random.Range(0, hitRules.Count)];
-        else return null;
+
+        return rule;
     }
 
     private class BiomeGenEdge
@@ -441,13 +446,19 @@ public class WorldBiomeGenerator : Generator
 
     private class RuleInstance
     {
+        public WorldSurfaceEdge edge;
+        public GameLayer layer;
         public FeatureRule rule;
-        public IWorldFeature IWorldFeature;
+        public IWorldFeature feature;
+        public Vector3 centre;
 
-        public RuleInstance(FeatureRule rule, IWorldFeature feature)
+        public RuleInstance(WorldSurfaceEdge edge, GameLayer layer, FeatureRule rule, IWorldFeature feature)
         {
+            this.edge = edge;
+            this.layer = layer;
             this.rule = rule;
-            this.IWorldFeature = feature;
+            this.feature = feature;
+            centre = (edge.a + edge.b) / 2.0f;
         }
     };
 }

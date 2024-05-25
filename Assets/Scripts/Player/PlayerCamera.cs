@@ -32,7 +32,7 @@ public class PlayerCamera : MonoBehaviour
     public void SetModeFollow(IFollowable follow, bool set = false)
     {
         // Unsubscribe from previous follow
-        if (this.follow != null) this.follow.OnMoveEvent -= UpdateMovementFollow;
+        if (this.follow != null) this.follow.OnMoveEvent -= XUpdateMovementFollow;
 
         CameraModeState = CameraMode.Follow;
         this.follow = follow;
@@ -41,17 +41,18 @@ public class PlayerCamera : MonoBehaviour
         if (set)
         {
             Vector2 pos = follow.GetFollowTransform().position;
-            controlledTransform.position = new Vector3(pos.x, pos.y, controlledTransform.position.z);
-            controlledTransform.up = follow.GetFollowUpwards();
+            cameraTfm.position = Utility.WithZ(pos, cameraTfm.position.z);
+            cameraTfm.up = follow.GetFollowUpwards();
         }
 
         // Listen to OnMove
-        this.follow.OnMoveEvent += UpdateMovementFollow;
+        // TODO: Check if this lags behind
+        this.follow.OnMoveEvent += XUpdateMovementFollow;
     }
 
     [Header("References")]
     [SerializeField] private PixelPerfectCamera pixelPerfectCamera;
-    [SerializeField] private Transform controlledTransform;
+    [SerializeField] private Transform cameraTfm;
 
     [Header("Config")]
     [SerializeField] private int zoomLevel = 1;
@@ -67,14 +68,10 @@ public class PlayerCamera : MonoBehaviour
 
     private void Awake()
     {
-        SetModeFree();
-    }
-
-    private void Start()
-    {
         // Set initial zoom level
         pixelPerfectCamera.refResolutionX = 2 * Mathf.FloorToInt(0.5f * Screen.width / zoomLevel);
         pixelPerfectCamera.refResolutionY = 2 * Mathf.FloorToInt(0.5f * Screen.height / zoomLevel);
+        SetModeFree();
     }
 
     private void Update()
@@ -116,21 +113,21 @@ public class PlayerCamera : MonoBehaviour
         // Constrain, move camera, apply damping
         movementVelocity = Vector2.ClampMagnitude(movementVelocity, freeMovementMaxSpeed / zoomLevel);
         movementVelocity *= freeMovementDamping;
-        controlledTransform.position += movementVelocity;
+        cameraTfm.position += movementVelocity;
 
         OnMoveEvent();
     }
 
-    private void UpdateMovementFollow()
+    private void XUpdateMovementFollow()
     {
         if (CameraModeState != CameraMode.Follow) return;
 
         // Follow object position
         Vector2 pos = follow.GetFollowPosition();
-        controlledTransform.position = new Vector3(pos.x, pos.y, controlledTransform.position.z);
+        cameraTfm.position = Utility.WithZ(pos, cameraTfm.position.z);
 
         // Follow object rotation
-        controlledTransform.up = Vector2.Lerp(controlledTransform.up, follow.GetFollowUpwards(), Time.deltaTime * followRotationSpeed);
+        cameraTfm.up = Vector2.Lerp(cameraTfm.up, follow.GetFollowUpwards(), Time.deltaTime * followRotationSpeed);
 
         OnMoveEvent();
     }

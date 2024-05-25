@@ -1,16 +1,5 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-
-[Serializable]
-public class FeatureRule
-{
-    [SerializeField] public bool isGuaranteed;
-    [SerializeField] public float averagePer100;
-    [SerializeField] public float minDistance;
-    [SerializeField] public GameObject feature;
-};
 
 [CreateAssetMenu(fileName = "Surface Biome", menuName = "Surface Biome")]
 public class SurfaceBiome : Biome

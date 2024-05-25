@@ -4,6 +4,8 @@ using UnityEngine;
 public class PlayerLegs : MonoBehaviour
 {
     public Action OnUpdateEvent { get; set; } = delegate { };
+    public float[] LegLengths => legLengths;
+    public float LegSpacing => legEndOffset;
 
     public Vector2 GetFootPos(int legIndex)
     {
@@ -50,7 +52,7 @@ public class PlayerLegs : MonoBehaviour
     private enum FootState
     { None, Air, Override, Idle, WalkingA, WalkingB };
 
-    private void Start()
+    private void Awake()
     {
         // Initialize IK and foot positions
         SetLegLengths();
@@ -242,7 +244,7 @@ public class PlayerLegs : MonoBehaviour
     {
         // Only produce steps on world
         // TODO: Change colour based on material
-        if (transform != playerMovement.ClosestWorld.WorldGenerator.WorldTransform) return;
+        if (transform != playerMovement.ClosestWorld.WorldGenerator.Transform) return;
         GameObject particleGO = Instantiate(stepParticlePfb);
         particleGO.transform.position = pos;
     }
@@ -282,9 +284,18 @@ public class PlayerLegs : MonoBehaviour
     private Vector2 GetLegPole(int footIndex)
     {
         float horizontalMult = (footIndex <= 1) ? (-2 + footIndex) : (-1 + footIndex);
-        return (Vector2)playerMovement.Transform.position
-            + (playerMovement.GroundRightDir.normalized * horizontalMult * 2 * legEndOffset)
-            + (playerMovement.GroundUpDir.normalized * kneeHeight * 2);
+        if (footOverridePos[footIndex] != Vector2.zero)
+        {
+            return (Vector2)playerMovement.Transform.position
+                + (playerMovement.GroundRightDir.normalized * horizontalMult * 0.2f * legEndOffset)
+                + (playerMovement.GroundUpDir.normalized * kneeHeight * 2.0f);
+        }
+        else
+        {
+            return (Vector2)playerMovement.Transform.position
+                + (playerMovement.GroundRightDir.normalized * horizontalMult * 2.0f * legEndOffset)
+                + (playerMovement.GroundUpDir.normalized * kneeHeight * 2.0f);
+        }
     }
 
     [ContextMenu("Set Leg Lengths")]

@@ -10,7 +10,7 @@ public class GravityAttractor : MonoBehaviour
 
     public Rigidbody2D RB => _RB;
     public PolygonCollider2D PolygonCollider => _polygonCollider;
-    public Vector2 Centre => RB.transform.position;
+    public Vector2 Centre => RB.position;
 
     public Vector2 ClosestPoint(Vector2 pos) => rigidbodySurface ? RB.ClosestPoint(pos) : PolygonCollider.ClosestPoint(pos);
 

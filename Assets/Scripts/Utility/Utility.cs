@@ -116,6 +116,8 @@ public static class Utility
         foreach (Transform c in t) SetLayer(c, layer);
     }
 
+    public static Vector3 WithZ(Vector2 pos, float z) => new Vector3(pos.x, pos.y, z);
+
     public static float CalculateBezierLength(Vector2 p0, Vector2 p1, Vector2 p2, int segments)
     {
         float length = 0;

@@ -3,8 +3,9 @@ using System.Linq;
 
 public class PartInteractable : Part
 {
-    public List<Interaction> Interactions { get; protected set; } = new List<Interaction>();
-    public bool CanInteract => Interactions.Where(i => i.IsEnabled && i.CanInteract).Count() > 0;
+    public List<Interaction> Interactions { get; private set; } = new List<Interaction>();
+
+    public bool CanInteractAny(IInteractor interactor) => Interactions.Where(i => i.CanInteract(interactor)).Count() > 0;
 
     public override void InitPart(CompositeObject composable)
     {
@@ -16,11 +17,13 @@ public class PartInteractable : Part
         base.DeinitPart();
     }
 
+    public void AddInteraction(Interaction interaction) => Interactions.Add(interaction);
+
+    public void RemoveInteraction(Interaction interaction) => Interactions.Remove(interaction);
+
     private void Update()
     {
-        foreach (var interaction in Interactions)
-        {
-            interaction.Update();
-        }
+        // Update interactions, with a copy of the list to avoid concurrent modification
+        foreach (var interaction in Interactions.ToList()) interaction.Update();
     }
 }

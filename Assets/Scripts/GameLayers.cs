@@ -27,7 +27,13 @@ public class GameLayers
     public static void SetLayer(Transform transform, GameLayer layer)
     {
         GameLayerInfo info = LAYER_MAPPINGS[layer];
-        transform.position = new Vector3(transform.position.x, transform.position.y, info.posZ);
+        transform.position = Utility.WithZ(transform.position, info.posZ);
         Utility.SetLayer(transform, info.sceneLayer);
+    }
+
+    public static Vector3 OnLayer(Vector2 pos, GameLayer layer)
+    {
+        GameLayerInfo info = LAYER_MAPPINGS[layer];
+        return Utility.WithZ(pos, info.posZ);
     }
 };

@@ -16,7 +16,7 @@ public class PartControllable : Part
 
     public override void DeinitPart()
     {
-        if (IsControlled) SetControlled(false);
+        if (IsControlled) StopControlling();
         base.DeinitPart();
     }
 
@@ -32,25 +32,43 @@ public class PartControllable : Part
         this.controlAngleForce = controlAngleForce;
     }
 
-    public void SetControlled(bool isControlled)
+    public bool StartControlling()
     {
-        if (isControlled == this.IsControlled) return;
-        Assert.IsFalse(isControlled && !CanControl);
+        if (!CanControl)
+        {
+            Debug.LogWarning("Trying to start controlling uncontrollable part");
+            return false;
+        }
 
-        // Update variables
-        this.IsControlled = isControlled;
-        Physical.RB.drag = IsControlled ? controlDrag : idleDrag;
-        Physical.RB.angularDrag = IsControlled ? controlAngularDrag : idleAngularDrag;
-        Physical.GRO.IsEnabled = !IsControlled;
+        // Set variables
+        IsControlled = true;
+        Physical.RB.drag = controlDrag;
+        Physical.RB.angularDrag = controlAngularDrag;
+        Physical.GRO.IsEnabled = false;
+
+        return true;
+    }
+
+    public bool StopControlling()
+    {
+        if (!IsControlled)
+        {
+            Debug.LogWarning("Trying to stop controlling uncontrolled part");
+            return false;
+        }
+
+        // Reset variables
+        IsControlled = false;
+        Physical.RB.drag = idleDrag;
+        Physical.RB.angularDrag = idleAngularDrag;
+        Physical.GRO.IsEnabled = true;
+
+        return true;
     }
 
     public void SetCanControl(bool canControl) => this.canControl = canControl;
 
     public void SetToSnap(bool toSnap) => this.toSnap = toSnap;
-
-    public void StartControl() => SetControlled(true);
-
-    public void StopControl() => SetControlled(false);
 
     [Header("Config")]
     [SerializeField] private float controlDrag = 10.0f;
@@ -78,7 +96,7 @@ public class PartControllable : Part
         else
         {
             // Angle towards desired
-            float angleDelta = Mathf.DeltaAngle(Physical.RB.transform.eulerAngles.z, controlAngle);
+            float angleDelta = Mathf.DeltaAngle(Physical.transform.eulerAngles.z, controlAngle);
             Physical.RB.AddTorque(controlAngleForce * angleDelta / 360.0f);
 
             // Move towards target (purposefully not normalized)
@@ -92,8 +110,8 @@ public class PartControllable : Part
         if (IsControlled)
         {
             Vector3 controlDir = Quaternion.AngleAxis(controlAngle, Vector3.forward) * Vector2.up;
-            Gizmos.DrawRay(Physical.RB.transform.position, controlDir);
-            Gizmos.DrawRay(Physical.RB.transform.position, transform.up);
+            Gizmos.DrawRay(Physical.RB.position, controlDir);
+            Gizmos.DrawRay(Physical.RB.position, transform.up);
 
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(controlPosition, 0.1f);

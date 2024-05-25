@@ -7,6 +7,18 @@ public class ChildOrganiser : MonoBehaviour
     [SerializeField] public bool toCentreChildren = true;
     [SerializeField] public float gap = 0.5f;
 
+    public void AddChild(IOrganiserChild newChild)
+    {
+        children.Add(newChild);
+        newChild.Transform.parent = transform;
+    }
+
+    public void Clear()
+    {
+        foreach (Transform child in transform) DestroyImmediate(child.gameObject);
+        children.Clear();
+    }
+
     public void UpdateChildren()
     {
         IOrganiserChild[] activeChildren = children.Where(child => child.IsVisible).ToArray();
@@ -16,22 +28,11 @@ public class ChildOrganiser : MonoBehaviour
         float cumsum = 0.0f;
         for (int i = 0; i < activeChildren.Length; i++)
         {
-            float dy = -totalHeight / 2.0f + cumsum;
+            float childHeight = activeChildren[i].GetOrganiserChildHeight();
+            float dy = -totalHeight / 2.0f + cumsum + childHeight / 2.0f;
             activeChildren[i].Transform.localPosition = Vector3.up * dy;
-            cumsum += activeChildren[i].GetOrganiserChildHeight();
+            cumsum += childHeight;
         }
-    }
-
-    public void Clear()
-    {
-        foreach (Transform child in transform) DestroyImmediate(child.gameObject);
-        children.Clear();
-    }
-
-    public void AddChild(IOrganiserChild newChild)
-    {
-        children.Add(newChild);
-        newChild.Transform.parent = transform;
     }
 
     private List<IOrganiserChild> children = new List<IOrganiserChild>();

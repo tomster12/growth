@@ -7,8 +7,7 @@ public class PartIndicatable : Part
     { General, Ingredient, Resource }
 
     public static bool ShowIndicators { get; set; } = false;
-    public Vector3 TargetOffset { get; set; }
-    public float PositionLerpSpeed { get; set; } = 4.0f;
+    public Vector2 OffsetDir { get; set; }
     public float ColorLerpSpeed { get; set; } = 10.0f;
     public float WobbleMagnitude { get; set; } = 0.22f;
     public float WobbleFrequency { get; set; } = 3.0f;
@@ -21,28 +20,32 @@ public class PartIndicatable : Part
         base.InitPart(composable);
 
         // Create indicator game object
+        GameObject parent = GameObject.Find("Indicators Container");
         GameObject indicatorGO = new GameObject();
         indicator = indicatorGO.transform;
+        indicator.SetParent(parent.transform);
         indicator.name = "Indicator";
         indicator.gameObject.SetActive(false);
 
         // Add sprite renderer
         indicatorSR = indicatorGO.AddComponent<SpriteRenderer>();
         indicatorSR.color = INVISIBLE_COLOR;
+        SetIcon(iconType);
+
+        isInitialized = true;
     }
 
     public void SetIcon(IconType type)
     {
+        iconType = type;
         indicatorSR.sprite = SpriteSet.GetSprite(ICON_PATHS[type]);
-        isInitialized = true;
     }
 
-    public void SetOffset(Vector3 offset)
+    public void SetOffsetDir(Vector2 offset)
     {
-        TargetOffset = offset.normalized * Composable.Bounds.extents.magnitude * 3f;
-        currentOffset = TargetOffset;
-        indicator.transform.position = Composable.transform.position + currentOffset;
+        OffsetDir = Composable.Transform.InverseTransformPoint(offset.normalized);
         wobbleTimeStart = Time.time;
+        SetPosition();
     }
 
     public void Show(float time)
@@ -58,7 +61,6 @@ public class PartIndicatable : Part
 
     private static Color INVISIBLE_COLOR = new Color(1.0f, 1.0f, 1.0f, 0.0f);
     private static Color VISIBLE_COLOR = new Color(1.0f, 1.0f, 1.0f, 0.3f);
-    private static float OFFSET_WOBBLE_SCALE = 0.06f;
     private static Dictionary<IconType, string> ICON_PATHS = new Dictionary<IconType, string>
     {
         { IconType.General, "indicator_general" },
@@ -66,12 +68,14 @@ public class PartIndicatable : Part
         { IconType.Resource, "indicator_resource" }
     };
 
+    [Header("Config")]
+    [SerializeField] private IconType iconType;
+
     private float showTimer = 0.0f;
     private float wobbleTimeStart = 0.0f;
     private bool isInitialized = false;
     private Transform indicator;
     private SpriteRenderer indicatorSR;
-    private Vector3 currentOffset;
 
     private void Update()
     {
@@ -80,15 +84,22 @@ public class PartIndicatable : Part
         // Update show timer
         showTimer = Mathf.Max(0, showTimer - Time.deltaTime);
 
+        // Lerp color and position
+        LerpColor(Time.deltaTime);
+        SetPosition();
+    }
+
+    private void LerpColor(float dt)
+    {
         // Lerp color towards target color
         if (IsVisible)
         {
-            indicatorSR.color = Color.Lerp(indicatorSR.color, VISIBLE_COLOR, ColorLerpSpeed * Time.deltaTime);
+            indicatorSR.color = Color.Lerp(indicatorSR.color, VISIBLE_COLOR, ColorLerpSpeed * dt);
             indicator.gameObject.SetActive(true);
         }
         else
         {
-            indicatorSR.color = Color.Lerp(indicatorSR.color, INVISIBLE_COLOR, ColorLerpSpeed * Time.deltaTime);
+            indicatorSR.color = Color.Lerp(indicatorSR.color, INVISIBLE_COLOR, ColorLerpSpeed * dt);
 
             // If reached target color hide
             if (Mathf.Abs(indicatorSR.color.a - INVISIBLE_COLOR.a) < 0.01f)
@@ -96,13 +107,16 @@ public class PartIndicatable : Part
                 indicator.gameObject.SetActive(false);
             }
         }
+    }
 
+    private void SetPosition()
+    {
         // Lerp offset towards target offset
-        currentOffset = Vector3.Lerp(currentOffset, TargetOffset.normalized, PositionLerpSpeed * Time.deltaTime);
         float wobble = Mathf.Sin((Time.time - wobbleTimeStart) * (Mathf.PI * 2.0f) / WobbleFrequency);
-        Vector3 pos = Composable.transform.position + currentOffset + currentOffset.normalized * WobbleMagnitude * wobble;
-        pos.z = -2.0f;
-        indicator.transform.position = pos;
-        indicator.transform.up = currentOffset;
+        Vector2 offset = Composable.Transform.TransformPoint(OffsetDir) * (Composable.Bounds.extents.magnitude + 0.35f + WobbleMagnitude * wobble);
+        Vector3 finalPos = Composable.Bounds.center + (Vector3)offset;
+        finalPos.z = -2.0f;
+        indicator.transform.position = finalPos;
+        indicator.transform.up = OffsetDir;
     }
 }

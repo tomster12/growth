@@ -8,7 +8,7 @@ public class GravityObject : MonoBehaviour
     [Header("References")]
     [SerializeField] public Rigidbody2D RB;
 
-    public Vector2 Centre => RB.transform.position;
+    public Vector2 Centre => RB.position;
     public bool IsEnabled { get; set; } = true;
     public Vector2 GravityDir { get; protected set; }
 
@@ -18,7 +18,7 @@ public class GravityObject : MonoBehaviour
         GravityDir = force;
     }
 
-    private void Start()
+    private void Awake()
     {
         gravityObjects.Add(this);
     }

@@ -18,9 +18,9 @@ public class GeneratorDrawer : PropertyDrawer
         generatorSO ??= new SerializedObject(generator);
 
         string path = generator.IsComposite ? "GeneratorDrawerCompositeXUML" : "GeneratorDrawerXUML";
-        compositeXUML ??= AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/Editor/" + path + ".uxml");
-        if (compositeXUML == null) return inspector;
-        compositeXUML.CloneTree(inspector);
+        usedXML ??= AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/Editor/" + path + ".uxml");
+        if (usedXML == null) return inspector;
+        usedXML.CloneTree(inspector);
 
         Label labelName = inspector.Q<Label>("LabelName");
         labelName.text = generator.Name;
@@ -48,6 +48,5 @@ public class GeneratorDrawer : PropertyDrawer
 
     private Generator generator;
     private SerializedObject generatorSO;
-    private VisualTreeAsset singleXUML;
-    private VisualTreeAsset compositeXUML;
+    private VisualTreeAsset usedXML;
 }

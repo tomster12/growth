@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public class PartPhysical : Part
 {
@@ -12,10 +13,10 @@ public class PartPhysical : Part
     public override void InitPart(CompositeObject composable)
     {
         base.InitPart(composable);
-        RB = gameObject.GetComponent<Rigidbody2D>();
-        GRO = gameObject.GetComponent<GravityObject>();
-        if (RB == null) RB = gameObject.AddComponent<Rigidbody2D>();
-        if (GRO == null) GRO = gameObject.AddComponent<GravityObject>();
+        RB = Composable.GameObject.GetComponent<Rigidbody2D>();
+        GRO = Composable.GameObject.GetComponent<GravityObject>();
+        if (RB == null) RB = Composable.GameObject.AddComponent<Rigidbody2D>();
+        if (GRO == null) GRO = Composable.GameObject.AddComponent<GravityObject>();
         RB.gravityScale = 0;
         GRO.IsEnabled = true;
         GRO.RB = RB;
@@ -35,6 +36,8 @@ public class PartPhysical : Part
     {
         IsEnabled = enabled;
         RB.simulated = enabled;
+        RB.velocity = Vector2.zero;
+        RB.angularVelocity = 0;
         GRO.IsEnabled = enabled;
     }
 }

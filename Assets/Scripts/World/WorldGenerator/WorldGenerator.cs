@@ -13,8 +13,8 @@ public partial class WorldGenerator : Generator
     public Mesh Mesh { get; private set; }
     public List<WorldSite> Sites { get; private set; }
     public List<WorldSurfaceEdge> SurfaceEdges { get; private set; }
-    public Transform WorldTransform => outsidePolygon.transform;
     public Dictionary<GameLayer, Transform> Containers { get; private set; }
+    public Transform Transform => outsidePolygon.transform;
 
     public void SafeGenerate()
     {
@@ -105,7 +105,7 @@ public partial class WorldGenerator : Generator
         Mesh = null;
         Sites = null;
         SurfaceEdges = null;
-        if (atmosphere == null) atmosphere = WorldTransform.Find("Atmosphere")?.GetComponent<SpriteRenderer>();
+        if (atmosphere == null) atmosphere = Transform.Find("Atmosphere")?.GetComponent<SpriteRenderer>();
         if (atmosphere != null) DestroyImmediate(atmosphere.gameObject);
         ClearContainers();
     }
@@ -166,8 +166,8 @@ public partial class WorldGenerator : Generator
                         // Reverse edge to be clockwise
                         WorldSurfaceEdge WorldSurfaceEdge = new WorldSurfaceEdge(worldSite, edge)
                         {
-                            a = transform.TransformPoint(Mesh.vertices[worldSite.meshSite.meshVerticesIdx[edge.siteToVertexIdx]]),
-                            b = transform.TransformPoint(Mesh.vertices[worldSite.meshSite.meshVerticesIdx[edge.siteFromVertexIdx]])
+                            a = Transform.TransformPoint(Mesh.vertices[worldSite.meshSite.meshVerticesIdx[edge.siteToVertexIdx]]),
+                            b = Transform.TransformPoint(Mesh.vertices[worldSite.meshSite.meshVerticesIdx[edge.siteFromVertexIdx]])
                         };
                         WorldSurfaceEdge.length = Vector3.Distance(WorldSurfaceEdge.a, WorldSurfaceEdge.b);
                         surfaceEdgesUnordered.Add(WorldSurfaceEdge);
@@ -257,16 +257,16 @@ public partial class WorldGenerator : Generator
             GameObject atmosphereGO = Instantiate(atmospherePfb);
             atmosphere = atmosphereGO.GetComponent<SpriteRenderer>();
             atmosphere.gameObject.name = "Atmosphere";
-            atmosphere.transform.parent = WorldTransform;
+            atmosphere.transform.parent = Transform;
             atmosphere.transform.localPosition = Vector3.zero;
 
             // Set global scale
             float targetScale = atmosphereSizeMax * 2.0f;
             atmosphere.transform.localScale = Vector3.one;
             atmosphere.transform.localScale = new Vector3(
-                targetScale / WorldTransform.lossyScale.x,
-                targetScale / WorldTransform.lossyScale.y,
-                targetScale / WorldTransform.lossyScale.z
+                targetScale / Transform.lossyScale.x,
+                targetScale / Transform.lossyScale.y,
+                targetScale / Transform.lossyScale.z
             );
 
             // Set shader material and shader min and max

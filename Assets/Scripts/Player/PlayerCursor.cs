@@ -9,6 +9,7 @@ public class PlayerCursor : MonoBehaviour
         {
             // Create object and struct
             GameObject indicatorObj = Instantiate(indicatorPfb);
+            indicatorObj.name = "Cursor Indicator " + i;
             indicators[i] = new Indicator
             {
                 sr = indicatorObj.GetComponent<SpriteRenderer>(),
@@ -27,6 +28,7 @@ public class PlayerCursor : MonoBehaviour
     public void SetTargetPosition(Vector2 pos, bool snap = false)
     {
         targetType = TargetType.Position;
+        targetBoundsGap = 0;
         targetPos = pos;
         snapCornerPos = snap;
         if (snapCornerPos) LerpCornersPosition(0);
@@ -56,12 +58,14 @@ public class PlayerCursor : MonoBehaviour
     [Header("References")]
     [SerializeField] private Transform cursorContainer;
     [SerializeField] private SpriteRenderer[] cursorCorners;
+    [SerializeField] private Transform promptOrganiser;
     [SerializeField] private GameObject indicatorPfb;
 
     [Header("Cursor Config")]
     [SerializeField] private float positionMoveSpeed = 50.0f;
     [SerializeField] private float boundsMoveSpeed = 20.0f;
     [SerializeField] private float idleCornerGap = 0.75f;
+    [SerializeField] private float promptOrganiserOffset = 0.5f;
     [SerializeField] private float colorLerpSpeed = 25.0f;
 
     private Indicator[] indicators;
@@ -75,7 +79,7 @@ public class PlayerCursor : MonoBehaviour
     private enum TargetType
     { Position, Bounds }
 
-    private void Start()
+    private void Awake()
     {
         // Set corner colors
         cornerColor = Color.white;
@@ -93,8 +97,8 @@ public class PlayerCursor : MonoBehaviour
     private void LateUpdateCursor()
     {
         if (GameManager.IsPaused) return;
-        if (targetType == TargetType.Bounds) LerpCornersBounds(Time.deltaTime);
         if (targetType == TargetType.Position) LerpCornersPosition(Time.deltaTime);
+        if (targetType == TargetType.Bounds) LerpCornersBounds(Time.deltaTime);
         LerpCornersColors(Time.deltaTime);
         UpdateIndicators();
     }
@@ -114,12 +118,9 @@ public class PlayerCursor : MonoBehaviour
 
     private void LerpCornersBounds(float dt)
     {
-        // Set container to centre
-        cursorContainer.position = new Vector2(Mathf.Round(targetBounds.center.x * 12) / 12, Mathf.Round(targetBounds.center.y * 12) / 12);
-
         for (int i = 0; i < 4; i++)
         {
-            // Target based on bounds and gap
+            // Target local based on bounds and gap
             Vector2 target = new Vector2(
                 targetBounds.center.x + (targetBounds.extents.x + targetBoundsGap) * CORNER_OFFSETS[i].x,
                 targetBounds.center.y + (targetBounds.extents.y + targetBoundsGap) * CORNER_OFFSETS[i].y
@@ -129,6 +130,11 @@ public class PlayerCursor : MonoBehaviour
             if (snapCornerPos) cursorCorners[i].transform.position = target;
             else cursorCorners[i].transform.position = Vector2.Lerp(cursorCorners[i].transform.position, target, dt * boundsMoveSpeed);
         }
+
+        // Set prompt organiser position
+        Vector3 targetPromptPosition = targetBounds.center + Vector3.right * (targetBounds.extents.x + targetBoundsGap + promptOrganiserOffset);
+        targetPromptPosition.z = -3.0f;
+        promptOrganiser.position = targetPromptPosition;
     }
 
     private void LerpCornersColors(float dt)
@@ -160,6 +166,20 @@ public class PlayerCursor : MonoBehaviour
     {
         cursorContainer.gameObject.SetActive(!isPaused);
         if (!isPaused) LateUpdateCursor();
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (targetType == TargetType.Position)
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireSphere(targetPos, 0.1f);
+        }
+        if (targetType == TargetType.Bounds)
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireCube(targetBounds.center, targetBounds.size + Vector3.one * targetBoundsGap * 2);
+        }
     }
 
     private struct Indicator

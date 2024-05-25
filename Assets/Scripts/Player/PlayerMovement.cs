@@ -65,7 +65,7 @@ public partial class PlayerMovement : MonoBehaviour, IFollowable
 
     private void Start()
     {
-        ClosestWorld = World.GetClosestWorld(characterRB.transform.position, out Vector2 closestGroundPosition);
+        ClosestWorld = World.GetClosestWorld(Transform.position, out Vector2 closestGroundPosition);
         playerCamera.SetModeFollow(this, true);
     }
 
@@ -100,11 +100,11 @@ public partial class PlayerMovement : MonoBehaviour, IFollowable
     private void FixedUpdateProperties()
     {
         // Calculate closest world and ground position
-        ClosestWorld = World.GetClosestWorld(characterRB.transform.position, out Vector2 closestGroundPosition);
+        ClosestWorld = World.GetClosestWorld(Transform.position, out Vector2 closestGroundPosition);
         GroundPos = closestGroundPosition;
 
         // Calculate ground variables
-        Vector3 dir = GroundPos - (Vector2)characterRB.transform.position;
+        Vector3 dir = GroundPos - (Vector2)Transform.position;
         IsGrounded = dir.magnitude < GroundedBodyHeight;
         GroundUpDir = -dir.normalized;
     }
@@ -113,7 +113,7 @@ public partial class PlayerMovement : MonoBehaviour, IFollowable
     {
         //  Rotate upwards
         Vector2 rotateTo = IsGrounded ? GroundUpDir : RB.velocity.normalized;
-        float angleDiff = Vector2.SignedAngle(characterRB.transform.up, rotateTo) % 360;
+        float angleDiff = Vector2.SignedAngle(Transform.up, rotateTo) % 360;
         characterRB.AddTorque(angleDiff * rotationSpeed * Mathf.Deg2Rad);
 
         // ------ Grounded ------
@@ -126,7 +126,7 @@ public partial class PlayerMovement : MonoBehaviour, IFollowable
 
             // Apply force for height with legs
             targetPosition = GroundPos + (GroundUpDir * TargetBodyHeight);
-            Vector2 dir = targetPosition - (Vector2)characterRB.transform.position;
+            Vector2 dir = targetPosition - (Vector2)Transform.position;
             float upAmount = Vector2.Dot(GroundUpDir, dir);
             if (Mathf.Abs(upAmount) > legForceThreshold)
             {
@@ -178,14 +178,14 @@ public partial class PlayerMovement : MonoBehaviour, IFollowable
         //{
         //    if (jumpTimer == 0.0f) Gizmos.color = Color.green;
         //    else Gizmos.color = Color.white;
-        //    Gizmos.DrawLine(characterRB.transform.position, (Vector2)characterRB.transform.position + upDir);
+        //    Gizmos.DrawLine(Transform.position, (Vector2)Transform.position + upDir);
         //}
 
         //// Draw to ground
         //if (groundPosition != Vector2.zero)
         //{
         //    Gizmos.color = Color.blue;
-        //    Gizmos.DrawLine(characterRB.transform.position, groundPosition);
+        //    Gizmos.DrawLine(Transform.position, groundPosition);
         //}
 
         // Draw to uncontrolled
@@ -199,7 +199,7 @@ public partial class PlayerMovement : MonoBehaviour, IFollowable
         if (targetPosition != Vector2.zero && IsGrounded)
         {
             Gizmos.color = Color.green;
-            Gizmos.DrawLine(characterRB.transform.position, targetPosition);
+            Gizmos.DrawLine(Transform.position, targetPosition);
 
             Gizmos.color = Color.blue;
             Gizmos.DrawSphere(targetPosition, 0.025f);
@@ -209,9 +209,9 @@ public partial class PlayerMovement : MonoBehaviour, IFollowable
 
 public partial class PlayerMovement // IFollowable
 {
-    public Transform GetFollowTransform() => characterRB.transform;
+    public Transform GetFollowTransform() => Transform;
 
-    public Vector2 GetFollowPosition() => characterRB.position;
+    public Vector2 GetFollowPosition() => Transform.position;
 
     public Vector2 GetFollowUpwards() => GroundUpDir;
 }

@@ -174,7 +174,10 @@ public class IKFabrik : MonoBehaviour
     private Vector2 initTargetPos_RS;
     private Quaternion initTargetRot_RS;
 
-    private void Start() => InitIK();
+    private void Awake()
+    {
+        InitIK();
+    }
 
     private Vector2 TransformPosition_WorldToRS(Vector2 worldPos) => Quaternion.Inverse(boneRoot.rotation) * (worldPos - (Vector2)boneRoot.position);
 
