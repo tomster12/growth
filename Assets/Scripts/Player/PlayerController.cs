@@ -339,6 +339,8 @@ public partial class PlayerController : MonoBehaviour, IInteractor
             var objects = CompositeObject.FindObjectsWithPart<PartIndicatable>();
             foreach (var obj in objects)
             {
+                if (obj == targettingCO) continue;
+                if (obj == equippedCO) continue;
                 var part = obj.GetPart<PartIndicatable>();
                 float dist = (obj.Position - (Vector2)playerMovement.Transform.position).magnitude;
                 if (dist < indicateDistance) StartCoroutine(showIndicator(part, dist / indicateSpeed, indicateTimerMax));

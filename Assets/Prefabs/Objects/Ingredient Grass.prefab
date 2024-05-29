@@ -160,6 +160,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36d4504721c169747b2a1765e18355a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  OffsetFromWorld: 1
   iconType: 1
 --- !u!114 &5534000928018849275
 MonoBehaviour:

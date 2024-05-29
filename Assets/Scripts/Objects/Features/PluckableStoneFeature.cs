@@ -5,7 +5,7 @@ public class PluckableStoneFeature : MonoBehaviour, IWorldFeature
     public void Spawn(WorldSurfaceEdge edge, float edgePct)
     {
         // Setup pluck direction and generate
-        composite.PopDir = Vector2.Perpendicular(edge.b - edge.a);
+        composite.PluckDir = Vector2.Perpendicular(edge.b - edge.a);
         generator.Generate();
 
         // Position and rotate

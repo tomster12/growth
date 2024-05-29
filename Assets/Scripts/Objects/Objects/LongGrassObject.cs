@@ -29,19 +29,21 @@ public class LongGrassObject : CompositeObject
         GrassFeature grassFeature = GetComponent<GrassFeature>();
     }
 
+    protected void Start()
+    {
+        // Initialize indicator
+        partIndicatable.SetIcon(PartIndicatable.IconType.Resource);
+        partIndicatable.SetOffsetDir(Transform.up);
+    }
+
     [Header("References")]
     [SerializeField] private GameObject grassIngredientPfb;
-
     [SerializeField] private SpriteRenderer spriteRenderer;
-
     [SerializeField] private BoxCollider2D boxCollider;
-
     [SerializeField] private Sprite cutSprite;
 
     private PartIndicatable partIndicatable;
-
     private PartHighlightable partHighlightable;
-
     private InteractionCut interactionCut;
 
     private void OnCut()
@@ -61,12 +63,5 @@ public class LongGrassObject : CompositeObject
 
         // Set variables
         IsCut = true;
-    }
-
-    private void Start()
-    {
-        // Initialize indicator
-        partIndicatable.SetIcon(PartIndicatable.IconType.Resource);
-        partIndicatable.SetOffsetDir(Transform.up);
     }
 }

@@ -29,11 +29,28 @@ public class World : MonoBehaviour
         return closestWorld;
     }
 
-    public Vector3 GetCentre() => rb.transform.position;
+    public static World GetClosestWorldCheap(Vector2 pos)
+    {
+        // Loop over and find the closest world
+        World closestWorld = null;
+        float closestDst = float.PositiveInfinity;
+        foreach (World world in World.Worlds)
+        {
+            float dst = ((Vector2)world.GetCentre() - pos).magnitude;
+            if (dst < closestDst)
+            {
+                closestWorld = world;
+                closestDst = dst;
+            }
+        }
+        return closestWorld;
+    }
 
-    public Vector3 GetClosestOverallPoint(Vector2 pos) => rb.ClosestPoint(pos);
+    public Vector2 GetCentre() => rb.transform.position;
 
-    public Vector3 GetClosestSurfacePoint(Vector2 pos) => outsidePolygon.ClosestPoint(pos);
+    public Vector2 GetClosestOverallPoint(Vector2 pos) => rb.ClosestPoint(pos);
+
+    public Vector2 GetClosestSurfacePoint(Vector2 pos) => outsidePolygon.ClosestPoint(pos);
 
     [Header("References")]
     [SerializeField] private WorldGenerator worldGenerator;

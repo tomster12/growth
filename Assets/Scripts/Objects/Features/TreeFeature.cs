@@ -8,7 +8,7 @@ public class TreeFeature : MonoBehaviour, IWorldFeature
         float t = 0.25f + UnityEngine.Random.value * 0.5f;
         transform.position = Utility.WithZ(Vector2.Lerp(edge.a, edge.b, t), transform.position.z);
         Vector2 edgeUp = Vector2.Perpendicular(edge.b - edge.a);
-        Vector2 worldUp = (edge.a + edge.b) / 2.0f - edge.worldSite.world.GetCentre();
+        Vector2 worldUp = (Vector2)(edge.a + edge.b) / 2.0f - edge.worldSite.world.GetCentre();
         transform.up = (edgeUp + worldUp) / 2.0f;
         transform.eulerAngles = new Vector3(0.0f, 0.0f, transform.eulerAngles.z - 6.0f + UnityEngine.Random.value * 12.0f);
 

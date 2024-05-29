@@ -73,8 +73,8 @@ public class InteractionPrompt : MonoBehaviour, IOrganiserChild
     public virtual string GetInputSprite(Interaction interaction, IInteractor interactor)
     {
         return !interaction.IsEnabled ? ("")
-            : !interaction.CanInteract(interactor) ? ("int_disabled")
             : interaction.IsActive ? ("int_" + interaction.RequiredInput.Name + "_active")
+            : !interaction.CanInteract(interactor) ? ("int_disabled")
             : ("int_" + interaction.RequiredInput.Name + "_inactive");
     }
 

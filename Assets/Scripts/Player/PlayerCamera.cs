@@ -52,6 +52,7 @@ public class PlayerCamera : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private PixelPerfectCamera pixelPerfectCamera;
+    [SerializeField] private Camera outsideUICamera;
     [SerializeField] private Transform cameraTfm;
 
     [Header("Config")]
@@ -71,6 +72,7 @@ public class PlayerCamera : MonoBehaviour
         // Set initial zoom level
         pixelPerfectCamera.refResolutionX = 2 * Mathf.FloorToInt(0.5f * Screen.width / zoomLevel);
         pixelPerfectCamera.refResolutionY = 2 * Mathf.FloorToInt(0.5f * Screen.height / zoomLevel);
+        outsideUICamera.orthographicSize = Mathf.FloorToInt(0.5f * Screen.height / zoomLevel) / 12;
         SetModeFree();
     }
 
@@ -90,6 +92,7 @@ public class PlayerCamera : MonoBehaviour
             zoomLevel = Mathf.Clamp(zoomLevel, zoomLevelMin, zoomLevelMax);
             pixelPerfectCamera.refResolutionX = 2 * Mathf.FloorToInt(0.5f * Screen.width / zoomLevel);
             pixelPerfectCamera.refResolutionY = 2 * Mathf.FloorToInt(0.5f * Screen.height / zoomLevel);
+            outsideUICamera.orthographicSize = Mathf.FloorToInt(0.5f * Screen.height / zoomLevel) / 12;
             OnZoomChangeEvent(zoomLevel);
         }
     }

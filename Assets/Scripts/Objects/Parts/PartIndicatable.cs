@@ -6,14 +6,18 @@ public class PartIndicatable : Part
     public enum IconType
     { General, Ingredient, Resource }
 
+    [SerializeField] public static GameObject prefab;
+
     public static bool ShowIndicators { get; set; } = false;
     public Vector2 OffsetDir { get; set; }
+    public float PositionLerpSpeed { get; set; } = 12.0f;
     public float ColorLerpSpeed { get; set; } = 10.0f;
     public float WobbleMagnitude { get; set; } = 0.22f;
     public float WobbleFrequency { get; set; } = 3.0f;
     public bool ToShow { get; set; } = false;
     public bool ToHide { get; set; } = false;
     public bool IsVisible => (ToShow || showTimer > 0) && !ToHide;
+    public bool OffsetFromWorld = false;
 
     public override void InitPart(CompositeObject composable)
     {
@@ -21,16 +25,18 @@ public class PartIndicatable : Part
 
         // Create indicator game object
         GameObject parent = GameObject.Find("Indicators Container");
-        GameObject indicatorGO = new GameObject();
-        indicator = indicatorGO.transform;
+        GameObject indicatorPfb = Resources.Load("Prefabs/Indicator") as GameObject;
+        indicator = Instantiate(indicatorPfb).transform;
         indicator.SetParent(parent.transform);
-        indicator.name = "Indicator";
         indicator.gameObject.SetActive(false);
-
-        // Add sprite renderer
-        indicatorSR = indicatorGO.AddComponent<SpriteRenderer>();
+        indicator.gameObject.layer = LayerMask.NameToLayer("Outside UI");
+        indicatorSR = indicator.gameObject.GetComponent<SpriteRenderer>();
         indicatorSR.color = INVISIBLE_COLOR;
+
+        // Set icon
         SetIcon(iconType);
+
+        floatPosition = Composable.Bounds.center;
 
         isInitialized = true;
     }
@@ -43,9 +49,9 @@ public class PartIndicatable : Part
 
     public void SetOffsetDir(Vector2 offset)
     {
-        OffsetDir = Composable.Transform.InverseTransformPoint(offset.normalized);
+        OffsetDir = offset.normalized;
         wobbleTimeStart = Time.time;
-        SetPosition();
+        LerpPosition(0.0f);
     }
 
     public void Show(float time)
@@ -60,7 +66,7 @@ public class PartIndicatable : Part
     public void Hide() => showTimer = 0;
 
     private static Color INVISIBLE_COLOR = new Color(1.0f, 1.0f, 1.0f, 0.0f);
-    private static Color VISIBLE_COLOR = new Color(1.0f, 1.0f, 1.0f, 0.3f);
+    private static Color VISIBLE_COLOR = new Color(1.0f, 1.0f, 1.0f, 0.45f);
     private static Dictionary<IconType, string> ICON_PATHS = new Dictionary<IconType, string>
     {
         { IconType.General, "indicator_general" },
@@ -73,6 +79,7 @@ public class PartIndicatable : Part
 
     private float showTimer = 0.0f;
     private float wobbleTimeStart = 0.0f;
+    private Vector3 floatPosition;
     private bool isInitialized = false;
     private Transform indicator;
     private SpriteRenderer indicatorSR;
@@ -86,7 +93,7 @@ public class PartIndicatable : Part
 
         // Lerp color and position
         LerpColor(Time.deltaTime);
-        SetPosition();
+        LerpPosition(Time.deltaTime);
     }
 
     private void LerpColor(float dt)
@@ -109,14 +116,30 @@ public class PartIndicatable : Part
         }
     }
 
-    private void SetPosition()
+    private void LerpPosition(float dt)
     {
-        // Lerp offset towards target offset
+        // Initialize offset dir based on closest world
+        if (OffsetFromWorld)
+        {
+            World world = World.GetClosestWorldCheap(Composable.Position);
+            OffsetDir = (Composable.Position - (Vector2)world.GetCentre()).normalized;
+        }
+
+        // Calculate final position
         float wobble = Mathf.Sin((Time.time - wobbleTimeStart) * (Mathf.PI * 2.0f) / WobbleFrequency);
-        Vector2 offset = Composable.Transform.TransformPoint(OffsetDir) * (Composable.Bounds.extents.magnitude + 0.35f + WobbleMagnitude * wobble);
+        float edgeDist = Composable.Bounds.extents.x * Mathf.Abs(OffsetDir.x) + Composable.Bounds.extents.y * Mathf.Abs(OffsetDir.y);
+        Vector2 offset = OffsetDir * (edgeDist + WobbleMagnitude * 2 + WobbleMagnitude * wobble);
         Vector3 finalPos = Composable.Bounds.center + (Vector3)offset;
         finalPos.z = -2.0f;
-        indicator.transform.position = finalPos;
+
+        // Lerp or set position
+        if (dt == 0) floatPosition = finalPos;
+        else floatPosition = Vector3.Lerp(floatPosition, finalPos, PositionLerpSpeed * dt);
+
+        // Floor to nearest world pixel (12)
+        floatPosition.x = Mathf.Round(floatPosition.x * 12.0f) / 12.0f;
+        floatPosition.y = Mathf.Round(floatPosition.y * 12.0f) / 12.0f;
+        indicator.position = floatPosition;
         indicator.transform.up = OffsetDir;
     }
 }

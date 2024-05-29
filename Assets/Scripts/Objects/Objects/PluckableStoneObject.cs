@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class PluckableStoneObject : CompositeObject
 {
-    public Vector2 PopDir { get; set; }
+    public Vector2 PluckDir { get; set; }
     public bool IsPlucked { get; private set; }
 
     protected override void Awake()
@@ -19,18 +19,18 @@ public class PluckableStoneObject : CompositeObject
         GetPart<PartInteractable>().AddInteraction(interactionPluck);
     }
 
-    private void Start()
+    protected void Start()
     {
         // Set popDir if not already set
-        if (PopDir.Equals(Vector2.zero))
+        if (PluckDir.Equals(Vector2.zero))
         {
             Debug.LogWarning("PluckableStone does not have a popDir");
-            PopDir = (Position - (Vector2)World.GetClosestWorld(Position).GetCentre()).normalized;
+            PluckDir = (Position - (Vector2)World.GetClosestWorld(Position).GetCentre()).normalized;
         }
 
         // Initialize indicator
         partIndicatable.SetIcon(PartIndicatable.IconType.Resource);
-        partIndicatable.SetOffsetDir(PopDir);
+        partIndicatable.SetOffsetDir(PluckDir);
     }
 
     protected void Update()
@@ -61,19 +61,20 @@ public class PluckableStoneObject : CompositeObject
         physical.InitMass(density);
 
         // Move out of ground
-        Transform.position += (Vector3)(PopDir.normalized * CL.bounds.extents * 1.5f);
+        Transform.position += (Vector3)(PluckDir.normalized * CL.bounds.extents * 1.5f);
 
         // Pop in a direction (ignore mass)
-        physical.RB.AddForce(physical.RB.mass * pluckVelocity * PopDir.normalized, ForceMode2D.Impulse);
+        physical.RB.AddForce(physical.RB.mass * pluckVelocity * PluckDir.normalized, ForceMode2D.Impulse);
 
         // Produce particles
         GameObject particlesGO = Instantiate(pluckPsysPfb);
         particlesGO.transform.position = physical.RB.transform.position;
-        particlesGO.transform.up = PopDir.normalized;
+        particlesGO.transform.up = PluckDir.normalized;
         IsPlucked = true;
 
         // Add ingredient part and change indicator accordingly
         AddPart<PartIngredient>();
         partIndicatable.SetIcon(PartIndicatable.IconType.Ingredient);
+        partIndicatable.OffsetFromWorld = true;
     }
 }
