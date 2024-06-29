@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public class PartHighlightable : Part
 {
     public OutlineController HighlightOutline { get; protected set; } = null;
@@ -11,6 +13,8 @@ public class PartHighlightable : Part
             HighlightOutline.enabled = value;
         }
     }
+
+    public Color HighlightColor { get => HighlightOutline.OutlineColor; set => HighlightOutline.OutlineColor = value; }
 
     public bool CanHighlight { get; private set; } = true;
 
@@ -29,6 +33,8 @@ public class PartHighlightable : Part
     }
 
     public void SetHighlighted(bool highlighted) => Highlighted = highlighted;
+
+    public void SetHighlightColor(Color color) => HighlightColor = color;
 
     public void SetCanHighlight(bool canHighlight)
     {

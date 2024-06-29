@@ -22,8 +22,8 @@ public class InteractionPrompt : MonoBehaviour, IOrganiserChild
     [SerializeField] private SpriteRenderer spriteRendererTool;
 
     [Header("Config")]
-    [SerializeField] private Color toolOutlineDisabledColor = new Color(0.53f, 0.53f, 0.53f);
-    [SerializeField] private Color toolDisabledColor = new Color(0.72f, 0.33f, 0.33f);
+    [SerializeField] private Color darkDisabledColour = new Color(0.32f, 0.32f, 0.32f);
+    [SerializeField] private Color lightDisabledColour = new Color(0.53f, 0.53f, 0.53f);
 
     private IInteractor interactor;
     private Interaction interaction;
@@ -37,51 +37,47 @@ public class InteractionPrompt : MonoBehaviour, IOrganiserChild
     {
         if (IsSet)
         {
-            string iconSprite = GetIconSprite(interaction, interactor);
-            string inputSprite = GetInputSprite(interaction, interactor);
-            string toolSprite = GetToolSprite(interaction, interactor);
+            bool canUseTool = interaction.CanUseTool(interactor);
+            bool canInteract = interaction.CanInteract(interactor);
 
-            spriteRendererIcon.enabled = !string.IsNullOrEmpty(iconSprite);
-            spriteRendererInput.enabled = !string.IsNullOrEmpty(inputSprite);
-            spriteRendererToolOutline.enabled = !string.IsNullOrEmpty(toolSprite);
-            spriteRendererTool.enabled = !string.IsNullOrEmpty(toolSprite);
+            // Handle icon sprite
+            spriteRendererIcon.enabled = true;
+            spriteRendererIcon.sprite = SpriteSet.GetSprite(
+                !interaction.IsEnabled ? ("int_disabled")
+                : interaction.IsActive ? ("int_" + interaction.IconSprite + "_active")
+                : ("int_" + interaction.IconSprite + "_inactive")
+            );
+            spriteRendererIcon.color = (canInteract || interaction.IsActive) ? Color.white : darkDisabledColour;
 
-            if (spriteRendererIcon.enabled) spriteRendererIcon.sprite = SpriteSet.GetSprite(iconSprite);
-            if (spriteRendererInput.enabled) spriteRendererInput.sprite = SpriteSet.GetSprite(inputSprite);
-            if (spriteRendererTool.enabled)
+            // Handle input sprite
+            spriteRendererInput.enabled = interaction.IsEnabled;
+            if (spriteRendererInput.enabled)
             {
-                spriteRendererTool.sprite = SpriteSet.GetSprite(toolSprite);
-                bool canUseTool = interaction.CanUseTool(interactor);
-                spriteRendererToolOutline.color = canUseTool ? Color.white : toolOutlineDisabledColor;
-                spriteRendererTool.color = canUseTool ? Color.white : toolDisabledColor;
+                spriteRendererInput.sprite = SpriteSet.GetSprite(
+                    interaction.IsActive ? ("int_" + interaction.RequiredInput.Name + "_active")
+                    : ("int_" + interaction.RequiredInput.Name + "_inactive")
+                );
+            }
+            spriteRendererInput.color = (canInteract || interaction.IsActive) ? Color.white : darkDisabledColour;
+
+            // Handle tool sprites
+            spriteRendererToolOutline.enabled = interaction.IsEnabled && interaction.RequiredTool != ToolType.None;
+            spriteRendererTool.enabled = spriteRendererToolOutline.enabled;
+            if (spriteRendererToolOutline.enabled)
+            {
+                spriteRendererTool.sprite = SpriteSet.GetSprite("int_tool_" + interaction.RequiredTool.ToString().ToLower());
+                spriteRendererToolOutline.color = (canUseTool || interaction.IsActive) ? Color.white : lightDisabledColour;
+                spriteRendererTool.color = (canUseTool || interaction.IsActive) ? Color.white : darkDisabledColour;
             }
         }
+
+        // Not set so disable all elements
         else
         {
-            spriteRendererInput.enabled = false;
             spriteRendererIcon.enabled = false;
+            spriteRendererInput.enabled = false;
+            spriteRendererToolOutline.enabled = false;
+            spriteRendererTool.enabled = false;
         }
-    }
-
-    public virtual string GetIconSprite(Interaction interaction, IInteractor interactor)
-    {
-        return !interaction.IsEnabled ? ("int_disabled")
-            : interaction.IsActive ? ("int_" + interaction.IconSprite + "_active")
-            : ("int_" + interaction.IconSprite + "_inactive");
-    }
-
-    public virtual string GetInputSprite(Interaction interaction, IInteractor interactor)
-    {
-        return !interaction.IsEnabled ? ("")
-            : interaction.IsActive ? ("int_" + interaction.RequiredInput.Name + "_active")
-            : !interaction.CanInteract(interactor) ? ("int_disabled")
-            : ("int_" + interaction.RequiredInput.Name + "_inactive");
-    }
-
-    public virtual string GetToolSprite(Interaction interaction, IInteractor interactor)
-    {
-        return !interaction.IsEnabled ? ("")
-            : interaction.RequiredTool == ToolType.None ? ""
-            : ("int_tool_" + interaction.RequiredTool.ToString().ToLower());
     }
 }

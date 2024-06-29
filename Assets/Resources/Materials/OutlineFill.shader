@@ -1,13 +1,11 @@
-// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
-
+// NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
 Shader "Tom/OutlineFill"
 {
     Properties
     {
         [Enum(UnityEngine.Rendering.CompareFunction)] _ZTest("ZTest", Float) = 0
-        [HDR]_OutlineColor ("Outline Color", Color) = (1, 1, 1, 1)
-        //_OutlineWidth ("Outline Width", Range(1.0, 3.0)) = 1.2
+        [HDR] _OutlineColor ("Outline Color", Color) = (1, 1, 1, 1)
         _OutlineWidth ("Outline Width", Range(0.0, 2.0)) = 0.3
         _MainTex ("Texture", 2D) = "white" {}
     }
@@ -17,7 +15,7 @@ Shader "Tom/OutlineFill"
         Tags
         {
             "Queue" = "Transparent+110"
-            "RenderType"="Overlay"
+            "RenderType" = "Overlay"
         }
 
         Pass
@@ -60,7 +58,7 @@ Shader "Tom/OutlineFill"
             sampler2D _MainTex;
             float4 _MainTex_ST;
 
-            v2f vert (appdata v)
+            v2f vert(appdata v)
             {
                 v2f o;
                 
@@ -78,7 +76,7 @@ Shader "Tom/OutlineFill"
                 return o;
             }
 
-            fixed4 frag (v2f i) : SV_Target
+            fixed4 frag(v2f i) : SV_Target
             {
                 fixed4 col = tex2D(_MainTex, i.uv);
                 return i.color * (col.a > 0);

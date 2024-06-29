@@ -10,6 +10,7 @@ public class PlayerCursor : MonoBehaviour
             // Create object and struct
             GameObject indicatorObj = Instantiate(indicatorPfb);
             indicatorObj.name = "Cursor Indicator " + i;
+            indicatorObj.transform.SetParent(transform);
             indicators[i] = new Indicator
             {
                 sr = indicatorObj.GetComponent<SpriteRenderer>(),
@@ -68,7 +69,7 @@ public class PlayerCursor : MonoBehaviour
     [SerializeField] private float promptOrganiserOffset = 0.5f;
     [SerializeField] private float colorLerpSpeed = 25.0f;
 
-    private Indicator[] indicators;
+    private Indicator[] indicators = new Indicator[0];
     private TargetType targetType;
     private Vector2 targetPos;
     private Bounds targetBounds;

@@ -50,7 +50,7 @@ Shader "Tom/OutlineMask"
             sampler2D _MainTex;
             float4 _MainTex_ST;
 
-            v2f vert (appdata v)
+            v2f vert(appdata v)
             {
                 v2f o;
                 o.position = UnityObjectToClipPos(v.position);
@@ -58,7 +58,7 @@ Shader "Tom/OutlineMask"
                 return o;
             }
 
-            fixed4 frag (v2f i) : SV_Target
+            fixed4 frag(v2f i) : SV_Target
             {
                 fixed4 col = tex2D(_MainTex, i.uv);
                 if (col.a != 1) discard;
