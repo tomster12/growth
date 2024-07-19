@@ -25,7 +25,7 @@ public class PartIndicatable : Part
 
         // Create indicator game object
         GameObject parent = GameObject.Find("Indicators Container");
-        GameObject indicatorPfb = Resources.Load("Prefabs/Indicator") as GameObject;
+        GameObject indicatorPfb = AssetManager.GetPrefab("Indicator");
         indicator = Instantiate(indicatorPfb).transform;
         indicator.SetParent(parent.transform);
         indicator.gameObject.SetActive(false);
@@ -33,7 +33,6 @@ public class PartIndicatable : Part
         indicatorSR = indicator.gameObject.GetComponent<SpriteRenderer>();
         indicatorSR.color = INVISIBLE_COLOR;
 
-        // Set icon
         SetIcon(iconType);
 
         floatPosition = Composable.Bounds.center;
@@ -44,7 +43,7 @@ public class PartIndicatable : Part
     public void SetIcon(IconType type)
     {
         iconType = type;
-        indicatorSR.sprite = SpriteSet.GetSprite(ICON_PATHS[type]);
+        indicatorSR.sprite = AssetManager.GetSprite(ICON_PATHS[type]);
     }
 
     public void SetOffsetDir(Vector2 offset)

@@ -145,7 +145,7 @@ MonoBehaviour:
     valueRange:
     - 0.2
     - 0.7
-    noiseScale: 1
+    noiseScale: 4
 --- !u!114 &552264183
 MonoBehaviour:
   m_ObjectHideFlags: 0

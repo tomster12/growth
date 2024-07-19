@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Rendering.Universal;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -22,6 +23,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
     [Header("Prefabs")]
     [SerializeField] private GameObject promptPfb;
     [SerializeField] private GameObject dropPsysPfb;
+    [SerializeField] private GameObject craftingTargetPfb;
 
     [Header("Target Config")]
     [SerializeField] private float controlForce = 25.0f;
@@ -52,6 +54,11 @@ public partial class PlayerController : MonoBehaviour, IInteractor
     [SerializeField] private Color cursorColorInteractable = new Color(1.0f, 0.3f, 0.3f);
     [SerializeField] private Color cursorColorInteracting = new Color(0.5f, 0.5f, 0.5f);
 
+    [Header("Crafting Config")]
+    [SerializeField] private CraftingRecipeList craftingRecipeList;
+    [SerializeField] private float craftingResultControlForce = 35.0f;
+
+    private bool inputLMB, inputRMB;
     private Vector2 inputMousePosition;
     private float inputMouseDistance;
     private TargettingState targetState;
@@ -67,15 +74,17 @@ public partial class PlayerController : MonoBehaviour, IInteractor
     private Interaction currentInteraction;
     private CompositeObject equippedObject;
     private int equippedLeg;
-    private List<CompositeObject> craftingObjects = new List<CompositeObject>();
+    private List<CompositeObject> craftingIngredients = new List<CompositeObject>();
+    private CraftingResultObject craftingResult;
     private float CursorSqueeze => interactionCursorSqueeze;
-    private bool IsTargetting => targetState != TargettingState.None;
-    private bool IsCraftingTarget => craftingObjects.Contains(targetObject);
+    private bool IsCraftingTarget => craftingIngredients.Contains(targetObject);
     private bool CanControlTarget => IsTargetting && !IsCraftingTarget && targetObject.HasPart<PartControllable>() && targetObject.GetPart<PartControllable>().CanControl;
     private bool CanEquipTarget => IsTargetting && !IsCraftingTarget && targetObject.HasPart<PartEquipable>() && targetObject.GetPart<PartEquipable>().CanEquip;
     private bool CanInteractAnyTarget => IsTargetting && !IsCraftingTarget && targetObject.HasPart<PartInteractable>() && targetObject.GetPart<PartInteractable>().CanInteractAny(this);
     private bool CanCraftTarget => IsTargetting && !IsCraftingTarget && targetObject.HasPart<PartIngredient>();
+    private bool IsTargetting => targetState != TargettingState.None;
     private bool IsEquipped => equippedObject != null;
+    private bool IsCrafting => craftingIngredients.Count > 0;
 
     private void Awake()
     {
@@ -121,6 +130,9 @@ public partial class PlayerController : MonoBehaviour, IInteractor
 
     private void HandleInput()
     {
+        // Poll input
+        inputLMB = Input.GetMouseButtonDown(0);
+        inputRMB = Input.GetMouseButtonDown(1);
         inputMousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         inputMouseDistance = (inputMousePosition - (Vector2)playerMovement.Transform.position).magnitude;
     }
@@ -167,9 +179,10 @@ public partial class PlayerController : MonoBehaviour, IInteractor
     private void UpdateTargetControlling()
     {
         // [Hovering] and LMB down so begin [Controlling]
-        if (targetState == TargettingState.Hovering && CanControlTarget && Input.GetMouseButtonDown(0))
+        if (targetState == TargettingState.Hovering && CanControlTarget && inputLMB)
         {
             StartControlling();
+            inputLMB = false;
             return;
         }
 
@@ -177,9 +190,10 @@ public partial class PlayerController : MonoBehaviour, IInteractor
         else if (targetState == TargettingState.Controlling)
         {
             // Drop on LMB click
-            if (Input.GetMouseButtonDown(0))
+            if (inputLMB)
             {
                 StopControlling();
+                inputLMB = false;
                 return;
             }
 
@@ -270,14 +284,25 @@ public partial class PlayerController : MonoBehaviour, IInteractor
     private void UpdateCrafting()
     {
         // Is [Hovering] and RMB down so handle toggle crafting
-        if (targetState == TargettingState.Hovering && Input.GetMouseButtonDown(1))
+        if (targetState == TargettingState.Hovering && inputRMB)
         {
             // Object is crafting so remove from crafting
             if (IsCraftingTarget)
             {
-                craftingObjects.Remove(targetObject);
-                targetObject.GetPart<PartHighlightable>().SetHighlighted(false);
-                targetObject.GetPart<PartHighlightable>()?.SetHighlightColor(Color.white);
+                inputRMB = false;
+                craftingIngredients.Remove(targetObject);
+                if (targetObject.TryGetPart<PartHighlightable>(out var highlightable))
+                {
+                    highlightable.SetHighlighted(false);
+                    highlightable.HighlightColor = Color.white;
+                }
+
+                // If last object remove crafting target
+                if (craftingResult != null)
+                {
+                    Destroy(craftingResult.gameObject);
+                    craftingResult = null;
+                }
 
                 // If controllable stop controlling
                 if ((bool)(targetObject.GetPart<PartControllable>()?.IsControlled))
@@ -289,9 +314,22 @@ public partial class PlayerController : MonoBehaviour, IInteractor
             // Object is not crafting so add to crafting
             else if (CanCraftTarget)
             {
-                craftingObjects.Add(targetObject);
-                targetObject.GetPart<PartHighlightable>()?.SetHighlighted(true);
-                targetObject.GetPart<PartHighlightable>()?.SetHighlightColor(craftingOutlineColor);
+                inputRMB = false;
+                craftingIngredients.Add(targetObject);
+                if (targetObject.TryGetPart<PartHighlightable>(out var highlightable))
+                {
+                    highlightable.SetHighlighted(true);
+                    highlightable.HighlightColor = craftingOutlineColor;
+                }
+
+                // If first object instantiate crafting target
+                if (craftingResult == null)
+                {
+                    GameObject craftingTargetGO = Instantiate(craftingTargetPfb, targetObject.Position, Quaternion.identity);
+                    craftingResult = craftingTargetGO.GetComponent<CraftingResultObject>();
+                    craftingResult.SetRecipe(null);
+                    craftingResult.GetPart<PartControllable>().StartControlling();
+                }
 
                 // If controllable hover upwards and start controlling
                 if ((bool)(targetObject.GetPart<PartControllable>()?.CanControl))
@@ -300,24 +338,83 @@ public partial class PlayerController : MonoBehaviour, IInteractor
                     Vector3 controlPosition = targetObject.Position + targetObject.GetPart<PartPhysical>().GRO.GravityDir.normalized * -1.0f;
                     targetObject.GetPart<PartControllable>().SetControlPosition(controlPosition, controlForce);
                 }
+
+                UpdateCraftingTarget(craftingIngredients.Count == 1);
             }
+        }
+
+        UpdateCraftingTarget();
+    }
+
+    private void UpdateCraftingTarget(bool first = false)
+    {
+        if (!IsCrafting) return;
+
+        // Go through all current crafting parts and accumulate ingredients
+        Dictionary<CraftingIngredient, int> ingredientCounts = new Dictionary<CraftingIngredient, int>();
+        foreach (CompositeObject obj in craftingIngredients)
+        {
+            CraftingIngredient ingredient = obj.GetPart<PartIngredient>().Ingredient;
+            if (ingredientCounts.ContainsKey(ingredient)) ingredientCounts[ingredient]++;
+            else ingredientCounts[ingredient] = 1;
+        }
+
+        // Look through recipes and find all that are viable
+        List<CraftingRecipe> viableRecipes = new List<CraftingRecipe>();
+        foreach (CraftingRecipe recipe in craftingRecipeList.recipes)
+        {
+            bool isViable = true;
+            foreach (var recipeIngredient in recipe.ingredients)
+            {
+                if (!ingredientCounts.ContainsKey(recipeIngredient.ingredient) || ingredientCounts[recipeIngredient.ingredient] < recipeIngredient.amount)
+                {
+                    isViable = false;
+                    break;
+                }
+            }
+            if (isViable) viableRecipes.Add(recipe);
+        }
+
+        // If viable recipes then update crafting target object
+        if (viableRecipes.Count > 0)
+        {
+            // TODO: Support more than 1 recipe
+            CraftingRecipe recipe = viableRecipes[0];
+            craftingResult.SetRecipe(recipe);
+        }
+        else craftingResult.SetRecipe(null);
+
+        // Update crafting target object position
+        Vector2 targetPos = Vector2.zero;
+        foreach (CompositeObject obj in craftingIngredients) targetPos += obj.Position;
+        targetPos /= craftingIngredients.Count;
+        targetPos += -craftingResult.GetPart<PartPhysical>().GRO.GravityDir.normalized * 1.5f;
+        craftingResult.GetPart<PartControllable>().SetControlPosition(targetPos, craftingResultControlForce);
+
+        // Set position if first object
+        if (first)
+        {
+            craftingResult.GetPart<PartPhysical>().RB.position = targetPos;
         }
     }
 
     private void UpdateEquipped()
     {
-        // [Controlling] RMB down so [Equipped]
-        if (targetState == TargettingState.Controlling && CanEquipTarget && Input.GetMouseButtonDown(1))
+        // [Controlling] RMB down so Equip
+        if (targetState == TargettingState.Controlling && CanEquipTarget && inputRMB)
         {
             StartEquipping();
+            inputRMB = false;
             return;
         }
+        // Handle [Equipped] state
         else if (IsEquipped)
         {
             // [Equipped] So check for dropping
-            if (Input.GetMouseButtonDown(1))
+            if (inputRMB)
             {
                 StopEquipping();
+                inputRMB = false;
                 return;
             }
 

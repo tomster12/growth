@@ -14,8 +14,8 @@ public class GravityObject : MonoBehaviour
 
     public void AddForce(Vector2 force)
     {
-        RB.AddForce(force);
         GravityDir = force;
+        if (IsEnabled && RB.simulated) RB.AddForce(force);
     }
 
     private void Awake()

@@ -1,5 +1,9 @@
+using UnityEngine;
+
 public class PartIngredient : Part
 {
+    public CraftingIngredient Ingredient => ingredient;
+
     public override void InitPart(CompositeObject composable)
     {
         base.InitPart(composable);
@@ -9,4 +13,6 @@ public class PartIngredient : Part
     {
         base.DeinitPart();
     }
+
+    [SerializeField] private CraftingIngredient ingredient;
 }

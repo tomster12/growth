@@ -42,7 +42,7 @@ public class InteractionPrompt : MonoBehaviour, IOrganiserChild
 
             // Handle icon sprite
             spriteRendererIcon.enabled = true;
-            spriteRendererIcon.sprite = SpriteSet.GetSprite(
+            spriteRendererIcon.sprite = AssetManager.GetSprite(
                 !interaction.IsEnabled ? ("int_disabled")
                 : interaction.IsActive ? ("int_" + interaction.IconSprite + "_active")
                 : ("int_" + interaction.IconSprite + "_inactive")
@@ -53,7 +53,7 @@ public class InteractionPrompt : MonoBehaviour, IOrganiserChild
             spriteRendererInput.enabled = interaction.IsEnabled;
             if (spriteRendererInput.enabled)
             {
-                spriteRendererInput.sprite = SpriteSet.GetSprite(
+                spriteRendererInput.sprite = AssetManager.GetSprite(
                     interaction.IsActive ? ("int_" + interaction.RequiredInput.Name + "_active")
                     : ("int_" + interaction.RequiredInput.Name + "_inactive")
                 );
@@ -65,7 +65,7 @@ public class InteractionPrompt : MonoBehaviour, IOrganiserChild
             spriteRendererTool.enabled = spriteRendererToolOutline.enabled;
             if (spriteRendererToolOutline.enabled)
             {
-                spriteRendererTool.sprite = SpriteSet.GetSprite("int_tool_" + interaction.RequiredTool.ToString().ToLower());
+                spriteRendererTool.sprite = AssetManager.GetSprite("int_tool_" + interaction.RequiredTool.ToString().ToLower());
                 spriteRendererToolOutline.color = (canUseTool || interaction.IsActive) ? Color.white : lightDisabledColour;
                 spriteRendererTool.color = (canUseTool || interaction.IsActive) ? Color.white : darkDisabledColour;
             }

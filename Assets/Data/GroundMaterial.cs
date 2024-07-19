@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Ground Material", menuName = "Ground Material")]
+[CreateAssetMenu(fileName = "GroundMaterial", menuName = "Ground Material")]
 public class GroundMaterial : ScriptableObject
 {
     [SerializeField] public String materialName = "NA";

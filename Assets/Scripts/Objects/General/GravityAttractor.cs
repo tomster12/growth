@@ -23,9 +23,6 @@ public class GravityAttractor : MonoBehaviour
         // Attract active all objects
         foreach (GravityObject obj in GravityObject.gravityObjects)
         {
-            if (!obj.IsEnabled) continue;
-            if (!obj.RB.simulated) continue;
-
             // If within gravity radius
             Vector2 centreDir = Centre - obj.Centre;
             if (centreDir.magnitude < gravityRadius)

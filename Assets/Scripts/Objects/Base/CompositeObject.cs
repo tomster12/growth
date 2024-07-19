@@ -44,6 +44,12 @@ public class CompositeObject : MonoBehaviour
         return (T)parts.GetValueOrDefault(typeof(T), null);
     }
 
+    public bool TryGetPart<T>(out T part) where T : Part
+    {
+        part = GetPart<T>();
+        return part != null;
+    }
+
     public bool RequirePart<T>() where T : Part
     {
         if (!HasPart<T>()) throw new System.Exception("CompositeObject requires " + typeof(T).ToString() + ".");
