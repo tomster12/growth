@@ -17,16 +17,13 @@ public class LongGrassObject : CompositeObject
         base.Awake();
 
         // Add parts
-        AddPart<PartInteractable>();
+        partInteractable = AddPart<PartInteractable>();
         partHighlightable = AddPart<PartHighlightable>();
         partIndicatable = AddPart<PartIndicatable>();
 
         // Initialize interaction
-        interactionCut = new InteractionCut(OnCut);
-        GetPart<PartInteractable>().AddInteraction(interactionCut);
-
-        // Update collider once spawned
-        GrassFeature grassFeature = GetComponent<GrassFeature>();
+        interactionCut = new InteractionToolClick("Cut", "cut", ToolType.Cutter, OnCut);
+        partInteractable.AddInteraction(interactionCut);
     }
 
     protected void Start()
@@ -42,21 +39,21 @@ public class LongGrassObject : CompositeObject
     [SerializeField] private BoxCollider2D boxCollider;
     [SerializeField] private Sprite cutSprite;
 
+    private PartInteractable partInteractable;
     private PartIndicatable partIndicatable;
     private PartHighlightable partHighlightable;
-    private InteractionCut interactionCut;
+    private InteractionToolClick interactionCut;
 
     private void OnCut()
     {
         // Change sprite
         spriteRenderer.sprite = cutSprite;
 
-        // Spawn ingredient
-        Instantiate(grassIngredientPfb, Transform.position, Quaternion.identity);
+        // Spawn ingredient at 90 degrees offset from this
+        Instantiate(grassIngredientPfb, Transform.position, Transform.rotation * Quaternion.Euler(0, 0, 90));
 
-        // Disable highlight and indicate
+        // Disable highlight
         partHighlightable.SetCanHighlight(false);
-        partIndicatable.ToHide = true;
 
         // Update size of collider
         UpdateCollider();

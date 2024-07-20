@@ -45,6 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   repeatMult: 0.8
+  repeatOffset: 0
   materialDottedPfb: {fileID: 2100000, guid: 2fb26cf900ea7494f93ad51734a84ccb, type: 2}
   materialSolidPfb: {fileID: 2100000, guid: 98b84de2cdbe36549a59363e45fafe97, type: 2}
 --- !u!1 &7280224659533181786
@@ -277,6 +278,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   repeatMult: 0.8
+  repeatOffset: 0
   materialDottedPfb: {fileID: 2100000, guid: 2fb26cf900ea7494f93ad51734a84ccb, type: 2}
   materialSolidPfb: {fileID: 2100000, guid: 98b84de2cdbe36549a59363e45fafe97, type: 2}
 --- !u!114 &7280224659533181787
@@ -292,5 +294,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _CL: {fileID: 430661055486523524}
+  craftingRecipeList: {fileID: 11400000, guid: 16cb0870b310a3c4db98f9c3c649de4c, type: 2}
   spriteRenderer: {fileID: 5095080757802738492}
   lineHelper: {fileID: 5819603471502319121}
+  craftingOutlineColor: {r: 0.83, g: 0.83, b: 0.83, a: 1}
+  noCraftingOutlineColor: {r: 0.83, g: 0.83, b: 0.83, a: 1}
+  noCraftColor: {r: 0.36078432, g: 0.36078432, b: 0.36078432, a: 1}
+  craftColor: {r: 1, g: 1, b: 1, a: 1}
+  noCraftOffsetSpeed: 3
+  craftOffsetSpeed: 6
+  repeatMult: 1.6
+  controlForce: 35

@@ -7,6 +7,8 @@ public class PartIngredient : Part
     public override void InitPart(CompositeObject composable)
     {
         base.InitPart(composable);
+        composable.RequirePart<PartHighlightable>();
+        composable.RequirePart<PartControllable>();
     }
 
     public override void DeinitPart()

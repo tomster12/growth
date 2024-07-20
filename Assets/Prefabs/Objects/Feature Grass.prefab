@@ -98,8 +98,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spriteRenderer: {fileID: 5738692934614858330}
+  OnSpawnEvent:
+    m_PersistentCalls:
+      m_Calls: []
   heightNoise:
     valueRange:
-    - 0.8
-    - 1.2
-    noiseScale: 1
+    - 0.9
+    - 1.6
+    noiseScale: 12

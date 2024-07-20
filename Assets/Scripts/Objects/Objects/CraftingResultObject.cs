@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Drawing.Text;
 using UnityEngine;
 
 public class CraftingResultObject : CompositeObject
@@ -21,15 +22,27 @@ public class CraftingResultObject : CompositeObject
         CL.isTrigger = true;
     }
 
+    [Header("References")]
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private PolygonCollider2D polygonCollider => (PolygonCollider2D)CL;
     [SerializeField] private LineHelper lineHelper;
 
+    [Header("Config")]
+    [SerializeField] public Color noCraftColor = new Color(210, 210, 210);
+    [SerializeField] public Color craftColor = Color.white;
+    [SerializeField] public float noCraftOffsetSpeed = 0.7f;
+    [SerializeField] public float craftOffsetSpeed = 1.2f;
+    [SerializeField] public float repeatMult = 1.6f;
+
     private CraftingRecipe recipe;
+    private float repeatOffset;
 
     private void Update()
     {
-        lineHelper.DrawCircle(transform.position, 0.75f, Color.white, 0.1f, LineFill.Dotted);
-        lineHelper.repeatOffset = Time.time;
+        repeatOffset += (recipe == null ? noCraftOffsetSpeed : craftOffsetSpeed) * Time.deltaTime;
+        Color color = recipe == null ? noCraftColor : craftColor;
+        lineHelper.DrawCircle(transform.position, 0.75f, color, 0.1f, LineFill.Dotted);
+        lineHelper.repeatOffset = repeatOffset;
+        lineHelper.repeatMult = repeatMult;
     }
 }
