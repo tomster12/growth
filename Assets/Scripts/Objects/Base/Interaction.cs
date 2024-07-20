@@ -4,7 +4,7 @@ using UnityEngine.Assertions;
 [Serializable]
 public class Interaction
 {
-    public Interaction(string name, string iconSprite, InteractionInput input, ToolType toolType = ToolType.None)
+    public Interaction(string name, string iconSprite, InteractionInput input, ToolType toolType = ToolType.Any)
     {
         this.Name = name;
         this.IconSprite = iconSprite;
@@ -26,7 +26,7 @@ public class Interaction
 
     public virtual bool CanInteract(IInteractor interactor) => IsEnabled && !IsActive && CanUseTool(interactor);
 
-    public virtual bool CanUseTool(IInteractor interactor) => interactor.GetInteractorToolType() == RequiredTool;
+    public virtual bool CanUseTool(IInteractor interactor) => RequiredTool == ToolType.Any || interactor.GetInteractorToolType() == RequiredTool;
 
     public virtual void Update()
     { }

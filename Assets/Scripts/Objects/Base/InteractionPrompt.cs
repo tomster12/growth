@@ -61,7 +61,7 @@ public class InteractionPrompt : MonoBehaviour, IOrganiserChild
             spriteRendererInput.color = (canInteract || interaction.IsActive) ? Color.white : darkDisabledColour;
 
             // Handle tool sprites
-            spriteRendererToolOutline.enabled = interaction.IsEnabled && interaction.RequiredTool != ToolType.None;
+            spriteRendererToolOutline.enabled = interaction.IsEnabled && interaction.RequiredTool != ToolType.Any;
             spriteRendererTool.enabled = spriteRendererToolOutline.enabled;
             if (spriteRendererToolOutline.enabled)
             {

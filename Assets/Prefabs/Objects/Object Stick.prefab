@@ -15,9 +15,11 @@ GameObject:
   - component: {fileID: 3748430920462727284}
   - component: {fileID: 3748430920462727283}
   - component: {fileID: 3748430920462727282}
+  - component: {fileID: 7273359086862986293}
   - component: {fileID: 3748430920462727281}
   - component: {fileID: 3748430920462727289}
   - component: {fileID: 3748430920462727290}
+  - component: {fileID: 2671195934926343700}
   - component: {fileID: 3748430920462727280}
   m_Layer: 0
   m_Name: Object Stick
@@ -33,7 +35,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3748430920462727279}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -8.86, y: 87.39, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -110,7 +112,7 @@ PolygonCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 0.25, y: 1.3333334}
+    oldSize: {x: 0.5833333, y: 1.6666666}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -185,6 +187,21 @@ MonoBehaviour:
   controlAngularDrag: 1
   idleDrag: 0.5
   idleAngularDrag: 0.05
+--- !u!114 &7273359086862986293
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3748430920462727279}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c68b36e5e6f141b4fa8d1cd83375b4b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 1
+  outlineMode: 1
 --- !u!114 &3748430920462727281
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -209,10 +226,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e93a3457992873d43bbf357ad34691f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gripOffset: {x: 0, y: 0}
+  gripOffset: {x: 0, y: 0.35}
   unequipForce: 20
   unequipForceMax: 30
-  toolType: 1
+  toolType: 2
 --- !u!114 &3748430920462727290
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -227,6 +244,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   OffsetFromWorld: 1
   iconType: 0
+--- !u!114 &2671195934926343700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3748430920462727279}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b03974d3a6df954ab7c7f453df78b66, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ingredient: {fileID: 11400000, guid: 71a042b01ff6b594182e45c43f7049a8, type: 2}
 --- !u!114 &3748430920462727280
 MonoBehaviour:
   m_ObjectHideFlags: 0

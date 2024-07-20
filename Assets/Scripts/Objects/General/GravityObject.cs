@@ -22,4 +22,9 @@ public class GravityObject : MonoBehaviour
     {
         gravityObjects.Add(this);
     }
+
+    private void OnDestroy()
+    {
+        gravityObjects.Remove(this);
+    }
 }

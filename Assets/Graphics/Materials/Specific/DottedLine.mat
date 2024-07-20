@@ -69,16 +69,16 @@ Material:
     - _Metallic: 0
     - _Mode: 2
     - _OcclusionStrength: 1
-    - _Offset: 0.27
+    - _Offset: 0
     - _Parallax: 0.02
     - _Rep: 30
     - _RepeatCount: 100
     - _Sharpness: 100
     - _SmoothnessTextureChannel: 0
-    - _Spacing: 5
+    - _Spacing: 4.9
     - _SpecularHighlights: 1
     - _SrcBlend: 5
-    - _Thickness: 1
+    - _Thickness: 0.97
     - _UVSec: 0
     - _ZWrite: 0
     m_Colors:

@@ -57,6 +57,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
     [Header("Crafting Config")]
     [SerializeField] private CraftingRecipeList craftingRecipeList;
     [SerializeField] private float craftingResultControlForce = 35.0f;
+    [SerializeField] private float craftingResultOffset = 1.5f;
 
     private bool inputLMB, inputRMB;
     private Vector2 inputMousePosition;
@@ -294,11 +295,11 @@ public partial class PlayerController : MonoBehaviour, IInteractor
                 if (targetObject.TryGetPart<PartHighlightable>(out var highlightable))
                 {
                     highlightable.SetHighlighted(false);
-                    highlightable.HighlightColor = Color.white;
+                    highlightable.OutlineController.OutlineColor = Color.white;
                 }
 
                 // If last object remove crafting target
-                if (craftingResult != null)
+                if (craftingIngredients.Count == 0)
                 {
                     Destroy(craftingResult.gameObject);
                     craftingResult = null;
@@ -319,7 +320,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
                 if (targetObject.TryGetPart<PartHighlightable>(out var highlightable))
                 {
                     highlightable.SetHighlighted(true);
-                    highlightable.HighlightColor = craftingOutlineColor;
+                    highlightable.OutlineController.OutlineColor = craftingOutlineColor;
                 }
 
                 // If first object instantiate crafting target
@@ -335,7 +336,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
                 if ((bool)(targetObject.GetPart<PartControllable>()?.CanControl))
                 {
                     targetObject.GetPart<PartControllable>().StartControlling();
-                    Vector3 controlPosition = targetObject.Position + targetObject.GetPart<PartPhysical>().GRO.GravityDir.normalized * -1.0f;
+                    Vector3 controlPosition = targetObject.Position + targetObject.GetPart<PartPhysical>().GRO.GravityDir.normalized * -craftingResultOffset;
                     targetObject.GetPart<PartControllable>().SetControlPosition(controlPosition, controlForce);
                 }
 
@@ -676,7 +677,7 @@ public partial class PlayerController // IInteractor
     public ToolType GetInteractorToolType()
     {
         if (IsEquipped) return equippedObject.GetPart<PartEquipable>().ToolType;
-        return ToolType.None;
+        return ToolType.Any;
     }
 
     private float interactionCursorSqueeze = 0.0f;

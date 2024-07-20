@@ -6,6 +6,7 @@
         _Spacing("Spacing", float) = 0.5
         _Thickness("Thickness", float) = 0.5
         _Sharpness("Sharpness", Range(0, 100)) = 100
+        _Offset("Offset", float) = 0
     }
 
     SubShader
@@ -28,6 +29,7 @@
             float _Spacing;
             float _Thickness;
             float _Sharpness;
+            float _Offset;
 
             struct appdata
             {
@@ -57,7 +59,7 @@
 
             fixed4 frag (v2f i) : SV_Target
             {
-                i.uv.x = fmod(i.uv.x, _Spacing);
+                i.uv.x = fmod(i.uv.x + _Offset, _Spacing);
                 float s = length(i.uv - float2(_Spacing, 1.0f) * 0.5);
 
                 fixed4 color = i.color;

@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6324482828172451857}
   - component: {fileID: 2190309437932403872}
   - component: {fileID: 4313430392721774507}
+  - component: {fileID: 5592557552908812780}
   - component: {fileID: 8749861168022408283}
   - component: {fileID: 256450524048045257}
   - component: {fileID: 5534000928018849275}
@@ -149,6 +150,21 @@ MonoBehaviour:
   controlAngularDrag: 1
   idleDrag: 0.5
   idleAngularDrag: 0.05
+--- !u!114 &5592557552908812780
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6200954566009880393}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c68b36e5e6f141b4fa8d1cd83375b4b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 1
+  outlineMode: 1
 --- !u!114 &8749861168022408283
 MonoBehaviour:
   m_ObjectHideFlags: 0

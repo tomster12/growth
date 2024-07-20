@@ -1,7 +1,7 @@
 using UnityEngine;
 
 public enum ToolType
-{ None, Cutter };
+{ None, Any, Cutter };
 
 public class PartEquipable : Part
 {
@@ -75,7 +75,7 @@ public class PartEquipable : Part
     [SerializeField] private Vector2 gripOffset = Vector2.zero;
     [SerializeField] private float unequipForce = 2.0f;
     [SerializeField] private float unequipForceMax = 8.0f;
-    [SerializeField] private ToolType toolType = ToolType.None;
+    [SerializeField] private ToolType toolType = ToolType.Any;
     private bool canEquip = true;
     private Vector2 oldGripPos;
     private Vector2 unequipDir;

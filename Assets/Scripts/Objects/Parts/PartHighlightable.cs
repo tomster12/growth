@@ -2,45 +2,33 @@ using UnityEngine;
 
 public class PartHighlightable : Part
 {
-    public bool Highlighted
-    {
-        get => outlineController.enabled;
-        set
-        {
-            if (!CanHighlight && value) return;
-            outlineController.enabled = value;
-        }
-    }
-
-    public Color HighlightColor { get => outlineController.OutlineColor; set => outlineController.OutlineColor = value; }
-
-    public float HighlightWidth { get => outlineController.OutlineWidth; set => outlineController.OutlineWidth = value; }
+    public OutlineController OutlineController { get; private set; }
 
     public bool CanHighlight { get; private set; } = true;
 
     public override void InitPart(CompositeObject composable)
     {
         base.InitPart(composable);
-        outlineController = gameObject.GetComponent<OutlineController2D>();
-        outlineController ??= gameObject.AddComponent<OutlineController2D>();
-        Highlighted = false;
+        OutlineController = gameObject.GetComponent<OutlineController>();
+        OutlineController ??= gameObject.AddComponent<OutlineController>();
+        OutlineController.enabled = false;
     }
 
     public override void DeinitPart()
     {
-        if (outlineController != null) DestroyImmediate(outlineController);
+        if (OutlineController != null) DestroyImmediate(OutlineController);
         base.DeinitPart();
     }
 
-    public void SetHighlighted(bool highlighted) => Highlighted = highlighted;
-
-    public void SetHighlightColor(Color color) => HighlightColor = color;
+    public void SetHighlighted(bool highlighted)
+    {
+        if (!CanHighlight) return;
+        OutlineController.enabled = highlighted;
+    }
 
     public void SetCanHighlight(bool canHighlight)
     {
         CanHighlight = canHighlight;
-        if (!CanHighlight) Highlighted = false;
+        if (!CanHighlight) OutlineController.enabled = false;
     }
-
-    private OutlineController2D outlineController;
 }

@@ -1,5 +1,52 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3229467235969804264
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8140455612800479471}
+  - component: {fileID: 5819603471502319121}
+  m_Layer: 10
+  m_Name: Circle Line Renderer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8140455612800479471
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3229467235969804264}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6764668557649880005}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5819603471502319121
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3229467235969804264}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34afb01643b30384c98cdc71ab48a908, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  repeatMult: 0.8
+  materialDottedPfb: {fileID: 2100000, guid: 2fb26cf900ea7494f93ad51734a84ccb, type: 2}
+  materialSolidPfb: {fileID: 2100000, guid: 98b84de2cdbe36549a59363e45fafe97, type: 2}
 --- !u!1 &7280224659533181786
 GameObject:
   m_ObjectHideFlags: 0
@@ -10,12 +57,14 @@ GameObject:
   m_Component:
   - component: {fileID: 6764668557649880005}
   - component: {fileID: 5095080757802738492}
-  - component: {fileID: 1297729139244439279}
+  - component: {fileID: 430661055486523524}
   - component: {fileID: 6237457437958817043}
   - component: {fileID: 3170077265008246809}
   - component: {fileID: 6184017018550144007}
   - component: {fileID: 638060363007876024}
+  - component: {fileID: 6435573449924264839}
   - component: {fileID: 5362514798211530824}
+  - component: {fileID: 1916169282752317378}
   - component: {fileID: 7280224659533181787}
   m_Layer: 10
   m_Name: Crafting Target
@@ -33,9 +82,10 @@ Transform:
   m_GameObject: {fileID: 7280224659533181786}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -4.9231853, y: 88.675606, z: 3}
-  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 8140455612800479471}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -80,8 +130,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  m_Color: {r: 0.8962264, g: 0.629895, b: 0.8910716, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 17b1823966558044abcb117e76f66b72, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -91,8 +141,8 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!58 &1297729139244439279
-CircleCollider2D:
+--- !u!60 &430661055486523524
+PolygonCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -101,12 +151,29 @@ CircleCollider2D:
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
-  serializedVersion: 2
-  m_Radius: 0.5
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 0.6666667, y: 1}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Points:
+    m_Paths:
+    - - {x: -0.25, y: 0.5}
+      - {x: -0.33333334, y: 0.25}
+      - {x: -0.25, y: -0.33333334}
+      - {x: -0.083333336, y: -0.5}
+      - {x: 0.16666667, y: -0.4166667}
+      - {x: 0.33333334, y: 0.083333336}
+      - {x: 0.33333334, y: 0.25}
+      - {x: 0.083333336, y: 0.5}
 --- !u!50 &6237457437958817043
 Rigidbody2D:
   serializedVersion: 4
@@ -122,7 +189,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 0
   m_Material: {fileID: 0}
   m_Interpolate: 0
   m_SleepingMode: 1
@@ -170,6 +237,21 @@ MonoBehaviour:
   controlAngularDrag: 1
   idleDrag: 0.5
   idleAngularDrag: 0.05
+--- !u!114 &6435573449924264839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7280224659533181786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c68b36e5e6f141b4fa8d1cd83375b4b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineColor: {r: 0.45834818, g: 0.6327118, b: 0.9433962, a: 1}
+  outlineWidth: 1
+  outlineMode: 1
 --- !u!114 &5362514798211530824
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -182,6 +264,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89abb41acc1177942a2e4ceb73841eb5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1916169282752317378
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7280224659533181786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34afb01643b30384c98cdc71ab48a908, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  repeatMult: 0.8
+  materialDottedPfb: {fileID: 2100000, guid: 2fb26cf900ea7494f93ad51734a84ccb, type: 2}
+  materialSolidPfb: {fileID: 2100000, guid: 98b84de2cdbe36549a59363e45fafe97, type: 2}
 --- !u!114 &7280224659533181787
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -194,4 +291,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6cc724311fb4a494486541248a1745ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _CL: {fileID: 1297729139244439279}
+  _CL: {fileID: 430661055486523524}
+  spriteRenderer: {fileID: 5095080757802738492}
+  lineHelper: {fileID: 5819603471502319121}

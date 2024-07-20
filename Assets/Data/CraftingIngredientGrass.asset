@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b824bd871336832468082712d40dff02, type: 3}
   m_Name: CraftingIngredientGrass
   m_EditorClassIdentifier: 
-  ingredientName: Grass
-  ingredientSprite: {fileID: -241026409, guid: d6fbc988468af194980604443c41fedd, type: 3}
-  ingredientPfb: {fileID: 6200954566009880393, guid: 79a8c41cdda91fc45b642284af140cfe, type: 3}
+  name: Grass
+  sprite: {fileID: 21300000, guid: 52fe0520f3b8af747b08e01def9d3d37, type: 3}
+  pfb: {fileID: 6200954566009880393, guid: 79a8c41cdda91fc45b642284af140cfe, type: 3}

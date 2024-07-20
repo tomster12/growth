@@ -11,7 +11,6 @@ public class CraftingRecipe
         public int amount;
     }
 
-    public string recipeName;
     public RecipeIngredient[] ingredients;
     public RecipeIngredient result;
 }

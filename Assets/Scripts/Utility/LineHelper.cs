@@ -6,6 +6,7 @@ public enum LineFill
 public class LineHelper : MonoBehaviour
 {
     public float repeatMult = 0.8f;
+    public float repeatOffset = 0.0f;
     public LineFill CurrentLineFill { get; private set; } = LineFill.None;
 
     public void DrawCircle(Vector3 centre, float radius, Color color, float width = 0.1f, LineFill lineFill = LineFill.Solid)
@@ -32,6 +33,7 @@ public class LineHelper : MonoBehaviour
         {
             float length = 2 * radius * Mathf.PI;
             materialDotted.SetFloat("_Rep", length * repeatMult);
+            materialDotted.SetFloat("_Offset", repeatOffset);
         }
     }
 
@@ -55,6 +57,7 @@ public class LineHelper : MonoBehaviour
         {
             float length = (to - from).magnitude;
             materialDotted.SetFloat("_Rep", length * repeatMult);
+            materialDotted.SetFloat("_Offset", repeatOffset);
         }
     }
 
@@ -82,6 +85,7 @@ public class LineHelper : MonoBehaviour
         {
             float length = Utility.CalculateBezierLength(from, control, to, segmentCount);
             materialDotted.SetFloat("_Rep", length * repeatMult);
+            materialDotted.SetFloat("_Offset", repeatOffset);
         }
     }
 
@@ -91,6 +95,7 @@ public class LineHelper : MonoBehaviour
 
     [SerializeField] private Material materialDottedPfb;
     [SerializeField] private Material materialSolidPfb;
+
     private Material materialDotted;
     private Material materialSolid;
     private LineRenderer lineRenderer;
