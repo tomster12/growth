@@ -30,7 +30,6 @@ public partial class PlayerController : MonoBehaviour, IInteractor
     [SerializeField] private float maxHoverDistance = 15.0f;
     [SerializeField] private float maxControlDistance = 9.0f;
     [SerializeField] private float maxControlWarningThreshold = 2.0f;
-    [SerializeField] private float controlCharacterSlowdown = 0.4f;
     [SerializeField] private float controlDropTimerDuration = 0.5f;
     [SerializeField] private float controlLimitColorLerpSpeed = 10.0f;
     [SerializeField] private Color controlLimitColorWarning = new Color(0.774f, 0.624f, 0.624f, 0.098f);
@@ -60,6 +59,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
     [SerializeField] private CraftingRecipeList craftingRecipeList;
     [SerializeField] private float craftingResultControlForce = 35.0f;
     [SerializeField] private float craftingResultOffset = 1.5f;
+    [SerializeField] private float craftingMaximumDistance = 10.0f;
 
     private bool inputLMB, inputRMB;
     private Vector2 inputMousePosition;
@@ -78,7 +78,9 @@ public partial class PlayerController : MonoBehaviour, IInteractor
     private CompositeObject equippedObject;
     private int equippedLeg;
     private List<CompositeObject> craftingIngredients = new List<CompositeObject>();
+    private List<CompositeObject> craftingIngredientsUsed = new List<CompositeObject>();
     private Dictionary<CraftingIngredient, List<CompositeObject>> craftingIngredientsAcc = new Dictionary<CraftingIngredient, List<CompositeObject>>();
+    private CraftingRecipe craftingRecipe;
     private CraftingResultObject craftingResult;
     private float CursorSqueeze => interactionCursorSqueeze;
     private bool IsCraftingTarget => craftingIngredients.Contains(targetObject);
@@ -175,7 +177,6 @@ public partial class PlayerController : MonoBehaviour, IInteractor
                 SetTarget(hovered);
                 targetState = (bool)hovered ? TargettingState.Hovering : TargettingState.None;
                 targetObject?.GetPart<PartHighlightable>()?.SetHighlighted(true);
-                targetObject?.GetPart<PartIndicatable>()?.Hide();
             }
         }
     }
@@ -287,72 +288,50 @@ public partial class PlayerController : MonoBehaviour, IInteractor
 
     private void UpdateCrafting()
     {
+        // Drop ingredients when too far away
+        if (IsCrafting)
+        {
+            for (int i = craftingIngredients.Count - 1; i >= 0; i--)
+            {
+                CompositeObject ingredient = craftingIngredients[i];
+                float dist = (ingredient.Position - (Vector2)playerMovement.Transform.position).magnitude;
+                if (dist > craftingMaximumDistance)
+                {
+                    StopCrafting(ingredient);
+                    UpdateCraftingRecipe();
+                }
+            }
+        }
+
         // Is [Hovering] and RMB down so handle toggle crafting
         if (targetState == TargettingState.Hovering && inputRMB)
         {
-            // Object is crafting so remove from crafting
-            if (IsCraftingTarget)
+            // Object is not crafting so add to crafting
+            if (CanCraftTarget)
             {
                 inputRMB = false;
-                craftingIngredients.Remove(targetObject);
-                targetObject.GetPart<PartHighlightable>().SetHighlighted(false);
-                targetObject.GetPart<PartHighlightable>().OutlineController.OutlineColor = Color.white;
-                targetObject.GetPart<PartControllable>().StopControlling();
-                UpdateCraftingIngredients();
-                if (craftingIngredients.Count == 0)
+                if (StartCrafting(targetObject))
                 {
-                    Destroy(craftingResult.gameObject);
-                    craftingResult = null;
+                    UpdateCraftingTarget(craftingIngredients.Count == 1);
+                    UpdateCraftingRecipe();
                 }
             }
 
-            // Object is not crafting so add to crafting
-            else if (CanCraftTarget)
+            // Object is crafting so remove from crafting
+            else if (IsCraftingTarget)
             {
                 inputRMB = false;
-                craftingIngredients.Add(targetObject);
-                targetObject.GetPart<PartHighlightable>().SetHighlighted(true);
-                Vector3 controlPosition = targetObject.Position + targetObject.GetPart<PartPhysical>().GRO.GravityDir.normalized * -craftingResultOffset;
-                targetObject.GetPart<PartControllable>().StartControlling();
-                targetObject.GetPart<PartControllable>().SetControlPosition(controlPosition, controlForce);
-                UpdateCraftingTarget(craftingIngredients.Count == 1);
-                UpdateCraftingIngredients();
+                StopCrafting(targetObject);
+                UpdateCraftingRecipe();
             }
         }
 
         UpdateCraftingTarget();
     }
 
-    private void UpdateCraftingTarget(bool initialUpdate = false)
+    private void UpdateCraftingRecipe()
     {
-        if (!IsCrafting) return;
-
-        // Initialize target if first update
-        if (initialUpdate)
-        {
-            GameObject craftingTargetGO = Instantiate(craftingTargetPfb, targetObject.Position, Quaternion.identity);
-            craftingResult = craftingTargetGO.GetComponent<CraftingResultObject>();
-            craftingResult.GetPart<PartControllable>().StartControlling();
-            craftingResult.GetPart<PartHighlightable>().OutlineController.OutlineColor = craftingTargetOutlineColor;
-        }
-
-        // Update crafting target object position
-        Vector2 targetPos = Vector2.zero;
-        foreach (CompositeObject obj in craftingIngredients) targetPos += obj.Position;
-        targetPos /= craftingIngredients.Count;
-        targetPos += -craftingResult.GetPart<PartPhysical>().GRO.GravityDir.normalized * 1.5f;
-        craftingResult.GetPart<PartControllable>().SetControlPosition(targetPos, craftingResultControlForce);
-
-        // Set position if first update
-        if (initialUpdate)
-        {
-            craftingResult.GetPart<PartPhysical>().RB.position = targetPos;
-        }
-    }
-
-    private void UpdateCraftingIngredients()
-    {
-        // Tranpose object <-> ingredient into a dictionary
+        // Tranpose composable objects <-> ingredient part into a dictionary
         craftingIngredientsAcc = new Dictionary<CraftingIngredient, List<CompositeObject>>();
         foreach (CompositeObject obj in craftingIngredients)
         {
@@ -384,22 +363,64 @@ public partial class PlayerController : MonoBehaviour, IInteractor
         }
 
         // If viable recipes then update crafting target object
+        craftingIngredientsUsed.Clear();
         if (viableRecipes.Count > 0)
         {
-            CraftingRecipe recipe = viableRecipes[0];
-            craftingResult.SetRecipe(recipe);
+            craftingRecipe = viableRecipes[0];
 
             // Highlight used ingredients
-            foreach (var recipeIngredient in recipe.ingredients)
+            foreach (var recipeIngredient in craftingRecipe.ingredients)
             {
                 for (int i = 0; i < recipeIngredient.amount; i++)
                 {
-                    CompositeObject obj = craftingIngredientsAcc[recipeIngredient.ingredient][i];
-                    obj.GetPart<PartHighlightable>().OutlineController.OutlineColor = craftingUsedOutlineColor;
+                    CompositeObject ingredientCO = craftingIngredientsAcc[recipeIngredient.ingredient][i];
+                    ingredientCO.GetPart<PartHighlightable>().OutlineController.OutlineColor = craftingUsedOutlineColor;
+                    craftingIngredientsUsed.Add(ingredientCO);
                 }
             }
         }
-        else craftingResult.SetRecipe(null);
+    }
+
+    private void UpdateCraftingTarget(bool initialUpdate = false)
+    {
+        if (!IsCrafting)
+        {
+            // Destroy crafting target if no longer crafting
+            if (craftingResult != null)
+            {
+                Destroy(craftingResult.gameObject);
+                craftingResult = null;
+            }
+
+            return;
+        }
+
+        // Initialize target if first update
+        if (initialUpdate)
+        {
+            GameObject craftingTargetGO = Instantiate(craftingTargetPfb, targetObject.Position, Quaternion.identity);
+            craftingResult = craftingTargetGO.GetComponent<CraftingResultObject>();
+            craftingResult.GetPart<PartControllable>().StartControlling();
+            craftingResult.GetPart<PartHighlightable>().OutlineController.OutlineColor = craftingTargetOutlineColor;
+            craftingResult.OnCraft += OnCraft;
+        }
+
+        // Set recipe
+        craftingResult.SetRecipe(craftingRecipe);
+
+        // Update crafting target object position
+        Vector2 targetPos = Vector2.zero;
+        foreach (CompositeObject obj in craftingIngredients) targetPos += obj.Position;
+        targetPos /= craftingIngredients.Count;
+        Vector2 worldDir = World.GetClosestWorldCheap(targetPos).GetCentre() - targetPos;
+        targetPos += -worldDir.normalized * 1.5f;
+        craftingResult.GetPart<PartControllable>().SetControlPosition(targetPos, craftingResultControlForce);
+
+        // Set position if first update
+        if (initialUpdate)
+        {
+            craftingResult.GetPart<PartPhysical>().RB.position = targetPos;
+        }
     }
 
     private void UpdateEquipped()
@@ -563,11 +584,15 @@ public partial class PlayerController : MonoBehaviour, IInteractor
     {
         if (!CanControlTarget) throw new System.Exception("Cannot control target.");
         targetState = TargettingState.Controlling;
+
         if (!targetObject.GetPart<PartControllable>().StartControlling()) throw new System.Exception("Failed to control target.");
         targetObject.GetPart<PartControllable>().SetControlPosition(targetObject.Position, controlForce);
+
         targetControlLH.SetActive(true);
         targetControlLimitLH.SetActive(true);
         targetControlLimitColor = new Color(controlLimitColorWarning.r, controlLimitColorWarning.g, controlLimitColorWarning.b, 0.0f);
+
+        targetObject.GetPart<PartIndicatable>()?.Hide();
 
         // Set controlling leg
         Vector2 targetDir = targetObject.Position - (Vector2)playerMovement.Transform.position;
@@ -604,6 +629,52 @@ public partial class PlayerController : MonoBehaviour, IInteractor
         playerLegs.UnsetOverrideLeg(equippedLeg);
         equippedObject = null;
         equippedLeg = -1;
+    }
+
+    private bool StartCrafting(CompositeObject ingredient)
+    {
+        // Check not too far away from other ingredients
+        foreach (CompositeObject obj in craftingIngredients)
+        {
+            float dist = (obj.Position - ingredient.Position).magnitude;
+            if (dist > craftingMaximumDistance) return false;
+        }
+
+        craftingIngredients.Add(ingredient);
+        ingredient.GetPart<PartHighlightable>().SetHighlighted(true);
+        Vector3 controlPosition = ingredient.Position + ingredient.GetPart<PartPhysical>().GRO.GravityDir.normalized * -craftingResultOffset;
+        ingredient.GetPart<PartIndicatable>()?.Hide();
+        ingredient.GetPart<PartControllable>().StartControlling();
+        ingredient.GetPart<PartControllable>().SetControlPosition(controlPosition, controlForce);
+        return true;
+    }
+
+    private void StopCrafting(CompositeObject ingredient)
+    {
+        craftingIngredients.Remove(ingredient);
+        ingredient.GetPart<PartHighlightable>().SetHighlighted(false);
+        ingredient.GetPart<PartHighlightable>().OutlineController.OutlineColor = Color.white;
+        ingredient.GetPart<PartControllable>().StopControlling();
+    }
+
+    private void OnCraft()
+    {
+        for (int i = craftingIngredients.Count - 1; i >= 0; i--)
+        {
+            CompositeObject ingredient = craftingIngredients[i];
+            if (!craftingIngredientsUsed.Contains(ingredient)) continue;
+            ingredient.GetPart<PartIngredient>().UseIngredient();
+            craftingIngredients.Remove(ingredient);
+        }
+
+        craftingResult.CreateResult();
+        craftingResult = null;
+
+        UpdateCraftingRecipe();
+        UpdateCraftingTarget();
+
+        targetObject = null;
+        targetState = TargettingState.None;
     }
 
     private bool CanTarget(CompositeObject compositeObject)

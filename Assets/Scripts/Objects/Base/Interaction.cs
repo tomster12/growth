@@ -6,23 +6,24 @@ public class Interaction
 {
     public Interaction(string name, string iconSprite, InteractionInput input, ToolType toolType = ToolType.Any)
     {
-        this.Name = name;
-        this.IconSprite = iconSprite;
-        this.RequiredInput = input;
-        this.RequiredTool = toolType;
+        Name = name;
+        IconSprite = iconSprite;
+        RequiredInput = input;
+        RequiredTool = toolType;
         IsEnabled = true;
         IsActive = false;
     }
-
-    public enum VisibilityType
-    { Hidden, Input, Icon, Text }
 
     public string Name { get; private set; }
     public string IconSprite { get; private set; }
     public InteractionInput RequiredInput { get; protected set; }
     public ToolType RequiredTool { get; protected set; }
-    public bool IsEnabled { get; protected set; }
     public bool IsActive { get; protected set; }
+    public bool IsEnabled { get; set; }
+    public bool SpriteVisible { get; private set; } = true;
+    public bool IconVisible { get; private set; } = true;
+    public bool InputVisible { get; private set; } = true;
+    public bool ToolVisible { get; private set; } = true;
 
     public virtual bool CanInteract(IInteractor interactor) => IsEnabled && !IsActive && CanUseTool(interactor);
 
@@ -43,6 +44,14 @@ public class Interaction
         Assert.IsTrue(IsActive);
         this.interactor = null;
         IsActive = false;
+    }
+
+    public void SetVisibility(bool sprite, bool icon, bool input, bool tool)
+    {
+        SpriteVisible = sprite;
+        IconVisible = icon;
+        InputVisible = input;
+        ToolVisible = tool;
     }
 
     protected IInteractor interactor;

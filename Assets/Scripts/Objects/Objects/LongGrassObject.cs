@@ -22,7 +22,7 @@ public class LongGrassObject : CompositeObject
         partIndicatable = AddPart<PartIndicatable>();
 
         // Initialize interaction
-        interactionCut = new InteractionToolClick("Cut", "cut", ToolType.Cutter, OnCut);
+        interactionCut = new InteractionClick("Cut", "cut", OnCut, ToolType.Cutter);
         partInteractable.AddInteraction(interactionCut);
     }
 
@@ -42,12 +42,15 @@ public class LongGrassObject : CompositeObject
     private PartInteractable partInteractable;
     private PartIndicatable partIndicatable;
     private PartHighlightable partHighlightable;
-    private InteractionToolClick interactionCut;
+    private InteractionClick interactionCut;
 
     private void OnCut()
     {
         // Change sprite
         spriteRenderer.sprite = cutSprite;
+
+        // Disable interaction
+        interactionCut.IsEnabled = false;
 
         // Spawn ingredient at 90 degrees offset from this
         Instantiate(grassIngredientPfb, Transform.position, Transform.rotation * Quaternion.Euler(0, 0, 90));

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class PartIndicatable : Part
@@ -108,6 +109,11 @@ public class PartIndicatable : Part
     private OffsetType offsetType = OffsetType.ClosestWorld;
     private GravityObject offsetGRO;
     private Vector2 offsetDir = Vector2.zero;
+
+    private void OnDestroy()
+    {
+        if (indicator != null) DestroyImmediate(indicator.gameObject);
+    }
 
     private void Update()
     {

@@ -41,16 +41,19 @@ public class InteractionPrompt : MonoBehaviour, IOrganiserChild
             bool canInteract = interaction.CanInteract(interactor);
 
             // Handle icon sprite
-            spriteRendererIcon.enabled = true;
-            spriteRendererIcon.sprite = AssetManager.GetSprite(
-                !interaction.IsEnabled ? ("int_disabled")
-                : interaction.IsActive ? ("int_" + interaction.IconSprite + "_active")
-                : ("int_" + interaction.IconSprite + "_inactive")
-            );
-            spriteRendererIcon.color = (canInteract || interaction.IsActive) ? Color.white : darkDisabledColour;
+            spriteRendererIcon.enabled = interaction.IconVisible;
+            if (spriteRendererIcon.enabled)
+            {
+                spriteRendererIcon.sprite = AssetManager.GetSprite(
+                    !interaction.IsEnabled ? ("int_disabled")
+                    : interaction.IsActive ? ("int_" + interaction.IconSprite + "_active")
+                    : ("int_" + interaction.IconSprite + "_inactive")
+                );
+                spriteRendererIcon.color = (canInteract || interaction.IsActive) ? Color.white : darkDisabledColour;
+            }
 
             // Handle input sprite
-            spriteRendererInput.enabled = interaction.IsEnabled;
+            spriteRendererInput.enabled = interaction.InputVisible;
             if (spriteRendererInput.enabled)
             {
                 spriteRendererInput.sprite = AssetManager.GetSprite(
@@ -61,13 +64,13 @@ public class InteractionPrompt : MonoBehaviour, IOrganiserChild
             spriteRendererInput.color = (canInteract || interaction.IsActive) ? Color.white : darkDisabledColour;
 
             // Handle tool sprites
-            spriteRendererToolOutline.enabled = interaction.IsEnabled && interaction.RequiredTool != ToolType.Any;
+            spriteRendererToolOutline.enabled = interaction.RequiredTool != ToolType.Any && interaction.ToolVisible;
             spriteRendererTool.enabled = spriteRendererToolOutline.enabled;
             if (spriteRendererToolOutline.enabled)
             {
                 spriteRendererTool.sprite = AssetManager.GetSprite("int_tool_" + interaction.RequiredTool.ToString().ToLower());
-                spriteRendererToolOutline.color = (canUseTool || interaction.IsActive) ? Color.white : lightDisabledColour;
-                spriteRendererTool.color = (canUseTool || interaction.IsActive) ? Color.white : darkDisabledColour;
+                spriteRendererToolOutline.color = (canInteract || interaction.IsActive) ? Color.white : lightDisabledColour;
+                spriteRendererTool.color = (canInteract || interaction.IsActive) ? Color.white : darkDisabledColour;
             }
         }
 

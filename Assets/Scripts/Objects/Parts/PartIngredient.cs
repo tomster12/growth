@@ -16,5 +16,10 @@ public class PartIngredient : Part
         base.DeinitPart();
     }
 
+    public void UseIngredient()
+    {
+        DestroyImmediate(gameObject);
+    }
+
     [SerializeField] private CraftingIngredient ingredient;
 }
