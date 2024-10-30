@@ -189,7 +189,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36d4504721c169747b2a1765e18355a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  OffsetFromWorld: 1
   iconType: 1
 --- !u!114 &5534000928018849275
 MonoBehaviour:
@@ -200,7 +199,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6200954566009880393}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b03974d3a6df954ab7c7f453df78b66, type: 3}
+  m_Script: {fileID: 11500000, guid: 918079f42fc42ba45bc03375c684b181, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ingredient: {fileID: 11400000, guid: 75b1936b6037f7040ad596aeefa7a080, type: 2}

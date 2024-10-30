@@ -66,7 +66,7 @@ public class PluckableStoneObject : CompositeObject
         IsPlucked = true;
 
         // Add ingredient part and change indicator accordingly
-        AddPart<PartIngredient>();
+        AddPart<PartCraftingIngredient>();
         partIndicatable.SetIcon(PartIndicatable.IconType.Ingredient);
         partIndicatable.SetOffsetGravity(partPhysical.GRO);
     }

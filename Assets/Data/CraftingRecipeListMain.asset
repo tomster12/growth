@@ -13,7 +13,9 @@ MonoBehaviour:
   m_Name: CraftingRecipeListMain
   m_EditorClassIdentifier: 
   recipes:
-  - ingredients:
+  - requiredTool: 1
+    requiredObject: {fileID: 0}
+    ingredients:
     - ingredient: {fileID: 11400000, guid: 75b1936b6037f7040ad596aeefa7a080, type: 2}
       amount: 2
     result:

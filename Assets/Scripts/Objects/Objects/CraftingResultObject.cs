@@ -4,7 +4,7 @@ using System;
 
 public class CraftingResultObject : CompositeObject
 {
-    public Action OnCraft = delegate { };
+    public Action OnClick = delegate { };
 
     public void SetRecipe(CraftingRecipe recipe)
     {
@@ -25,7 +25,8 @@ public class CraftingResultObject : CompositeObject
     {
         if (recipe == null) return;
         CraftingIngredient result = recipe.result.ingredient;
-        Instantiate(result.pfb, transform.position, Quaternion.identity);
+        GameObject resultGO = Instantiate(result.pfb, transform.position, Quaternion.identity);
+        GameLayers.SetLayer(resultGO.transform, GameLayer.Foreground);
         DestroyImmediate(gameObject);
     }
 
@@ -75,5 +76,5 @@ public class CraftingResultObject : CompositeObject
         lineHelper.repeatMult = repeatMult;
     }
 
-    private void OnInteract() => OnCraft();
+    private void OnInteract() => OnClick();
 }

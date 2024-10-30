@@ -1,8 +1,5 @@
 using UnityEngine;
 
-public enum ToolType
-{ None, Any, Cutter };
-
 public class PartEquipable : Part
 {
     public ToolType ToolType => toolType;
