@@ -53,7 +53,8 @@ public class LongGrassObject : CompositeObject
         interactionCut.IsEnabled = false;
 
         // Spawn ingredient at 90 degrees offset from this
-        Instantiate(grassIngredientPfb, Transform.position, Transform.rotation * Quaternion.Euler(0, 0, 90));
+        GameObject grass = Instantiate(grassIngredientPfb, Transform.position, Transform.rotation * Quaternion.Euler(0, 0, 90));
+        GameLayers.SetLayer(grass.transform, GameLayer.Foreground);
 
         // Disable highlight
         partHighlightable.SetCanHighlight(false);

@@ -22,7 +22,7 @@ public class PartEquipable : Part
 
         // Set variables
         IsEquipped = true;
-        GameLayers.SetLayer(Composable.Transform, GameLayer.Tools);
+        GameLayers.SetLayer(Composable.Transform, GameLayer.Foreground);
         Physical.SetEnabled(false);
 
         return true;
@@ -61,7 +61,7 @@ public class PartEquipable : Part
         Vector2 gripPos = handPos + (Vector2)Composable.Transform.TransformDirection(gripOffset);
         unequipDir = gripPos - oldGripPos;
         oldGripPos = gripPos;
-        Composable.Transform.position = new Vector3(gripPos.x, gripPos.y, GameLayers.LAYER_MAPPINGS[GameLayer.Tools].posZ);
+        Composable.Transform.position = GameLayers.OnLayer(gripPos, GameLayer.Foreground);
     }
 
     public void SetCanEquip(bool canEquip) => this.canEquip = canEquip;

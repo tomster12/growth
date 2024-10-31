@@ -5,7 +5,7 @@ public class PartInteractable : Part
 {
     public List<Interaction> Interactions { get; private set; } = new List<Interaction>();
 
-    public bool CanInteractAny(IInteractor interactor) => Interactions.Where(i => i.CanInteract(interactor)).Count() > 0;
+    public bool CanInteractAny(IInteractor interactor) => Interactions.Where(i => i.CanStartInteracting(interactor)).Count() > 0;
 
     public override void InitPart(CompositeObject composable)
     {

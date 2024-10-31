@@ -37,8 +37,7 @@ public class InteractionPrompt : MonoBehaviour, IOrganiserChild
     {
         if (IsSet)
         {
-            bool canUseTool = interaction.CanUseTool(interactor);
-            bool canInteract = interaction.CanInteract(interactor);
+            bool canInteract = interaction.CanStartInteracting(interactor);
 
             // Handle icon sprite
             spriteRendererIcon.enabled = interaction.IconVisible;

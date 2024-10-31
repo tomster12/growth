@@ -221,6 +221,7 @@ MonoBehaviour:
   pluckTimerMax: 2
   pluckVelocity: 12.5
   pluckPsysPfb: {fileID: 5503937232138274497, guid: 3337d54cdf864b14894aa73dc2f9a456, type: 3}
+  craftingIngredient: {fileID: 11400000, guid: 8ded31c01e0f01c43be1c1c5fb7c774e, type: 2}
 --- !u!114 &-7607101712983403901
 MonoBehaviour:
   m_ObjectHideFlags: 0

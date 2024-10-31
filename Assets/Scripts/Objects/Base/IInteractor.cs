@@ -2,7 +2,7 @@
 
 public interface IInteractor
 {
-    public InputEvent PollInput(InteractionInput input);
+    public void OnInteractionFinished();
 
     public void SetInteractionEmphasis(float amount);
 

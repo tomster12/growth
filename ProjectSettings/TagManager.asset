@@ -16,9 +16,9 @@ TagManager:
   - 
   - Velocity
   - Terrain
-  - Background
-  - Player
-  - Foreground
+  - Decor
+  - World
+  - 
   - Outside UI
   - 
   - 

@@ -16,7 +16,7 @@ public class GrassFeature : MonoBehaviour, IWorldFeature
         // Place correctly
         Vector3 dir = (edge.b - edge.a);
         transform.right = dir.normalized;
-        transform.position = Utility.WithZ(edge.a + dir / 2.0f, transform.position.z);
+        transform.position = edge.a + dir / 2.0f;
 
         // Grow sprite to correct size
         float width = dir.magnitude + 0.04f;

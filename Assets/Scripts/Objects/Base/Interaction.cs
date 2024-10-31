@@ -25,16 +25,22 @@ public class Interaction
     public bool InputVisible { get; private set; } = true;
     public bool ToolVisible { get; private set; } = true;
 
-    public virtual bool CanInteract(IInteractor interactor) => IsEnabled && !IsActive && CanUseTool(interactor);
+    public virtual bool CanStartInteracting(IInteractor interactor)
+    {
+        return IsEnabled && !IsActive && HasRequiredTool(interactor);
+    }
 
-    public virtual bool CanUseTool(IInteractor interactor) => RequiredTool == ToolType.Any || interactor.GetInteractorToolType() == RequiredTool;
+    public virtual bool HasRequiredTool(IInteractor interactor)
+    {
+        return RequiredTool == ToolType.Any || interactor.GetInteractorToolType() == RequiredTool;
+    }
 
     public virtual void Update()
     { }
 
     public virtual void StartInteracting(IInteractor interactor)
     {
-        Assert.IsTrue(CanInteract(interactor));
+        Assert.IsTrue(CanStartInteracting(interactor));
         this.interactor = interactor;
         IsActive = true;
     }
@@ -42,7 +48,8 @@ public class Interaction
     public virtual void StopInteracting()
     {
         Assert.IsTrue(IsActive);
-        this.interactor = null;
+        interactor.OnInteractionFinished();
+        interactor = null;
         IsActive = false;
     }
 

@@ -11,6 +11,11 @@ public class PartCraftingIngredient : Part
         composable.RequirePart<PartControllable>();
     }
 
+    public void SetIngredient(CraftingIngredient ingredient)
+    {
+        this.ingredient = ingredient;
+    }
+
     public void UseIngredient()
     {
         DestroyImmediate(gameObject);

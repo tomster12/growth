@@ -1,4 +1,5 @@
 using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering.Universal;
 
@@ -53,6 +54,7 @@ public class PlayerCamera : MonoBehaviour
     [Header("References")]
     [SerializeField] private PixelPerfectCamera pixelPerfectCamera;
     [SerializeField] private Camera outsideUICamera;
+    [SerializeField] private RenderTexture outsideUITexture;
     [SerializeField] private Transform cameraTfm;
 
     [Header("Config")]
@@ -69,10 +71,7 @@ public class PlayerCamera : MonoBehaviour
 
     private void Awake()
     {
-        // Set initial zoom level
-        pixelPerfectCamera.refResolutionX = 2 * Mathf.FloorToInt(0.5f * Screen.width / zoomLevel);
-        pixelPerfectCamera.refResolutionY = 2 * Mathf.FloorToInt(0.5f * Screen.height / zoomLevel);
-        outsideUICamera.orthographicSize = Mathf.FloorToInt(0.5f * Screen.height / zoomLevel) / 12;
+        UpdateCamerasToZoom();
         SetModeFree();
     }
 
@@ -90,11 +89,25 @@ public class PlayerCamera : MonoBehaviour
         {
             zoomLevel += Mathf.RoundToInt(scrollWheelInput * 10);
             zoomLevel = Mathf.Clamp(zoomLevel, zoomLevelMin, zoomLevelMax);
-            pixelPerfectCamera.refResolutionX = 2 * Mathf.FloorToInt(0.5f * Screen.width / zoomLevel);
-            pixelPerfectCamera.refResolutionY = 2 * Mathf.FloorToInt(0.5f * Screen.height / zoomLevel);
-            outsideUICamera.orthographicSize = Mathf.FloorToInt(0.5f * Screen.height / zoomLevel) / 12;
+            UpdateCamerasToZoom();
             OnZoomChangeEvent(zoomLevel);
         }
+    }
+
+    [ContextMenu("Update Cameras To Zoom")]
+    private void UpdateCamerasToZoom()
+    {
+        // Get screen resolution
+        string[] res = UnityStats.screenRes.Split('x');
+        float screenWidth = int.Parse(res[0]);
+        float screenHeight = int.Parse(res[1]);
+
+        // Round PP camera resolution to nearest even number
+        pixelPerfectCamera.refResolutionX = 2 * Mathf.FloorToInt(0.5f * screenWidth / zoomLevel);
+        pixelPerfectCamera.refResolutionY = 2 * Mathf.FloorToInt(0.5f * screenHeight / zoomLevel);
+
+        // Update outside UI camera size to match PP cameras
+        outsideUICamera.orthographicSize = Mathf.FloorToInt(0.5f * screenHeight / zoomLevel) / 12;
     }
 
     private void FixedUpdate()

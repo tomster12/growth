@@ -27,7 +27,7 @@ public class CraftingResultObject : CompositeObject
         CraftingIngredient result = recipe.result.ingredient;
         GameObject resultGO = Instantiate(result.pfb, transform.position, Quaternion.identity);
         GameLayers.SetLayer(resultGO.transform, GameLayer.Foreground);
-        DestroyImmediate(gameObject);
+        SetRecipe(null);
     }
 
     protected override void Awake()

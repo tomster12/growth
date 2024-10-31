@@ -246,7 +246,7 @@ public class PlayerLegs : MonoBehaviour
         // TODO: Change colour based on material
         if (transform != playerMovement.ClosestWorld.WorldGenerator.Transform) return;
         GameObject particleGO = Instantiate(stepParticlePfb);
-        particleGO.transform.position = pos;
+        particleGO.transform.position = GameLayers.OnLayer(pos, GameLayer.Particles);
     }
 
     private void GetLegEndRaycast(int footIndex, float stepPct, out Transform transform, out Vector2 pos, out bool isTouching)

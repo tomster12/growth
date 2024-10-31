@@ -17,7 +17,7 @@ public class InteractionPluck : Interaction
 
     public bool IsPlucked { get; private set; }
 
-    public override bool CanInteract(IInteractor interactor) => base.CanInteract(interactor) && !IsPlucked;
+    public override bool CanStartInteracting(IInteractor interactor) => base.CanStartInteracting(interactor) && !IsPlucked;
 
     public override void Update()
     {

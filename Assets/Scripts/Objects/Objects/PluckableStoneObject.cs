@@ -38,6 +38,7 @@ public class PluckableStoneObject : CompositeObject
     [SerializeField] private float pluckTimerMax = 2.0f;
     [SerializeField] private float pluckVelocity = 12.5f;
     [SerializeField] private GameObject pluckPsysPfb;
+    [SerializeField] private CraftingIngredient craftingIngredient;
 
     private PartIndicatable partIndicatable;
     private PartPhysical partPhysical;
@@ -63,10 +64,12 @@ public class PluckableStoneObject : CompositeObject
         GameObject particlesGO = Instantiate(pluckPsysPfb);
         particlesGO.transform.position = partPhysical.RB.transform.position;
         particlesGO.transform.up = PluckDir.normalized;
+        GameLayers.SetLayer(particlesGO.transform, GameLayer.Particles);
         IsPlucked = true;
 
         // Add ingredient part and change indicator accordingly
         AddPart<PartCraftingIngredient>();
+        GetPart<PartCraftingIngredient>().SetIngredient(craftingIngredient);
         partIndicatable.SetIcon(PartIndicatable.IconType.Ingredient);
         partIndicatable.SetOffsetGravity(partPhysical.GRO);
     }

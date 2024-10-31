@@ -150,7 +150,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
         // Show indicators on tab press of nearby objects
         if (Input.GetKeyDown(KeyCode.Tab))
         {
-            IEnumerator showIndicator(PartIndicatable part, float wait, float time)
+            IEnumerator showWithDelay(PartIndicatable part, float wait, float time)
             {
                 yield return new WaitForSeconds(wait);
                 part.Show(time);
@@ -164,7 +164,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
                 if (obj == equippedObject) continue;
                 var part = obj.GetPart<PartIndicatable>();
                 float dist = (obj.Position - (Vector2)playerMovement.Transform.position).magnitude;
-                if (dist < indicateDistance) StartCoroutine(showIndicator(part, dist / indicateSpeed, indicateTimerMax));
+                if (dist < indicateDistance) StartCoroutine(showWithDelay(part, dist / indicateSpeed, indicateTimerMax));
             }
         }
     }
@@ -204,19 +204,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
         }
     }
 
-    #region Target Hovering / Controlling / Interacting
-
-    private bool CanControlTarget => targetState != TargetState.None && !IsCraftingWithTarget
-        && targetObject.HasPart<PartControllable>() && targetObject.GetPart<PartControllable>().CanControl;
-
-    private bool CanInteractAnyTarget => targetState != TargetState.None && !IsCraftingWithTarget
-        && targetObject.HasPart<PartInteractable>() && targetObject.GetPart<PartInteractable>().CanInteractAny(this);
-
-    private bool CanTarget(CompositeObject compositeObject)
-    {
-        if (equippedObject == compositeObject) return false;
-        return compositeObject.CanTarget;
-    }
+    #region Hovering
 
     private void UpdateTargetHovering()
     {
@@ -243,7 +231,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
             if (hovered != targetObject)
             {
                 // Unset old target (if it is not null)
-                if (!IsCraftingWithTarget)
+                if (!IsCraftingWithTarget && targetObject != null)
                 {
                     targetObject?.GetPart<PartHighlightable>()?.SetHighlighted(false);
                 }
@@ -255,6 +243,39 @@ public partial class PlayerController : MonoBehaviour, IInteractor
             }
         }
     }
+
+    private void SetTarget(CompositeObject newTarget)
+    {
+        // Update target composable
+        targetObject = newTarget;
+
+        // Update prompt organiser with new interactions
+        promptOrganiser.Clear();
+        if (targetObject != null && targetObject.HasPart<PartInteractable>())
+        {
+            foreach (Interaction interaction in targetObject.GetPart<PartInteractable>().Interactions)
+            {
+                GameObject promptGO = Instantiate(promptPfb);
+                InteractionPrompt prompt = promptGO.GetComponent<InteractionPrompt>();
+                prompt.SetInteraction(this, interaction);
+                promptOrganiser.AddChild(prompt);
+            }
+            promptOrganiser.UpdateChildren();
+        }
+    }
+
+    private bool CanTarget(CompositeObject compositeObject)
+    {
+        if (equippedObject == compositeObject) return false;
+        return compositeObject.CanTarget;
+    }
+
+    #endregion Hovering
+
+    #region Controlling
+
+    private bool CanControlTarget => targetState != TargetState.None && !IsCraftingWithTarget
+        && targetObject.HasPart<PartControllable>() && targetObject.GetPart<PartControllable>().CanControl;
 
     private void UpdateTargetControlling()
     {
@@ -319,7 +340,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
                 {
                     Vector3 dropPos = targetObject.Position;
                     GameObject particlesGO = Instantiate(dropPsysPfb);
-                    particlesGO.transform.position = dropPos;
+                    particlesGO.transform.position = GameLayers.OnLayer(dropPos, GameLayer.Particles);
                     StopControlling();
                     return;
                 }
@@ -328,78 +349,37 @@ public partial class PlayerController : MonoBehaviour, IInteractor
         }
     }
 
-    private void UpdateTargetInteracting()
-    {
-        // Currently [Interacting] so check for finished
-        if (targetState == TargetState.Interacting)
-        {
-            if (currentInteraction.IsActive && (PollInput(currentInteraction.RequiredInput) == InputEvent.Inactive))
-            {
-                currentInteraction.StopInteracting();
-            }
-            if (!currentInteraction.IsActive)
-            {
-                targetState = TargetState.Hovering;
-                OnInteractionFinished();
-            }
-        }
-
-        // [Hovering] so check for interactions
-        else if (targetState == TargetState.Hovering && CanInteractAnyTarget)
-        {
-            foreach (Interaction interaction in targetObject.GetPart<PartInteractable>().Interactions)
-            {
-                // Can interact and input polled down begin interaction
-                if (interaction.CanInteract(this) && (PollInput(interaction.RequiredInput) == InputEvent.Active))
-                {
-                    targetState = TargetState.Interacting;
-                    currentInteraction = interaction;
-                    interaction.StartInteracting(this);
-                    break;
-                }
-            }
-        }
-    }
-
-    private void SetTarget(CompositeObject newTarget)
-    {
-        // Update target composable
-        targetObject = newTarget;
-
-        // Update prompt organiser with new interactions
-        promptOrganiser.Clear();
-        if (targetObject != null && targetObject.HasPart<PartInteractable>())
-        {
-            foreach (Interaction interaction in targetObject.GetPart<PartInteractable>().Interactions)
-            {
-                GameObject promptGO = Instantiate(promptPfb);
-                InteractionPrompt prompt = promptGO.GetComponent<InteractionPrompt>();
-                prompt.SetInteraction(this, interaction);
-                promptOrganiser.AddChild(prompt);
-            }
-            promptOrganiser.UpdateChildren();
-        }
-    }
-
     private void StartControlling()
     {
         if (!CanControlTarget) throw new System.Exception("Cannot control target.");
-        targetState = TargetState.Controlling;
 
+        // Set controlling
         if (!targetObject.GetPart<PartControllable>().StartControlling()) throw new System.Exception("Failed to control target.");
         targetObject.GetPart<PartControllable>().SetControlPosition(targetObject.Position, controlForce);
+        targetState = TargetState.Controlling;
 
-        targetControlLH.SetActive(true);
-        targetControlLimitLH.SetActive(true);
-        targetControlLimitColor = new Color(controlLimitColorWarning.r, controlLimitColorWarning.g, controlLimitColorWarning.b, 0.0f);
-
+        // Disable indicators if they exist
         targetObject.GetPart<PartIndicatable>()?.Hide();
 
-        // Set controlling leg
+        // Calculate leg to use based on target direction
         Vector2 targetDir = targetObject.Position - (Vector2)playerMovement.Transform.position;
         float rightPct = Vector2.Dot(playerMovement.GroundRightDir, targetDir);
         if (equippedObject != null) targetControlLeg = equippedLeg == 1 ? 2 : 1;
         else targetControlLeg = rightPct > 0.0f ? 2 : 1;
+
+        // Set line helpers
+        targetControlLH.SetActive(true);
+        targetControlLimitLH.SetActive(true);
+        targetControlLimitColor = new Color(controlLimitColorWarning.r, controlLimitColorWarning.g, controlLimitColorWarning.b, 0.0f);
+
+        // Initialize lines and cursors
+        Vector2 pathStart = playerLegs.GetFootPos(targetControlLeg);
+        Vector2 pathEnd = targetObject.Position;
+        float z = playerMovement.Transform.position.z + 0.1f;
+        targetControlLH.DrawLine(Utility.WithZ(pathStart, z), Utility.WithZ(pathEnd, z), legDirControlColor);
+        Vector2 mouseDir = inputMousePosition - (Vector2)playerMovement.Transform.position;
+        targetControlLimitedDir = Vector2.ClampMagnitude(mouseDir, maxControlDistance - 0.1f);
+        targetControlLimitedPos = (Vector2)playerMovement.Transform.position + targetControlLimitedDir;
     }
 
     private void StopControlling()
@@ -414,7 +394,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
         UpdateTargetHovering();
     }
 
-    #endregion Target Hovering / Controlling / Interacting
+    #endregion Controlling
 
     #region Equipping
 
@@ -619,6 +599,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
         {
             Vector2 initialPos = craftingIngredients[0].Position;
             GameObject craftingTargetGO = Instantiate(craftingTargetPfb, initialPos, Quaternion.identity);
+            GameLayers.SetLayer(craftingTargetGO.transform, GameLayer.FrontDecor);
             craftingResult = craftingTargetGO.GetComponent<CraftingResultObject>();
             craftingResult.GetPart<PartControllable>().StartControlling();
             craftingResult.GetPart<PartHighlightable>().OutlineController.OutlineColor = craftingTargetOutlineColor;
@@ -724,12 +705,61 @@ public partial class PlayerController : MonoBehaviour, IInteractor
 
     #endregion Crafting
 
-    #region IInteractor
+    #region Interacting
+
+    private bool CanInteractAnyTarget => targetState != TargetState.None && !IsCraftingWithTarget
+        && targetObject.HasPart<PartInteractable>() && targetObject.GetPart<PartInteractable>().CanInteractAny(this);
 
     private float interactionCursorSqueeze = 0.0f;
     private bool interactionIsPulling = false;
     private LineHelper interactionPullingLH;
     private int interactionPullingLeg = 0;
+
+    private void UpdateTargetInteracting()
+    {
+        // [Hovering] so check all interactions
+        if (targetState == TargetState.Hovering && CanInteractAnyTarget)
+        {
+            foreach (Interaction interaction in targetObject.GetPart<PartInteractable>().Interactions)
+            {
+                // Can interact and input polled down begin interaction
+                if (interaction.CanStartInteracting(this) && (PollInput(interaction.RequiredInput) == InputEvent.Active))
+                {
+                    targetState = TargetState.Interacting;
+                    currentInteraction = interaction;
+                    interaction.StartInteracting(this);
+                    break;
+                }
+            }
+        }
+
+        // Currently [Interacting] so check for finished
+        else if (targetState == TargetState.Interacting)
+        {
+            if (PollInput(currentInteraction.RequiredInput) == InputEvent.Inactive)
+            {
+                currentInteraction.StopInteracting();
+            }
+        }
+    }
+
+    public void OnInteractionFinished()
+    {
+        // Clean up interaction variables
+        currentInteraction = null;
+        interactionCursorSqueeze = 0.0f;
+        playerMovement.SetMovementSlowdown = 0.0f;
+
+        if (interactionIsPulling)
+        {
+            interactionIsPulling = false;
+            interactionPullingLH.SetActive(false);
+            playerLegs.UnsetOverrideLeg(interactionPullingLeg);
+            playerMovement.SetVerticalLean = 0;
+        }
+
+        targetState = TargetState.Hovering;
+    }
 
     public InputEvent PollInput(InteractionInput input)
     {
@@ -792,20 +822,5 @@ public partial class PlayerController : MonoBehaviour, IInteractor
         return ToolType.Any;
     }
 
-    private void OnInteractionFinished()
-    {
-        // Clean up interaction variables
-        currentInteraction = null;
-        interactionCursorSqueeze = 0.0f;
-        playerMovement.SetMovementSlowdown = 0.0f;
-        if (interactionIsPulling)
-        {
-            interactionIsPulling = false;
-            interactionPullingLH.SetActive(false);
-            playerLegs.UnsetOverrideLeg(interactionPullingLeg);
-            playerMovement.SetVerticalLean = 0;
-        }
-    }
-
-    #endregion IInteractor
+    #endregion Interacting
 }
