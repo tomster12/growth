@@ -22,7 +22,7 @@ public class PartEquipable : Part
 
         // Set variables
         IsEquipped = true;
-        GameLayers.SetLayer(Composable.Transform, GameLayer.Foreground);
+        GameLayers.SetLayer(Composable.Transform, GameLayer.World);
         Physical.SetEnabled(false);
 
         return true;
@@ -38,7 +38,7 @@ public class PartEquipable : Part
 
         // Reset variables
         IsEquipped = false;
-        GameLayers.SetLayer(Composable.Transform, GameLayer.Foreground);
+        GameLayers.SetLayer(Composable.Transform, GameLayer.World);
         Physical.SetEnabled(true);
 
         // Add force to physical with grip direction
@@ -61,7 +61,7 @@ public class PartEquipable : Part
         Vector2 gripPos = handPos + (Vector2)Composable.Transform.TransformDirection(gripOffset);
         unequipDir = gripPos - oldGripPos;
         oldGripPos = gripPos;
-        Composable.Transform.position = GameLayers.OnLayer(gripPos, GameLayer.Foreground);
+        Composable.Transform.position = GameLayers.OnLayer(gripPos, GameLayer.World);
     }
 
     public void SetCanEquip(bool canEquip) => this.canEquip = canEquip;

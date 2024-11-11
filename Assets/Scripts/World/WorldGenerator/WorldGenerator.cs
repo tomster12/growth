@@ -11,10 +11,10 @@ public partial class WorldGenerator : Generator
     public override string Name => "World Generator";
     public override Generator[] ComposedGenerators => new Generator[] { planetPolygonGenerator, meshGenerator, biomeGenerator };
     public Mesh Mesh { get; private set; }
-    public List<WorldSite> Sites { get; private set; }
-    public List<WorldSurfaceEdge> SurfaceEdges { get; private set; }
     public Dictionary<GameLayer, Transform> Containers { get; private set; }
     public Transform Transform => outsidePolygon.transform;
+    public List<WorldSurfaceEdge> SurfaceEdges => surfaceEdges;
+    public List<WorldSite> Sites => sites;
 
     public void SafeGenerate()
     {
@@ -71,8 +71,7 @@ public partial class WorldGenerator : Generator
     [Header("Containers", order = 1)]
     [SerializeField] private Transform frontDecorContainer;
     [SerializeField] private Transform terrainContainer;
-    [SerializeField] private Transform foregroundContainer;
-    [SerializeField] private Transform backgroundContainer;
+    [SerializeField] private Transform worldContainer;
     [SerializeField] private Transform backDecorContainer;
     [Space(6, order = 0)]
     [Header("Components", order = 1)]
@@ -95,6 +94,9 @@ public partial class WorldGenerator : Generator
     [SerializeField] private float atmosphereSizeMax = 200.0f;
     [SerializeField] private float gravityForce = 10.0f;
 
+    [SerializeField]
+    private List<WorldSurfaceEdge> surfaceEdges;
+    private List<WorldSite> sites;
     private SpriteRenderer atmosphere;
 
     private void ClearOutput()
@@ -103,8 +105,8 @@ public partial class WorldGenerator : Generator
         meshGenerator.Clear();
         biomeGenerator.Clear();
         Mesh = null;
-        Sites = null;
-        SurfaceEdges = null;
+        sites = null;
+        surfaceEdges = null;
         if (atmosphere == null) atmosphere = Transform.Find("Atmosphere")?.GetComponent<SpriteRenderer>();
         if (atmosphere != null) DestroyImmediate(atmosphere.gameObject);
         ClearContainers();
@@ -147,15 +149,15 @@ public partial class WorldGenerator : Generator
         meshRenderer.sharedMaterial.SetFloat("_NoiseScale", noiseScale);
 
         // Generate world sites
-        Sites = new List<WorldSite>();
-        foreach (MeshSite meshSite in meshGenerator.MeshSites) Sites.Add(new WorldSite(world, meshSite));
+        sites = new List<WorldSite>();
+        foreach (MeshSite meshSite in meshGenerator.MeshSites) sites.Add(new WorldSite(world, meshSite));
     }
 
     private void StepCalculateOutsideEdges()
     {
         // Calculate external edges
         HashSet<WorldSurfaceEdge> surfaceEdgesUnordered = new HashSet<WorldSurfaceEdge>();
-        foreach (WorldSite worldSite in Sites)
+        foreach (WorldSite worldSite in sites)
         {
             if (worldSite.meshSite.isOutside)
             {
@@ -177,33 +179,33 @@ public partial class WorldGenerator : Generator
         }
 
         // - Grab random first edge from unordered
-        SurfaceEdges = new List<WorldSurfaceEdge>();
+        surfaceEdges = new List<WorldSurfaceEdge>();
         WorldSurfaceEdge first = surfaceEdgesUnordered.First();
-        SurfaceEdges.Add(first);
+        surfaceEdges.Add(first);
         surfaceEdgesUnordered.Remove(first);
 
         // - While sites left unordered
         while (surfaceEdgesUnordered.Count > 0)
         {
-            WorldSurfaceEdge current = SurfaceEdges.Last();
-            MeshSite currentSite = Sites[current.meshSiteEdge.siteIndex].meshSite;
+            WorldSurfaceEdge current = surfaceEdges.Last();
+            MeshSite currentSite = sites[current.meshSiteEdge.siteIndex].meshSite;
             WorldSurfaceEdge picked = null;
 
             // - Find first edge that matches to == from
             foreach (WorldSurfaceEdge checkEdge in surfaceEdgesUnordered)
             {
-                MeshSite checkSite = Sites[checkEdge.meshSiteEdge.siteIndex].meshSite;
+                MeshSite checkSite = sites[checkEdge.meshSiteEdge.siteIndex].meshSite;
                 MeshSiteVertex toVertex = currentSite.vertices[current.meshSiteEdge.siteToVertexIdx];
                 MeshSiteVertex fromVertex = checkSite.vertices[checkEdge.meshSiteEdge.siteFromVertexIdx];
                 if (toVertex.vertexUID == fromVertex.vertexUID) { picked = checkEdge; break; }
             }
             if (picked == null)
             {
-                throw new Exception("Could not find next edge for site " + current.meshSiteEdge.siteIndex + " vertex " + current.meshSiteEdge.siteFromVertexIdx + " to " + current.meshSiteEdge.siteToVertexIdx + ", " + SurfaceEdges.Count + " edges left");
+                throw new Exception("Could not find next edge for site " + current.meshSiteEdge.siteIndex + " vertex " + current.meshSiteEdge.siteFromVertexIdx + " to " + current.meshSiteEdge.siteToVertexIdx + ", " + surfaceEdges.Count + " edges left");
             }
 
             // - Add to ordered
-            SurfaceEdges.Add(picked);
+            surfaceEdges.Add(picked);
             surfaceEdgesUnordered.Remove(picked);
         }
     }
@@ -215,7 +217,7 @@ public partial class WorldGenerator : Generator
         Stack<int> openSet = new Stack<int>();
 
         // - Set edge site to distance 0 and add to open
-        foreach (WorldSite worldSite in Sites)
+        foreach (WorldSite worldSite in sites)
         {
             if (worldSite.meshSite.isOutside)
             {
@@ -228,13 +230,13 @@ public partial class WorldGenerator : Generator
         while (openSet.Count > 0)
         {
             int currentSiteIndex = openSet.Pop();
-            var currentSite = Sites[currentSiteIndex];
+            var currentSite = sites[currentSiteIndex];
             if (closedSet.Contains(currentSiteIndex)) continue;
 
             // - Check each valid neighbour
             foreach (var neighbourSiteIndex in currentSite.meshSite.neighbouringSitesIdx)
             {
-                var neighbourSite = Sites[neighbourSiteIndex];
+                var neighbourSite = sites[neighbourSiteIndex];
                 if (!closedSet.Contains(neighbourSiteIndex))
                 {
                     // - If this is better parent then update and add to open
@@ -291,8 +293,7 @@ public partial class WorldGenerator : Generator
         Containers ??= new Dictionary<GameLayer, Transform>();
         Containers[GameLayer.FrontDecor] = frontDecorContainer;
         Containers[GameLayer.Terrain] = terrainContainer;
-        Containers[GameLayer.Foreground] = foregroundContainer;
-        Containers[GameLayer.Background] = backgroundContainer;
+        Containers[GameLayer.World] = worldContainer;
         Containers[GameLayer.BackDecor] = backDecorContainer;
     }
 }

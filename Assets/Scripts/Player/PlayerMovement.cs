@@ -4,6 +4,7 @@ using UnityEngine;
 public partial class PlayerMovement : MonoBehaviour, IFollowable
 {
     public World ClosestWorld { get; private set; }
+    public WorldSurfaceEdge ClosestEdge { get; private set; }
     public Vector2 GroundPos { get; private set; }
     public Vector2 GroundUpDir { get; private set; }
     public bool IsGrounded { get; private set; }
@@ -66,6 +67,7 @@ public partial class PlayerMovement : MonoBehaviour, IFollowable
     private void Start()
     {
         ClosestWorld = World.GetClosestWorld(Transform.position, out Vector2 closestGroundPosition);
+        ClosestEdge = ClosestWorld?.GetClosestEdge(Transform.position);
         playerCamera.SetModeFollow(this, true);
     }
 
@@ -101,6 +103,7 @@ public partial class PlayerMovement : MonoBehaviour, IFollowable
     {
         // Calculate closest world and ground position
         ClosestWorld = World.GetClosestWorld(Transform.position, out Vector2 closestGroundPosition);
+        ClosestEdge = ClosestWorld?.GetClosestEdge(Transform.position);
         GroundPos = closestGroundPosition;
 
         // Calculate ground variables

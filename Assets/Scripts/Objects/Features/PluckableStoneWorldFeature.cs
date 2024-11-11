@@ -1,0 +1,27 @@
+using UnityEngine;
+
+public class PluckableStoneWorldFeature : MonoBehaviour, IWorldFeature
+{
+    public void Spawn(WorldSurfaceEdge edge, float edgePct, WorldFeatureConfig config)
+    {
+        // Setup pluck direction and generate
+        composite.PluckDir = Vector2.Perpendicular(edge.b - edge.a);
+        generator.Generate();
+
+        // Position and rotate
+        float t = 0.25f + Random.value * 0.5f;
+        transform.eulerAngles = new Vector3(0.0f, 0.0f, Random.value * 360.0f);
+        transform.position = Vector2.Lerp(edge.a, edge.b, t);
+
+        // Set blocking radius
+        blockingRadius = (edge.b - edge.a).magnitude * 0.5f;
+    }
+
+    public float BlockingRadius => blockingRadius;
+
+    [Header("References")]
+    [SerializeField] private PluckableStoneObject composite;
+    [SerializeField] private GeneratorController generator;
+
+    private float blockingRadius;
+}

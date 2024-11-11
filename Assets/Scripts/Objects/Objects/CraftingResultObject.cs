@@ -26,7 +26,7 @@ public class CraftingResultObject : CompositeObject
         if (recipe == null) return;
         CraftingIngredient result = recipe.result.ingredient;
         GameObject resultGO = Instantiate(result.pfb, transform.position, Quaternion.identity);
-        GameLayers.SetLayer(resultGO.transform, GameLayer.Foreground);
+        GameLayers.SetLayer(resultGO.transform, GameLayer.World);
         SetRecipe(null);
     }
 

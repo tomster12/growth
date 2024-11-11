@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c0db50292402394d98c567e945b105f, type: 3}
   m_Name: SurfaceBiomeForest
   m_EditorClassIdentifier: 
+  biomeName: Forest
   colorRange:
   - {r: 0.2264151, g: 0.18808168, b: 0.15485938, a: 1}
   - {r: 0.49056602, g: 0.39393377, b: 0.28924882, a: 1}
@@ -32,28 +33,32 @@ MonoBehaviour:
     canOverlapTerrain: 1
     averagePer100: 0
     minDistance: 0
-    feature: {fileID: 5738692934614858331, guid: 4370251ad19ded443876dcbd596a451a, type: 3}
+    feature: {fileID: 2121669492149474180, guid: 365a3e62885d6484f936b526a0eaa62c, type: 3}
+    config: {fileID: 11400000, guid: a6248a84b70b48b4589ded4a9ed46fff, type: 2}
   terrainRules:
   - everyEdge: 0
     canOverlapTerrain: 0
     averagePer100: 1.2
     minDistance: 15
     feature: {fileID: 2022025293066536358, guid: 46b5024162834b34d847fd4dc278df89, type: 3}
-  foregroundRules:
+    config: {fileID: 0}
+  worldRules:
   - everyEdge: 0
     canOverlapTerrain: 0
     averagePer100: 2
     minDistance: 15
     feature: {fileID: 3338917768004317453, guid: 0bfe27a21aa41e942b02087c7c49f160, type: 3}
-  backgroundRules:
+    config: {fileID: 0}
   - everyEdge: 0
     canOverlapTerrain: 0
     averagePer100: 20
     minDistance: 5
     feature: {fileID: 1372191144710954479, guid: d742054c59b375b429639d89c5e3fea0, type: 3}
+    config: {fileID: 0}
   backDecorRules:
   - everyEdge: 0
     canOverlapTerrain: 0
     averagePer100: 3
     minDistance: 15
     feature: {fileID: 6099407925653884417, guid: f81494f42fc45274f98cc9bd8c13ae95, type: 3}
+    config: {fileID: 0}

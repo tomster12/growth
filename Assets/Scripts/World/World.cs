@@ -52,6 +52,25 @@ public class World : MonoBehaviour
 
     public Vector2 GetClosestSurfacePoint(Vector2 pos) => outsidePolygon.ClosestPoint(pos);
 
+    public WorldSurfaceEdge GetClosestEdge(Vector2 pos)
+    {
+        // Get closest edge using sq distance
+        WorldSurfaceEdge closestEdge = null;
+        float closestDst = float.PositiveInfinity;
+        foreach (WorldSurfaceEdge edge in worldGenerator.SurfaceEdges)
+        {
+            float dstSqA = ((Vector2)edge.a - pos).sqrMagnitude;
+            float dstSqB = ((Vector2)edge.b - pos).sqrMagnitude;
+            float dstSq = Mathf.Min(dstSqA, dstSqB);
+            if (dstSq < closestDst)
+            {
+                closestEdge = edge;
+                closestDst = dstSq;
+            }
+        }
+        return closestEdge;
+    }
+
     [Header("References")]
     [SerializeField] private WorldGenerator worldGenerator;
     [SerializeField] private PolygonCollider2D outsidePolygon;

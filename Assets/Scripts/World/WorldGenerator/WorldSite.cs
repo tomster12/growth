@@ -1,5 +1,6 @@
-﻿using static VoronoiMeshGenerator;
+﻿using System;
 
+[Serializable]
 public class WorldSite
 {
     public World world;

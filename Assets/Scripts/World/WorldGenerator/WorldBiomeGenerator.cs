@@ -22,7 +22,6 @@ public class WorldBiomeGenerator : Generator
 
     public override void Clear()
     {
-        ruleInstances.Clear();
         IsGenerated = false;
     }
 
@@ -30,13 +29,15 @@ public class WorldBiomeGenerator : Generator
     [SerializeField] private WorldGenerator worldGenerator;
 
     [Header("Config")]
-    [SerializeField] private BiomeRequirement[] biomeRequirements;
+    [SerializeField] private WorldBiomeRequirement[] biomeRequirements;
     [SerializeField] private UndergroundBiome undergroundBiome;
     [SerializeField] private int maxBiomeCount = 4;
     [SerializeField] private bool debugLog = true;
 
-    private List<RuleInstance> ruleInstances = new List<RuleInstance>();
+    private List<BiomeInstance> biomeInstances;
+    private List<WorldFeatureInstance> featureInstances;
 
+    [SerializeField]
     private void StepAssignBiomes()
     {
         // Goal is to update worldGenerator.SurfaceEdges biomes all the way round
@@ -75,7 +76,7 @@ public class WorldBiomeGenerator : Generator
             return (index + genEdges.Length + change) % genEdges.Length;
         };
 
-        bool PlaceBiome(BiomeGenEdge[] genEdges, BiomeRequirement req, int startIndex)
+        bool PlaceBiome(BiomeGenEdge[] genEdges, WorldBiomeRequirement req, int startIndex)
         {
             if (debugLog) Debug.Log("PlaceBiome(" + startIndex + ", " + req.minimumSize + ")");
 
@@ -167,7 +168,7 @@ public class WorldBiomeGenerator : Generator
             if (debugLog) Debug.Log("End pushed back " + endPushedLength + " / start pushed back " + startPushedLength + " / required " + lengthLeft + " made new end " + newEndIndex);
 
             // Loop from old start to new end and update edges
-            BiomeRequirement req = genEdges[index].req;
+            WorldBiomeRequirement req = genEdges[index].req;
             float newBiomeLength = genEdges[index].biomeTotalLength + (endPushedLength - startPushedLength);
             for (int i = index, old = 0; i != newEndIndex; i = modAdd(i, 1))
             {
@@ -198,7 +199,7 @@ public class WorldBiomeGenerator : Generator
             totalLengthLeft += (startPushedLength - endPushedLength);
         };
 
-        void PushAndPlaceBiome(BiomeRequirement req, int index, float lengthRequired)
+        void PushAndPlaceBiome(WorldBiomeRequirement req, int index, float lengthRequired)
         {
             if (debugLog) Debug.Log("PushAndPlaceBiome(" + index + ", " + lengthRequired + ")");
             BiomeGenEdge edge = genEdges[index];
@@ -226,13 +227,13 @@ public class WorldBiomeGenerator : Generator
             // Pick biome requirement
             // - First, pick each requirement in order
             // - Otherwise, pick random from the fitting biomes
-            BiomeRequirement req = null;
+            WorldBiomeRequirement req = null;
             while (req == null)
             {
                 if (assignedBiomeCount < biomeRequirements.Length) req = biomeRequirements[assignedBiomeCount];
                 else
                 {
-                    BiomeRequirement[] viableBiomes = biomeRequirements.Where(req => req.minimumSize <= totalLengthLeft).ToArray();
+                    WorldBiomeRequirement[] viableBiomes = biomeRequirements.Where(req => req.minimumSize <= totalLengthLeft).ToArray();
                     Assert.IsTrue(viableBiomes.Length > 0); // Later on break assures this should be bigger than 0
                     req = viableBiomes[(int)UnityEngine.Random.Range(0, viableBiomes.Length)];
                 }
@@ -276,16 +277,43 @@ public class WorldBiomeGenerator : Generator
 
         // Apply biomes and fill in the gaps
         int fillStart = -1;
-        Biome currentBiome = null;
+        int biomeStart = -1;
+        SurfaceBiome currentBiome = null;
         for (int i = 0; i != fillStart;)
         {
             if (genEdges[i].GetIsAssigned())
             {
                 if (fillStart == -1) fillStart = i;
-                currentBiome = genEdges[i].req.biome;
+
+                if (currentBiome != genEdges[i].req.biome)
+                {
+                    if (currentBiome != null)
+                    {
+                        biomeInstances.Add(new BiomeInstance(biomeStart, i, currentBiome));
+                    }
+
+                    biomeStart = i;
+                    currentBiome = genEdges[i].req.biome;
+                }
             }
-            if (currentBiome != null) worldGenerator.SurfaceEdges[i].worldSite.biome = currentBiome;
+            if (currentBiome != null)
+            {
+                worldGenerator.SurfaceEdges[i].worldSite.biome = currentBiome;
+            }
             i = modAdd(i, 1);
+        }
+
+        // Finish off adding last biome
+        if (currentBiome != null)
+        {
+            if (biomeInstances.Count > 0 && biomeInstances[0].biome == currentBiome)
+            {
+                biomeInstances[0].startIndex = biomeStart;
+            }
+            else
+            {
+                biomeInstances.Add(new BiomeInstance(biomeStart, fillStart, currentBiome));
+            }
         }
 
         // Breadth-first fill biomes down
@@ -332,26 +360,12 @@ public class WorldBiomeGenerator : Generator
 
     private void StepPopulateBiomes()
     {
-        GameLayer[] order = new GameLayer[] { GameLayer.Terrain, GameLayer.FrontDecor, GameLayer.Foreground, GameLayer.Background, GameLayer.BackDecor };
-
-        // For every surface edge
-        for (int i = 0; i < worldGenerator.SurfaceEdges.Count; i++)
+        // For each biome populate using biome rules
+        foreach (BiomeInstance biomeInstance in biomeInstances)
         {
-            WorldSurfaceEdge edge = worldGenerator.SurfaceEdges[i];
-            float edgePct = (float)i / worldGenerator.SurfaceEdges.Count;
-
-            // For each GameLayer pick a rule and spawn
-            foreach (GameLayer layer in order)
+            foreach (WorldFeatureRule rule in biomeInstance.biome.rules)
             {
-                FeatureRule rule = PickRule(edge.biome.Rules[layer], edge);
-                if (rule == null) continue;
-
-                GameObject featureObj = Instantiate(rule.feature);
-                featureObj.transform.parent = worldGenerator.Containers[layer];
-                IWorldFeature feature = featureObj.GetComponent<IWorldFeature>();
-                feature?.Spawn(edge, edgePct);
-                GameLayers.SetLayer(featureObj.transform, layer);
-                ruleInstances.Add(new RuleInstance(edge, layer, rule, feature));
+                rule.SpawnOnEdges(worldGenerator.SurfaceEdges, biomeInstance.startIndex, biomeInstance.endIndex, featureInstances);
             }
         }
     }
@@ -371,50 +385,23 @@ public class WorldBiomeGenerator : Generator
         worldGenerator.Mesh.colors = meshColors;
     }
 
-    private FeatureRule PickRule(FeatureRule[] rules, WorldSurfaceEdge edge)
+    private class BiomeInstance
     {
-        Vector3 centre = (edge.a + edge.b) / 2.0f;
+        public int startIndex;
+        public int endIndex;
+        public SurfaceBiome biome;
 
-        // Pick a random rule from the options
-        float r = UnityEngine.Random.value;
-        float length = edge.length;
-        List<FeatureRule> availableRules = new();
-        for (int i = 0; i < rules.Length; i++)
+        public BiomeInstance(int startIndex, int endIndex, SurfaceBiome biome)
         {
-            if (rules[i].everyEdge) availableRules.Add(rules[i]);
-            else if (r < (rules[i].averagePer100 * (length / 100.0f))) availableRules.Add(rules[i]);
+            this.startIndex = startIndex;
+            this.endIndex = endIndex;
+            this.biome = biome;
         }
-        if (availableRules.Count == 0) return null;
-        FeatureRule rule = availableRules[UnityEngine.Random.Range(0, availableRules.Count)];
-
-        // Ensure distance between features
-        if (rule.minDistance != 0.0f)
-        {
-            RuleInstance[] matchingInstances = ruleInstances.Where(i => i.rule == rule).ToArray();
-            foreach (RuleInstance instance in matchingInstances)
-            {
-                float dst = Vector3.Distance(centre, instance.centre);
-                if (dst < rule.minDistance) return null;
-            }
-        }
-
-        // Ensure not overlapping terrain
-        if (!rule.canOverlapTerrain)
-        {
-            RuleInstance[] matchingInstances = ruleInstances.Where(i => i.layer == GameLayer.Terrain).ToArray();
-            foreach (RuleInstance instance in matchingInstances)
-            {
-                float dst = Vector3.Distance(centre, instance.centre);
-                if (dst < instance.feature.BlockingRadius) return null;
-            }
-        }
-
-        return rule;
     }
 
     private class BiomeGenEdge
     {
-        public BiomeRequirement req;
+        public WorldBiomeRequirement req;
         public int index;
         public float length;
         public float lengthToBiomeStart;
@@ -437,28 +424,10 @@ public class WorldBiomeGenerator : Generator
     };
 
     [Serializable]
-    private class BiomeRequirement
+    private class WorldBiomeRequirement
     {
         public SurfaceBiome biome;
         public int requiredCount;
         public float minimumSize;
-    };
-
-    private class RuleInstance
-    {
-        public WorldSurfaceEdge edge;
-        public GameLayer layer;
-        public FeatureRule rule;
-        public IWorldFeature feature;
-        public Vector3 centre;
-
-        public RuleInstance(WorldSurfaceEdge edge, GameLayer layer, FeatureRule rule, IWorldFeature feature)
-        {
-            this.edge = edge;
-            this.layer = layer;
-            this.rule = rule;
-            this.feature = feature;
-            centre = (edge.a + edge.b) / 2.0f;
-        }
     };
 }

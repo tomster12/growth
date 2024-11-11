@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63988de7d5a629f44b5a38807b7d1e4a, type: 3}
   m_Name: UndergroundBiomeStone
   m_EditorClassIdentifier: 
+  biomeName: Underground
   colorRange:
   - {r: 0.254717, g: 0.254717, b: 0.254717, a: 1}
   - {r: 0.4433962, g: 0.4433962, b: 0.4433962, a: 1}

@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class Biome : ScriptableObject
 {
+    public string biomeName;
     public Color[] colorRange = new Color[] { Color.black, Color.white };
     public NoiseData energyMaxNoise = new NoiseData(new float[2] { 40, 200 });
     public NoiseData energyPctNoise = new NoiseData();

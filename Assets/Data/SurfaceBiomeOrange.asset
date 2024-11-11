@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c0db50292402394d98c567e945b105f, type: 3}
   m_Name: SurfaceBiomeOrange
   m_EditorClassIdentifier: 
+  biomeName: Debug Orange
   colorRange:
   - {r: 0.6415094, g: 0.42225662, b: 0.20879316, a: 1}
   - {r: 0.9245283, g: 0.6026085, b: 0.2921858, a: 1}

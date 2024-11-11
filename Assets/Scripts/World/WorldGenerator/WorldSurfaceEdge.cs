@@ -1,7 +1,9 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Assertions;
 
 // Counter-clockwise edge
+[Serializable]
 public class WorldSurfaceEdge
 {
     public SurfaceBiome biome => (SurfaceBiome)worldSite.biome;

@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c0db50292402394d98c567e945b105f, type: 3}
   m_Name: SurfaceBiomeBlue
   m_EditorClassIdentifier: 
+  biomeName: Debug Blue
   colorRange:
   - {r: 0.2990388, g: 0.42079368, b: 0.6037736, a: 1}
   - {r: 0.3972944, g: 0.5993374, b: 0.9056604, a: 1}
@@ -27,8 +28,13 @@ MonoBehaviour:
     noiseScale: 1
   deadspotChance: 0.02
   deadspotPct: 0.15
-  frontDecorRules: []
+  frontDecorRules:
+  - everyEdge: 1
+    canOverlapTerrain: 0
+    averagePer100: 0
+    minDistance: 0
+    feature: {fileID: 2121669492149474180, guid: 365a3e62885d6484f936b526a0eaa62c, type: 3}
+    config: {fileID: 11400000, guid: 83ee5e922c8486147b5d5645fca555e8, type: 2}
   terrainRules: []
-  foregroundRules: []
-  backgroundRules: []
+  worldRules: []
   backDecorRules: []
