@@ -2,7 +2,10 @@ using UnityEngine;
 
 public class TreeWorldFeature : MonoBehaviour, IWorldFeature
 {
-    public void Spawn(WorldSurfaceEdge edge, float edgePct, WorldFeatureConfig config)
+    public Transform Transform => transform;
+    public float BlockingRadius => mesh.localScale.x * 0.5f;
+
+    public void Place(WorldSurfaceEdge edge, float edgePct, WorldFeatureConfig config)
     {
         // Position and rotate
         float t = 0.25f + Random.value * 0.5f;
@@ -19,8 +22,6 @@ public class TreeWorldFeature : MonoBehaviour, IWorldFeature
         mesh.localScale = new Vector3(width, height, 1.0f);
         mesh.localPosition = new Vector3(-mesh.localScale.x * 0.5f, mesh.localScale.y * 0.5f - embedDistance, mesh.transform.position.z);
     }
-
-    public float BlockingRadius => mesh.localScale.x * 0.5f;
 
     [Header("References")]
     [SerializeField] private Transform mesh;

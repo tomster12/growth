@@ -5,8 +5,9 @@ using UnityEngine.Events;
 public class GrassWorldFeature : MonoBehaviour, IWorldFeature
 {
     public float BlockingRadius => blockingRadius;
+    public Transform Transform => transform;
 
-    public void Spawn(WorldSurfaceEdge edge, float edgePct, WorldFeatureConfig config)
+    public void Place(WorldSurfaceEdge edge, float edgePct, WorldFeatureConfig config)
     {
         WorldFeatureConfigGrass grassConfig = config as WorldFeatureConfigGrass;
 

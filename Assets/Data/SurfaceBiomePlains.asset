@@ -28,49 +28,13 @@ MonoBehaviour:
     noiseScale: 1
   deadspotChance: 0.02
   deadspotPct: 0.15
-  frontDecorRules:
-  - everyEdge: 1
-    canOverlapTerrain: 1
-    averagePer100: 0
-    minDistance: 0
-    feature: {fileID: 2121669492149474180, guid: 365a3e62885d6484f936b526a0eaa62c, type: 3}
-    config: {fileID: 11400000, guid: 9459713720d8cb6409accf65d7f54c45, type: 2}
-  - everyEdge: 0
-    canOverlapTerrain: 0
-    averagePer100: 5
-    minDistance: 0
-    feature: {fileID: 6322695881459281577, guid: eb259c2d1188af449891d29f957249f6, type: 3}
-    config: {fileID: 0}
-  terrainRules:
-  - everyEdge: 0
-    canOverlapTerrain: 0
-    averagePer100: 4
-    minDistance: 15
-    feature: {fileID: 2022025293066536358, guid: 46b5024162834b34d847fd4dc278df89, type: 3}
-    config: {fileID: 0}
-  worldRules:
-  - everyEdge: 0
-    canOverlapTerrain: 0
-    averagePer100: 6
-    minDistance: 5
-    feature: {fileID: 3338917768004317453, guid: 0bfe27a21aa41e942b02087c7c49f160, type: 3}
-    config: {fileID: 0}
-  - everyEdge: 0
-    canOverlapTerrain: 0
-    averagePer100: 12
-    minDistance: 1
-    feature: {fileID: 7041187217807487430, guid: 382d0be6598603e479f57a13ace98ed3, type: 3}
-    config: {fileID: 11400000, guid: 9459713720d8cb6409accf65d7f54c45, type: 2}
-  - everyEdge: 0
-    canOverlapTerrain: 0
-    averagePer100: 1
-    minDistance: 20
-    feature: {fileID: 1372191144710954479, guid: d742054c59b375b429639d89c5e3fea0, type: 3}
-    config: {fileID: 0}
-  backDecorRules:
-  - everyEdge: 0
-    canOverlapTerrain: 0
-    averagePer100: 1.5
-    minDistance: 15
-    feature: {fileID: 6099407925653884417, guid: f81494f42fc45274f98cc9bd8c13ae95, type: 3}
-    config: {fileID: 0}
+  rules:
+  - config: {fileID: 11400000, guid: 9459713720d8cb6409accf65d7f54c45, type: 2}
+    spawnType: 2
+    spawnConfig:
+      rid: 4012813091167535107
+  references:
+    version: 2
+    RefIds:
+    - rid: 4012813091167535107
+      type: {class: WorldFeatureSpawnConfigEvery, ns: , asm: Assembly-CSharp}

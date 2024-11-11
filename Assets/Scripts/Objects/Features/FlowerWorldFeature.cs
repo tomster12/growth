@@ -5,8 +5,9 @@ using UnityEngine.Events;
 public class FlowerWorldFeature : MonoBehaviour, IWorldFeature
 {
     public float BlockingRadius => blockingRadius;
+    public Transform Transform => transform;
 
-    public void Spawn(WorldSurfaceEdge edge, float edgePct, WorldFeatureConfig config)
+    public void Place(WorldSurfaceEdge edge, float edgePct, WorldFeatureConfig config)
     {
         // Choose to flip or not
         bool toFlipX = UnityEngine.Random.value < 0.5f;

@@ -2,7 +2,10 @@ using UnityEngine;
 
 public class PluckableStoneWorldFeature : MonoBehaviour, IWorldFeature
 {
-    public void Spawn(WorldSurfaceEdge edge, float edgePct, WorldFeatureConfig config)
+    public float BlockingRadius => blockingRadius;
+    public Transform Transform => transform;
+
+    public void Place(WorldSurfaceEdge edge, float edgePct, WorldFeatureConfig config)
     {
         // Setup pluck direction and generate
         composite.PluckDir = Vector2.Perpendicular(edge.b - edge.a);
@@ -16,8 +19,6 @@ public class PluckableStoneWorldFeature : MonoBehaviour, IWorldFeature
         // Set blocking radius
         blockingRadius = (edge.b - edge.a).magnitude * 0.5f;
     }
-
-    public float BlockingRadius => blockingRadius;
 
     [Header("References")]
     [SerializeField] private PluckableStoneObject composite;

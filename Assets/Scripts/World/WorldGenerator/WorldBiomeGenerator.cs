@@ -23,6 +23,7 @@ public class WorldBiomeGenerator : Generator
     public override void Clear()
     {
         IsGenerated = false;
+        biomeInstances = null;
     }
 
     [Header("References")]
@@ -279,6 +280,7 @@ public class WorldBiomeGenerator : Generator
         int fillStart = -1;
         int biomeStart = -1;
         SurfaceBiome currentBiome = null;
+        biomeInstances = new List<BiomeInstance>();
         for (int i = 0; i != fillStart;)
         {
             if (genEdges[i].GetIsAssigned())
@@ -383,6 +385,12 @@ public class WorldBiomeGenerator : Generator
         }
 
         worldGenerator.Mesh.colors = meshColors;
+    }
+
+    public class WorldFeatureInstance
+    {
+        public IWorldFeature Feature;
+        public WorldFeatureConfig Config;
     }
 
     private class BiomeInstance

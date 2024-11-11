@@ -10,5 +10,5 @@ public class WorldFeatureRule_Old
     [SerializeField] public float minDistance;
 
     [SerializeField] public GameObject feature;
-    [SerializeReference] public WorldFeatureConfig config;
+    [SerializeReference] public WorldFeature config;
 };

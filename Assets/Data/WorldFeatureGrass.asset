@@ -9,8 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e27f78ca00b31b44a5936ab29f9e4b3, type: 3}
-  m_Name: WorldFeatureConfigGrassForest
+  m_Script: {fileID: 11500000, guid: e7cc57fe2ffc06d4e8f16bea6af3d518, type: 3}
+  m_Name: WorldFeatureGrass
   m_EditorClassIdentifier: 
-  feature: {fileID: 11400000, guid: f0ccab68ed51289429b8d67835a052a5, type: 2}
-  color: {r: 0.3254902, g: 0.4509804, b: 0.25882354, a: 1}
+  prefab: {fileID: 2121669492149474180, guid: 365a3e62885d6484f936b526a0eaa62c, type: 3}
