@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -48,7 +49,7 @@ public partial class WorldGenerator : Generator
 
         StepSetContainers();
         StepGenerateMesh();
-        StepCalculateOutsideEdges();
+        StepCalculateSurfaceEdges();
         StepCalculateSiteEdgeDistance();
         StepInitializeComponents();
         StepGenerateBiome();
@@ -58,7 +59,29 @@ public partial class WorldGenerator : Generator
 
     public override void Clear()
     {
-        ClearOutput();
+        // Clear required components
+        planetPolygonGenerator.Clear();
+        meshGenerator.Clear();
+        biomeGenerator.Clear();
+
+        // Clear atmosphere
+        if (atmosphere == null) atmosphere = Transform.Find("Atmosphere")?.GetComponent<SpriteRenderer>();
+        if (atmosphere != null) DestroyImmediate(atmosphere.gameObject);
+
+        // Clear containers
+        foreach (var pair in Containers)
+        {
+            for (int i = pair.Value.childCount - 1; i >= 0; i--)
+            {
+                GameObject child = pair.Value.GetChild(i).gameObject;
+                if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
+            }
+        }
+
+        Mesh = null;
+        sites = null;
+        surfaceEdges = null;
+        atmosphere = null;
         IsGenerated = false;
     }
 
@@ -87,42 +110,19 @@ public partial class WorldGenerator : Generator
     [SerializeField] private Material meshMaterial;
     [Space(20, order = 0)]
     [Header("====== Pipeline Config ======", order = 1)]
-    [SerializeField] private bool doNotGenerateShape = false;
     [SerializeField] private int pipelineMaxTries = 5;
     [SerializeField] private bool hasAtmosphere = true;
     [SerializeField] private float atmosphereSizeMin = 150.0f;
     [SerializeField] private float atmosphereSizeMax = 200.0f;
     [SerializeField] private float gravityForce = 10.0f;
+    [Header("Gizmos", order = 1)]
+    [SerializeField] private bool showGizmoWorldSurface = false;
+    [SerializeField] private bool showGizmoWorldSites = false;
 
-    [SerializeField]
-    private List<WorldSurfaceEdge> surfaceEdges;
-    private List<WorldSite> sites;
+    // Serialize so they still exist ingame
+    [HideInInspector][SerializeField] private List<WorldSurfaceEdge> surfaceEdges;
+    [HideInInspector][SerializeField] private List<WorldSite> sites;
     private SpriteRenderer atmosphere;
-
-    private void ClearOutput()
-    {
-        planetPolygonGenerator.Clear();
-        meshGenerator.Clear();
-        biomeGenerator.Clear();
-        Mesh = null;
-        sites = null;
-        surfaceEdges = null;
-        if (atmosphere == null) atmosphere = Transform.Find("Atmosphere")?.GetComponent<SpriteRenderer>();
-        if (atmosphere != null) DestroyImmediate(atmosphere.gameObject);
-        ClearContainers();
-    }
-
-    private void ClearContainers()
-    {
-        foreach (var pair in Containers)
-        {
-            for (int i = pair.Value.childCount - 1; i >= 0; i--)
-            {
-                GameObject child = pair.Value.GetChild(i).gameObject;
-                if (!child.CompareTag("DoNotClear")) DestroyImmediate(child);
-            }
-        }
-    }
 
     private void StepSetContainers()
     {
@@ -135,10 +135,8 @@ public partial class WorldGenerator : Generator
 
     private void StepGenerateMesh()
     {
-        // Generate polygon
-        if (!doNotGenerateShape) planetPolygonGenerator.Generate();
-
-        // Generate mesh
+        // Generate polygonv and mesh
+        planetPolygonGenerator.Generate();
         meshGenerator.Generate();
         Mesh = meshGenerator.Mesh;
 
@@ -153,7 +151,7 @@ public partial class WorldGenerator : Generator
         foreach (MeshSite meshSite in meshGenerator.MeshSites) sites.Add(new WorldSite(world, meshSite));
     }
 
-    private void StepCalculateOutsideEdges()
+    private void StepCalculateSurfaceEdges()
     {
         // Calculate external edges
         HashSet<WorldSurfaceEdge> surfaceEdgesUnordered = new HashSet<WorldSurfaceEdge>();
@@ -165,20 +163,15 @@ public partial class WorldGenerator : Generator
                 {
                     if (edge.isOutside)
                     {
-                        // Reverse edge to be clockwise
-                        WorldSurfaceEdge WorldSurfaceEdge = new WorldSurfaceEdge(worldSite, edge)
-                        {
-                            a = Transform.TransformPoint(Mesh.vertices[worldSite.meshSite.meshVerticesIdx[edge.siteToVertexIdx]]),
-                            b = Transform.TransformPoint(Mesh.vertices[worldSite.meshSite.meshVerticesIdx[edge.siteFromVertexIdx]])
-                        };
-                        WorldSurfaceEdge.length = Vector3.Distance(WorldSurfaceEdge.a, WorldSurfaceEdge.b);
+                        WorldSurfaceEdge WorldSurfaceEdge = new WorldSurfaceEdge(worldSite, edge);
+                        WorldSurfaceEdge.InitPositions(Transform, Mesh);
                         surfaceEdgesUnordered.Add(WorldSurfaceEdge);
                     }
                 }
             }
         }
 
-        // - Grab random first edge from unordered
+        // Grab random first edge from unordered
         surfaceEdges = new List<WorldSurfaceEdge>();
         WorldSurfaceEdge first = surfaceEdgesUnordered.First();
         surfaceEdges.Add(first);
@@ -195,13 +188,13 @@ public partial class WorldGenerator : Generator
             foreach (WorldSurfaceEdge checkEdge in surfaceEdgesUnordered)
             {
                 MeshSite checkSite = sites[checkEdge.meshSiteEdge.siteIndex].meshSite;
-                MeshSiteVertex toVertex = currentSite.vertices[current.meshSiteEdge.siteToVertexIdx];
-                MeshSiteVertex fromVertex = checkSite.vertices[checkEdge.meshSiteEdge.siteFromVertexIdx];
+                MeshSiteVertex toVertex = currentSite.vertices[current.meshSiteEdge.toVertexIndex];
+                MeshSiteVertex fromVertex = checkSite.vertices[checkEdge.meshSiteEdge.fromVertexIndex];
                 if (toVertex.vertexUID == fromVertex.vertexUID) { picked = checkEdge; break; }
             }
             if (picked == null)
             {
-                throw new Exception("Could not find next edge for site " + current.meshSiteEdge.siteIndex + " vertex " + current.meshSiteEdge.siteFromVertexIdx + " to " + current.meshSiteEdge.siteToVertexIdx + ", " + surfaceEdges.Count + " edges left");
+                throw new Exception("Could not find next edge for site " + current.meshSiteEdge.siteIndex + " vertex " + current.meshSiteEdge.fromVertexIndex + " to " + current.meshSiteEdge.toVertexIndex + ", " + surfaceEdges.Count + " edges left");
             }
 
             // - Add to ordered
@@ -222,7 +215,7 @@ public partial class WorldGenerator : Generator
             if (worldSite.meshSite.isOutside)
             {
                 worldSite.outsideDistance = 0;
-                openSet.Push(worldSite.meshSite.siteIdx);
+                openSet.Push(worldSite.meshSite.siteIndex);
             }
         }
 
@@ -234,7 +227,7 @@ public partial class WorldGenerator : Generator
             if (closedSet.Contains(currentSiteIndex)) continue;
 
             // - Check each valid neighbour
-            foreach (var neighbourSiteIndex in currentSite.meshSite.neighbouringSitesIdx)
+            foreach (var neighbourSiteIndex in currentSite.meshSite.neighbouringSiteIndices)
             {
                 var neighbourSite = sites[neighbourSiteIndex];
                 if (!closedSet.Contains(neighbourSiteIndex))
@@ -295,5 +288,40 @@ public partial class WorldGenerator : Generator
         Containers[GameLayer.Terrain] = terrainContainer;
         Containers[GameLayer.World] = worldContainer;
         Containers[GameLayer.BackDecor] = backDecorContainer;
+    }
+
+    private void OnDrawGizmos()
+    {
+        // Draw surface edges
+        if (showGizmoWorldSurface && surfaceEdges != null)
+        {
+            for (int i = 0; i < surfaceEdges.Count; i++)
+            {
+                Vector2 centrePos = surfaceEdges[i].centre;
+                Vector2 labelPos = centrePos + Vector2.right * 0.25f;
+
+                Gizmos.color = Color.white;
+                Gizmos.DrawSphere(centrePos, 0.1f);
+
+                string label = surfaceEdges[i].biome.name + "(" + i + ")";
+                Handles.Label(labelPos, label);
+            }
+        }
+
+        // Draw world sites
+        if (showGizmoWorldSites && sites != null)
+        {
+            for (int i = 0; i < sites.Count; i++)
+            {
+                Vector2 centrePos = Transform.TransformPoint(Mesh.vertices[sites[i].meshSite.centroidMeshIndex]);
+                Vector2 labelPos = centrePos + Vector2.right * 0.25f;
+
+                Gizmos.color = Color.white;
+                Gizmos.DrawSphere(centrePos, 0.15f);
+
+                string label = i.ToString();
+                Handles.Label(labelPos, label);
+            }
+        }
     }
 }

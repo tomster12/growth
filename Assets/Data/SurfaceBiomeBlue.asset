@@ -28,13 +28,14 @@ MonoBehaviour:
     noiseScale: 1
   deadspotChance: 0.02
   deadspotPct: 0.15
-  frontDecorRules:
-  - everyEdge: 1
-    canOverlapTerrain: 0
-    averagePer100: 0
-    minDistance: 0
-    feature: {fileID: 2121669492149474180, guid: 365a3e62885d6484f936b526a0eaa62c, type: 3}
+  rules:
+  - type: {fileID: 11400000, guid: f0ccab68ed51289429b8d67835a052a5, type: 2}
     config: {fileID: 11400000, guid: 83ee5e922c8486147b5d5645fca555e8, type: 2}
-  terrainRules: []
-  worldRules: []
-  backDecorRules: []
+    spawnType: 2
+    spawnConfig:
+      rid: 4012813128126169089
+  references:
+    version: 2
+    RefIds:
+    - rid: 4012813128126169089
+      type: {class: WorldFeatureSpawnConfigEvery, ns: , asm: Assembly-CSharp}

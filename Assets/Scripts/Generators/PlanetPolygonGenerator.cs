@@ -20,6 +20,7 @@ public class PlanetPolygonGenerator : Generator
         // Generate points in a circle
         Points = new Vector2[shapeInfo.vertexCount];
         foreach (NoiseData noiseData in shapeInfo.noiseData) noiseData.RandomizeOffset();
+
         for (int i = 0; i < Points.Length; i++)
         {
             // Add each noise to value

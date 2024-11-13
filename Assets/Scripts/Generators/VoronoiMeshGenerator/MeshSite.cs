@@ -4,11 +4,11 @@ using System.Collections.Generic;
 [Serializable]
 public class MeshSite
 {
+    public int siteIndex = -1;
+    public HashSet<int> neighbouringSiteIndices;
     public MeshSiteVertex[] vertices;
     public MeshSiteEdge[] edges;
-    public int[] meshVerticesIdx;
-    public int meshCentroidIdx = -1;
-    public int siteIdx = -1;
+    public int centroidMeshIndex = -1;
+    public int[] verticesMeshIndices;
     public bool isOutside = false;
-    public HashSet<int> neighbouringSitesIdx;
 }

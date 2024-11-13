@@ -29,12 +29,58 @@ MonoBehaviour:
   deadspotChance: 0.02
   deadspotPct: 0.15
   rules:
-  - config: {fileID: 11400000, guid: 9459713720d8cb6409accf65d7f54c45, type: 2}
+  - type: {fileID: 11400000, guid: f0ccab68ed51289429b8d67835a052a5, type: 2}
+    config: {fileID: 11400000, guid: 9459713720d8cb6409accf65d7f54c45, type: 2}
     spawnType: 2
     spawnConfig:
       rid: 4012813091167535107
+  - type: {fileID: 11400000, guid: a1bc795d9d537bc43af01eecf03f6ee7, type: 2}
+    config: {fileID: 11400000, guid: 8ccef745f3282ad4db8e1c37c80e8e0f, type: 2}
+    spawnType: 1
+    spawnConfig:
+      rid: 4012813131927781382
+  - type: {fileID: 11400000, guid: 1351f7571ac15254c950ef0378aa5856, type: 2}
+    config: {fileID: 11400000, guid: 8ccef745f3282ad4db8e1c37c80e8e0f, type: 2}
+    spawnType: 1
+    spawnConfig:
+      rid: 4012813131927781376
+  - type: {fileID: 11400000, guid: 78393091d045d3f45ba92a80c6dac394, type: 2}
+    config: {fileID: 11400000, guid: 8ccef745f3282ad4db8e1c37c80e8e0f, type: 2}
+    spawnType: 1
+    spawnConfig:
+      rid: 4012813131927781380
+  - type: {fileID: 11400000, guid: 2b1bb8fee03be3241b046d6079e3a227, type: 2}
+    config: {fileID: 11400000, guid: 8ccef745f3282ad4db8e1c37c80e8e0f, type: 2}
+    spawnType: 1
+    spawnConfig:
+      rid: 4012813132889063427
+  - type: {fileID: 11400000, guid: 30a02f364c3dce74fbebe79b61e12fef, type: 2}
+    config: {fileID: 11400000, guid: 9459713720d8cb6409accf65d7f54c45, type: 2}
+    spawnType: 1
+    spawnConfig:
+      rid: 4012813132889063428
   references:
     version: 2
     RefIds:
     - rid: 4012813091167535107
       type: {class: WorldFeatureSpawnConfigEvery, ns: , asm: Assembly-CSharp}
+    - rid: 4012813131927781376
+      type: {class: WorldFeatureSpawnConfigChance, ns: , asm: Assembly-CSharp}
+      data:
+        countPer100: 2.8
+    - rid: 4012813131927781380
+      type: {class: WorldFeatureSpawnConfigChance, ns: , asm: Assembly-CSharp}
+      data:
+        countPer100: 1.2
+    - rid: 4012813131927781382
+      type: {class: WorldFeatureSpawnConfigChance, ns: , asm: Assembly-CSharp}
+      data:
+        countPer100: 2
+    - rid: 4012813132889063427
+      type: {class: WorldFeatureSpawnConfigChance, ns: , asm: Assembly-CSharp}
+      data:
+        countPer100: 2.5
+    - rid: 4012813132889063428
+      type: {class: WorldFeatureSpawnConfigChance, ns: , asm: Assembly-CSharp}
+      data:
+        countPer100: 7.5

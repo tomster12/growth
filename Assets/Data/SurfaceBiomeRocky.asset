@@ -28,24 +28,7 @@ MonoBehaviour:
     noiseScale: 1
   deadspotChance: 0.02
   deadspotPct: 0.15
-  frontDecorRules: []
-  terrainRules:
-  - everyEdge: 0
-    canOverlapTerrain: 0
-    averagePer100: 6.5
-    minDistance: 15
-    feature: {fileID: 2022025293066536358, guid: 46b5024162834b34d847fd4dc278df89, type: 3}
-  worldRules:
-  - everyEdge: 0
-    canOverlapTerrain: 0
-    averagePer100: 8
-    minDistance: 5
-    feature: {fileID: 3338917768004317453, guid: 0bfe27a21aa41e942b02087c7c49f160, type: 3}
-  foregroundRules: []
-  backgroundRules: []
-  backDecorRules:
-  - everyEdge: 0
-    canOverlapTerrain: 0
-    averagePer100: 3
-    minDistance: 15
-    feature: {fileID: 6099407925653884417, guid: f81494f42fc45274f98cc9bd8c13ae95, type: 3}
+  rules: []
+  references:
+    version: 2
+    RefIds: []

@@ -59,9 +59,7 @@ public class World : MonoBehaviour
         float closestDst = float.PositiveInfinity;
         foreach (WorldSurfaceEdge edge in worldGenerator.SurfaceEdges)
         {
-            float dstSqA = ((Vector2)edge.a - pos).sqrMagnitude;
-            float dstSqB = ((Vector2)edge.b - pos).sqrMagnitude;
-            float dstSq = Mathf.Min(dstSqA, dstSqB);
+            float dstSq = (edge.centre - pos).sqrMagnitude;
             if (dstSq < closestDst)
             {
                 closestEdge = edge;

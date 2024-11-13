@@ -5,6 +5,7 @@ public class WorldSite
 {
     public World world;
     public MeshSite meshSite;
+    public int siteIndex;
     public int outsideDistance = -1;
     public float maxEnergy = 0, energy = 0;
     public Biome biome;
@@ -13,5 +14,6 @@ public class WorldSite
     {
         this.world = world;
         this.meshSite = meshSite;
+        siteIndex = meshSite.siteIndex;
     }
 }

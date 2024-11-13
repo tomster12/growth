@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public abstract class WorldFeatureConfig : ScriptableObject
+[CreateAssetMenu(fileName = "WorldFeatureConfig", menuName = "World Feature/Config")]
+public class WorldFeatureConfig : ScriptableObject
 {
-    public WorldFeature feature;
 };

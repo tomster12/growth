@@ -28,8 +28,11 @@ using UnityEngine;
 
 namespace GK
 {
+    [Serializable]
     public class VoronoiClipper
     {
+        private static float CLIPPING_THRESHOLD = 0.0005f;
+
         public List<ClippedSite> clippedSites;
 
         /// <summary>
@@ -128,7 +131,7 @@ namespace GK
             List<ClippedVertex> verticesNext = new List<ClippedVertex>();
 
             // Setup intersection indexing
-            int getIntersectionUI(int ev0, int ev1, int v0, int v1)
+            int getIntersectionUID(int ev0, int ev1, int v0, int v1)
             {
                 String key = "";
                 key += (ev0 < ev1) ? (ev0 + "," + ev1 + ",") : (ev1 + "," + ev0 + ",");
@@ -185,6 +188,8 @@ namespace GK
                 else { Debug.Assert(false); return null; }
 
                 // Trim all external vertices down based on current edge
+                // Imagine slicing the world in half along lv + ld
+                // All edges are counter clockwise so point to the left = inside
                 for (int cvi0 = 0; cvi0 < verticesCurrent.Count; cvi0++)
                 {
                     var cvi1 = cvi0 == verticesCurrent.Count - 1 ? 0 : cvi0 + 1;
@@ -195,7 +200,7 @@ namespace GK
                     var p0Inside = Geom.ToTheLeft(v0, lv, lv + ld);
                     var p1Inside = Geom.ToTheLeft(v1, lv, lv + ld);
 
-                    // - Clipped edge is firmly inside - add cp1 because cp0 is already added
+                    // - Clipped edge is firmly inside - add cv1 because cv0 is added by previous edge
                     if (p0Inside && p1Inside)
                     {
                         verticesNext.Add(cv1);
@@ -210,20 +215,22 @@ namespace GK
                         Geom.LineLineIntersection(lv, ld.normalized, v0, (v1 - v0).normalized, out float m0, out _);
                         var intersection = lv + ld.normalized * m0;
 
-                        // - Intersecting an outer edge
+                        // - Intersecting an outer edge (pure or already intersected)
                         if (
                             cv0.type == VertexType.Polygon || cv1.type == VertexType.Polygon
                             || (cv0.intersectionFromUID == cv1.intersectionFromUID && cv0.intersectionFromUID != -1)
                         )
                         {
-                            int intersectionUID = getIntersectionUI(edge.Vert0, edge.Vert1, cv0.intersectionFromUID, cv1.intersectionToUID);
+                            int intersectionUID = getIntersectionUID(edge.Vert0, edge.Vert1, cv0.intersectionFromUID, cv1.intersectionToUID);
                             verticesNext.Add(ClippedVertex.NewPolygonIntersectionVertex(intersection, intersectionUID, cv0.intersectionFromUID, cv1.intersectionToUID));
                         }
 
                         // - Intersection at a site point
                         else
                         {
-                            verticesNext.Add(ClippedVertex.NewSiteVertex(intersection, m0 < 0.0001f ? edge.Vert0 : edge.Vert1));
+                            // NOTE: If this threshold is too low then multiple vertices can be the same UID
+                            int vertexUID = m0 < CLIPPING_THRESHOLD ? edge.Vert0 : edge.Vert1;
+                            verticesNext.Add(ClippedVertex.NewSiteVertex(intersection, vertexUID));
                         }
 
                         // - Points straddling start of inside

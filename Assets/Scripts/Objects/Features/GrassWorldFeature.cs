@@ -15,9 +15,9 @@ public class GrassWorldFeature : MonoBehaviour, IWorldFeature
         bool toFlipX = UnityEngine.Random.value < 0.5f;
 
         // Place correctly
-        Vector3 dir = (edge.b - edge.a);
-        transform.right = dir.normalized;
-        transform.position = edge.a + dir / 2.0f;
+        Vector2 dir = edge.b - edge.a;
+        transform.right = -dir.normalized;
+        transform.position = edge.centre;
 
         // Grow sprite to correct size
         float width = dir.magnitude + 0.04f;

@@ -17,7 +17,7 @@ public class PluckableStoneWorldFeature : MonoBehaviour, IWorldFeature
         transform.position = Vector2.Lerp(edge.a, edge.b, t);
 
         // Set blocking radius
-        blockingRadius = (edge.b - edge.a).magnitude * 0.5f;
+        blockingRadius = edge.length * 0.5f;
     }
 
     [Header("References")]

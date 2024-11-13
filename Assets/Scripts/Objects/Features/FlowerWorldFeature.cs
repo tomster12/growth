@@ -1,5 +1,4 @@
 using UnityEngine;
-using System;
 using UnityEngine.Events;
 
 public class FlowerWorldFeature : MonoBehaviour, IWorldFeature
@@ -12,11 +11,10 @@ public class FlowerWorldFeature : MonoBehaviour, IWorldFeature
         // Choose to flip or not
         bool toFlipX = UnityEngine.Random.value < 0.5f;
 
-        // Place correctly
-        float position = UnityEngine.Random.value;
-        Vector3 dir = (edge.b - edge.a);
+        // Position
+        Vector2 dir = edge.b - edge.a;
         transform.right = dir.normalized;
-        transform.position = edge.a + dir * position;
+        transform.position = Vector2.Lerp(edge.a, edge.b, edgePct);
 
         // Grow sprite to correct size
         float height = heightNoise.GetCyclicNoise(edgePct);

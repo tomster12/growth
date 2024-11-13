@@ -42,13 +42,13 @@ public class RockGenerator : Generator
         // Calculate colors for each site
         foreach (MeshSite meshSite in meshSites)
         {
-            Vector2 centre = mesh.vertices[meshSite.meshCentroidIdx];
+            Vector2 centre = mesh.vertices[meshSite.centroidMeshIndex];
             float r = colorNoise.GetNoise(centre.x, centre.y);
             Color col = Color.Lerp(colorRange[0], colorRange[1], r);
 
             // Update mesh colors
-            colors[meshSite.meshCentroidIdx] = col;
-            foreach (int i in meshSite.meshVerticesIdx) colors[i] = col;
+            colors[meshSite.centroidMeshIndex] = col;
+            foreach (int i in meshSite.verticesMeshIndices) colors[i] = col;
         }
 
         // Update mesh colors
