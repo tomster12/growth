@@ -33,7 +33,7 @@ MonoBehaviour:
     config: {fileID: 11400000, guid: a6248a84b70b48b4589ded4a9ed46fff, type: 2}
     spawnType: 2
     spawnConfig:
-      rid: 4012813132889063430
+      rid: 4012813136817815556
   - type: {fileID: 11400000, guid: a1bc795d9d537bc43af01eecf03f6ee7, type: 2}
     config: {fileID: 0}
     spawnType: 1
@@ -57,21 +57,32 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 4012813132889063430
-      type: {class: WorldFeatureSpawnConfigEvery, ns: , asm: Assembly-CSharp}
     - rid: 4012813132889063433
       type: {class: WorldFeatureSpawnConfigChance, ns: , asm: Assembly-CSharp}
       data:
+        canOverlapTerrain: 0
+        selfMinDistance: 0
         countPer100: 5
     - rid: 4012813132889063435
       type: {class: WorldFeatureSpawnConfigChance, ns: , asm: Assembly-CSharp}
       data:
-        countPer100: 10
+        canOverlapTerrain: 0
+        selfMinDistance: 3.5
+        countPer100: 20
     - rid: 4012813132889063437
       type: {class: WorldFeatureSpawnConfigChance, ns: , asm: Assembly-CSharp}
       data:
+        canOverlapTerrain: 0
+        selfMinDistance: 0
         countPer100: 1.2
     - rid: 4012813132889063441
       type: {class: WorldFeatureSpawnConfigChance, ns: , asm: Assembly-CSharp}
       data:
+        canOverlapTerrain: 0
+        selfMinDistance: 0
         countPer100: 2
+    - rid: 4012813136817815556
+      type: {class: WorldFeatureSpawnConfigEvery, ns: , asm: Assembly-CSharp}
+      data:
+        canOverlapTerrain: 0
+        selfMinDistance: 0

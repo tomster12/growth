@@ -18,7 +18,7 @@ public class PartPhysical : Part
         if (RB == null) RB = Composable.GameObject.AddComponent<Rigidbody2D>();
         if (GRO == null) GRO = Composable.GameObject.AddComponent<GravityObject>();
         RB.gravityScale = 0;
-        GRO.IsEnabled = true;
+        GRO.IsKinematic = true;
         GRO.RB = RB;
         Composable.CL.isTrigger = false;
         InitMass(density);
@@ -38,6 +38,6 @@ public class PartPhysical : Part
         RB.simulated = enabled;
         RB.velocity = Vector2.zero;
         RB.angularVelocity = 0;
-        GRO.IsEnabled = enabled;
+        GRO.IsKinematic = enabled;
     }
 }

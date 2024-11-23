@@ -25,7 +25,9 @@ public class PluckableStoneObject : CompositeObject
         if (PluckDir.Equals(Vector2.zero))
         {
             Debug.LogWarning("PluckableStone does not have a popDir");
-            PluckDir = (Position - World.GetClosestWorldCheap(Position).GetCentre()).normalized;
+            World closestWorld = World.GetClosestWorldByCentre(Position);
+            WorldSurfaceEdge closestEdge = closestWorld.GetClosestEdge(Position);
+            PluckDir = (Position - closestEdge.centre).normalized;
         }
 
         // Initialize indicator

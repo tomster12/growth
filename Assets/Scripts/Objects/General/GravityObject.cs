@@ -8,14 +8,15 @@ public class GravityObject : MonoBehaviour
     [Header("References")]
     [SerializeField] public Rigidbody2D RB;
 
-    public Vector2 Centre => RB.position;
-    public bool IsEnabled { get; set; } = true;
+    public bool IsKinematic = true;
+    public bool UseRBSurface = false;
+    public Vector2 Centre => transform.position;
     public Vector2 GravityDir { get; protected set; }
 
     public void AddForce(Vector2 force)
     {
         GravityDir = force;
-        if (IsEnabled && RB.simulated) RB.AddForce(force);
+        if (IsKinematic && RB.simulated) RB.AddForce(force);
     }
 
     private void Awake()

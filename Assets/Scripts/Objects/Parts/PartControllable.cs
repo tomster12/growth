@@ -44,7 +44,7 @@ public class PartControllable : Part
         IsControlled = true;
         Physical.RB.drag = controlDrag;
         Physical.RB.angularDrag = controlAngularDrag;
-        Physical.GRO.IsEnabled = false;
+        Physical.GRO.IsKinematic = false;
 
         return true;
     }
@@ -61,7 +61,7 @@ public class PartControllable : Part
         IsControlled = false;
         Physical.RB.drag = idleDrag;
         Physical.RB.angularDrag = idleAngularDrag;
-        Physical.GRO.IsEnabled = true;
+        Physical.GRO.IsKinematic = true;
 
         return true;
     }

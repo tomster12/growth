@@ -66,7 +66,7 @@ public partial class PlayerMovement : MonoBehaviour, IFollowable
 
     private void Start()
     {
-        ClosestWorld = World.GetClosestWorld(Transform.position, out Vector2 closestGroundPosition);
+        ClosestWorld = World.GetClosestWorldByRB(Transform.position, out Vector2 closestGroundPosition);
         ClosestEdge = ClosestWorld?.GetClosestEdge(Transform.position);
         playerCamera.SetModeFollow(this, true);
     }
@@ -102,7 +102,7 @@ public partial class PlayerMovement : MonoBehaviour, IFollowable
     private void FixedUpdateProperties()
     {
         // Calculate closest world and ground position
-        ClosestWorld = World.GetClosestWorld(Transform.position, out Vector2 closestGroundPosition);
+        ClosestWorld = World.GetClosestWorldByRB(Transform.position, out Vector2 closestGroundPosition);
         ClosestEdge = ClosestWorld?.GetClosestEdge(Transform.position);
         GroundPos = closestGroundPosition;
 
@@ -125,7 +125,7 @@ public partial class PlayerMovement : MonoBehaviour, IFollowable
             // Set grounded physical properties
             characterRB.drag = groundDrag;
             characterRB.angularDrag = groundAngularDrag;
-            characterGravity.IsEnabled = false;
+            characterGravity.IsKinematic = false;
 
             // Apply force for height with legs
             targetPosition = GroundPos + (GroundUpDir * TargetBodyHeight);
@@ -159,7 +159,7 @@ public partial class PlayerMovement : MonoBehaviour, IFollowable
             // Set air physical properties
             characterRB.drag = airDrag;
             characterRB.angularDrag = airAngularDrag;
-            characterGravity.IsEnabled = true;
+            characterGravity.IsKinematic = true;
 
             // Reset jump timer to max
             jumpTimer = jumpTimerMax;
@@ -216,5 +216,5 @@ public partial class PlayerMovement // IFollowable
 
     public Vector2 GetFollowPosition() => Transform.position;
 
-    public Vector2 GetFollowUpwards() => GroundUpDir;
+    public Vector2 GetFollowUpwards() => -characterGravity.GravityDir;
 }

@@ -12,9 +12,12 @@ public partial class PlayerController : MonoBehaviour, IInteractor
     public static PlayerController Instance { get; private set; }
 
     public Action OnMoveEvent { get; private set; }
+    public Vector2 MousePosition => inputMousePosition;
+    public Vector2 MouseChange => inputMouseChange;
 
     [Header("References")]
     [SerializeField] private PlayerMovement playerMovement;
+    [SerializeField] private PlayerCamera playerCamera;
     [SerializeField] private PlayerLegs playerLegs;
     [SerializeField] private PlayerCursor playerCursor;
     [SerializeField] private ChildOrganiser promptOrganiser;
@@ -63,6 +66,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
     private bool inputLMB, inputRMB;
     private Vector2 inputMousePosition;
     private float inputMouseDistance;
+    private Vector2 inputMouseChange;
     private TargetState targetState;
     private CompositeObject targetObject;
     private float targetDistance;
@@ -141,7 +145,9 @@ public partial class PlayerController : MonoBehaviour, IInteractor
         // Poll input
         inputLMB = Input.GetMouseButtonDown(0);
         inputRMB = Input.GetMouseButtonDown(1);
-        inputMousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 newInputMousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        inputMouseChange = newInputMousePosition - inputMousePosition;
+        inputMousePosition = newInputMousePosition;
         inputMouseDistance = (inputMousePosition - (Vector2)playerMovement.Transform.position).magnitude;
     }
 
@@ -202,6 +208,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
             if (inputMouseDistance < maxHoverDistance) playerCursor.SetCornerColor(cursorColorIdle);
             else playerCursor.SetCornerColor(cursorColorFar);
         }
+        playerCursor.SetUpwards(playerCamera.CameraTfm.up);
     }
 
     #region Hovering
@@ -523,7 +530,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
                 Vector2 targetPos = Vector2.zero;
                 foreach (CompositeObject obj in craftingIngredients) targetPos += obj.Position;
                 targetPos /= craftingIngredients.Count;
-                Vector2 worldDir = World.GetClosestWorldCheap(targetPos).GetCentre() - targetPos;
+                Vector2 worldDir = World.GetClosestWorldByCentre(targetPos).GetCentre() - targetPos;
                 targetPos += -worldDir.normalized * 1.5f;
                 craftingResult.GetPart<PartControllable>().SetControlPosition(targetPos, craftingResultControlForce);
             }

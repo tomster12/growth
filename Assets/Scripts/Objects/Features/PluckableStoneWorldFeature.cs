@@ -20,6 +20,11 @@ public class PluckableStoneWorldFeature : MonoBehaviour, IWorldFeature
         blockingRadius = edge.length * 0.5f;
     }
 
+    public bool Contains(Vector2 point)
+    {
+        return Vector2.Distance(point, transform.position) < blockingRadius;
+    }
+
     [Header("References")]
     [SerializeField] private PluckableStoneObject composite;
     [SerializeField] private GeneratorController generator;

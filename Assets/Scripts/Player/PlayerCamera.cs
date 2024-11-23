@@ -2,6 +2,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering.Universal;
+using static UnityEngine.GraphicsBuffer;
 
 public interface IFollowable
 {
@@ -24,6 +25,7 @@ public class PlayerCamera : MonoBehaviour
     { Free, Follow }
 
     public CameraMode CameraModeState { get; private set; }
+    public Transform CameraTfm => cameraTfm;
 
     public void SetModeFree()
     {
@@ -33,7 +35,7 @@ public class PlayerCamera : MonoBehaviour
     public void SetModeFollow(IFollowable follow, bool set = false)
     {
         // Unsubscribe from previous follow
-        if (this.follow != null) this.follow.OnMoveEvent -= XUpdateMovementFollow;
+        if (this.follow != null) this.follow.OnMoveEvent -= OnTargetMove;
 
         CameraModeState = CameraMode.Follow;
         this.follow = follow;
@@ -47,8 +49,7 @@ public class PlayerCamera : MonoBehaviour
         }
 
         // Listen to OnMove
-        // TODO: Check if this lags behind
-        this.follow.OnMoveEvent += XUpdateMovementFollow;
+        this.follow.OnMoveEvent += OnTargetMove;
     }
 
     [Header("References")]
@@ -65,9 +66,11 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private float freeMovementDamping = 0.75f;
     [SerializeField] private float freeMovementMaxSpeed = 3.0f;
     [SerializeField] private float followRotationSpeed = 3.0f;
+    [SerializeField] private float followRotationThreshold = 0.4f;
 
     private IFollowable follow;
-    private Vector3 movementVelocity = Vector3.zero;
+    private Vector2 movementVelocity = Vector2.zero;
+    private Vector2 targetUp = Vector2.zero;
 
     private void Awake()
     {
@@ -123,18 +126,18 @@ public class PlayerCamera : MonoBehaviour
         // Handle camera movement
         float horz = Input.GetAxisRaw("Horizontal");
         float vert = Input.GetAxisRaw("Vertical");
-        movementVelocity += Vector3.right * horz * freeMovementAcc / zoomLevel;
-        movementVelocity += Vector3.up * vert * freeMovementAcc / zoomLevel;
+        movementVelocity += Vector2.right * horz * freeMovementAcc / zoomLevel;
+        movementVelocity += Vector2.up * vert * freeMovementAcc / zoomLevel;
 
         // Constrain, move camera, apply damping
         movementVelocity = Vector2.ClampMagnitude(movementVelocity, freeMovementMaxSpeed / zoomLevel);
         movementVelocity *= freeMovementDamping;
-        cameraTfm.position += movementVelocity;
+        cameraTfm.position += (Vector3)movementVelocity;
 
         OnMoveEvent();
     }
 
-    private void XUpdateMovementFollow()
+    private void OnTargetMove()
     {
         if (CameraModeState != CameraMode.Follow) return;
 
@@ -142,8 +145,12 @@ public class PlayerCamera : MonoBehaviour
         Vector2 pos = follow.GetFollowPosition();
         cameraTfm.position = Utility.WithZ(pos, cameraTfm.position.z);
 
-        // Follow object rotation
-        cameraTfm.up = Vector2.Lerp(cameraTfm.up, follow.GetFollowUpwards(), Time.deltaTime * followRotationSpeed);
+        // Follow object rotation if difference is bigger than threshold
+        float angle = Vector2.SignedAngle(cameraTfm.up, follow.GetFollowUpwards());
+        if (Mathf.Abs(angle) > followRotationThreshold)
+        {
+            cameraTfm.up = Vector2.Lerp(cameraTfm.up, follow.GetFollowUpwards(), Time.deltaTime * followRotationSpeed);
+        }
 
         OnMoveEvent();
     }

@@ -3,7 +3,6 @@ using UnityEngine;
 public class TreeWorldFeature : MonoBehaviour, IWorldFeature
 {
     public Transform Transform => transform;
-    public float BlockingRadius => mesh.localScale.x * 0.5f;
 
     public void Place(WorldSurfaceEdge edge, float edgePct, WorldFeatureConfig config)
     {
@@ -21,6 +20,11 @@ public class TreeWorldFeature : MonoBehaviour, IWorldFeature
         if (Random.value < tallChance) height = sizeTall;
         mesh.localScale = new Vector3(width, height, 1.0f);
         mesh.localPosition = new Vector3(-mesh.localScale.x * 0.5f, mesh.localScale.y * 0.5f - embedDistance, mesh.transform.position.z);
+    }
+
+    public bool Contains(Vector2 point)
+    {
+        return Vector2.Distance(transform.position, point) < mesh.localScale.x * 0.5f;
     }
 
     [Header("References")]

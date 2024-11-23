@@ -44,6 +44,11 @@ public class PlayerCursor : MonoBehaviour
         if (snapCornerPos) LerpCornersBounds(0);
     }
 
+    public void SetUpwards(Vector2 up)
+    {
+        cursorContainer.up = up;
+    }
+
     public void SetIndicator(int index, bool show, Vector2 pos = default)
     {
         indicators[index].show = show;

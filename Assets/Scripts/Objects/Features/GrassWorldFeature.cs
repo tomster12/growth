@@ -4,7 +4,6 @@ using UnityEngine.Events;
 
 public class GrassWorldFeature : MonoBehaviour, IWorldFeature
 {
-    public float BlockingRadius => blockingRadius;
     public Transform Transform => transform;
 
     public void Place(WorldSurfaceEdge edge, float edgePct, WorldFeatureConfig config)
@@ -30,6 +29,11 @@ public class GrassWorldFeature : MonoBehaviour, IWorldFeature
 
         // Invoke event
         OnSpawnEvent.Invoke();
+    }
+
+    public bool Contains(Vector2 point)
+    {
+        return Vector2.Distance(point, transform.position) < blockingRadius;
     }
 
     [Header("References")]

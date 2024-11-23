@@ -149,7 +149,7 @@ public class PartIndicatable : Part
         // Closest World: Find closest world and set offset dir
         if (offsetType == OffsetType.ClosestWorld)
         {
-            World world = World.GetClosestWorldCheap(Composable.Position);
+            World world = World.GetClosestWorldByCentre(Composable.Position);
             offsetDir = (Composable.Position - (Vector2)world.GetCentre()).normalized;
         }
 

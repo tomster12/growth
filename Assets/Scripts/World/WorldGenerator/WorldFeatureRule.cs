@@ -9,6 +9,8 @@ public enum WorldFeatureSpawnType
 
 public abstract class WorldFeatureSpawnConfig
 {
+    public bool canOverlapTerrain = false;
+    public float selfMinDistance = 0f;
 };
 
 public class WorldFeatureSpawnConfigCluster : WorldFeatureSpawnConfig
@@ -56,6 +58,64 @@ public class WorldFeatureRule
 
         for (int i = biomeInstance.startIndex; i != biomeInstance.endIndex; i = (i + 1) % edges.Count)
         {
+            // Check if the feature is overlapping terrain if needed
+            if (!spawnConfig.canOverlapTerrain)
+            {
+                bool overlapping = false;
+                for (int j = 0; j < instances.Count; j++)
+                {
+                    if (instances[j].Type.gameLayer == GameLayer.Terrain)
+                    {
+                        if (instances[j].Feature.Contains(edges[i].a) || instances[j].Feature.Contains(edges[i].b))
+                        {
+                            overlapping = true;
+                            break;
+                        }
+                    }
+                }
+                if (overlapping) continue;
+                for (int j = 0; j < newInstances.Count; j++)
+                {
+                    if (newInstances[j].Type.gameLayer == GameLayer.Terrain)
+                    {
+                        if (newInstances[j].Feature.Contains(edges[i].a) || newInstances[j].Feature.Contains(edges[i].b))
+                        {
+                            overlapping = true;
+                            break;
+                        }
+                    }
+                }
+                if (overlapping) continue;
+            }
+
+            // Check if the feature is too close to other features of the same type
+            if (spawnConfig.selfMinDistance > 0.0f)
+            {
+                bool overlapping = false;
+                for (int j = 0; j < instances.Count; j++)
+                {
+                    if (instances[j].Type == type)
+                    {
+                        if (Vector3.Distance(instances[j].Feature.Transform.position, edges[i].centre) < spawnConfig.selfMinDistance)
+                        {
+                            overlapping = true;
+                            break;
+                        }
+                    }
+                }
+                if (overlapping) continue;
+                for (int j = 0; j < newInstances.Count; j++)
+                {
+                    if (Vector3.Distance(newInstances[j].Feature.Transform.position, edges[i].centre) < spawnConfig.selfMinDistance)
+                    {
+                        overlapping = true;
+                        break;
+                    }
+                }
+                if (overlapping) continue;
+            }
+
+            // Perform spawn type specific logic
             switch (spawnType)
             {
                 case WorldFeatureSpawnType.CLUSTER:

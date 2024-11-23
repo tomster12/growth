@@ -16,6 +16,7 @@ public partial class WorldGenerator : Generator
     public Transform Transform => outsidePolygon.transform;
     public List<WorldSurfaceEdge> SurfaceEdges => surfaceEdges;
     public List<WorldSite> Sites => sites;
+    public float AtmosphereRadius => atmosphereSizeMax;
 
     public void SafeGenerate()
     {

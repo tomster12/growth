@@ -6,17 +6,19 @@ public class GravityAttractor : MonoBehaviour
     [SerializeField] public float gravityForce = 200.0f;
     [SerializeField] public float gravityRadius = 200.0f; // Standard Range: 150-300
     [SerializeField] public float minimumDistance = 3.0f;
-    [SerializeField] public bool rigidbodySurface = true;
 
-    public Rigidbody2D RB => _RB;
-    public PolygonCollider2D PolygonCollider => _polygonCollider;
+    public Rigidbody2D RB => rb;
+    public PolygonCollider2D PolygonCollider => polygonCollider;
     public Vector2 Centre => RB.position;
 
-    public Vector2 ClosestPoint(Vector2 pos) => rigidbodySurface ? RB.ClosestPoint(pos) : PolygonCollider.ClosestPoint(pos);
+    public Vector2 GetGravityDir(GravityObject obj)
+    {
+        return obj.UseRBSurface ? RB.ClosestPoint(obj.Centre) - obj.Centre : PolygonCollider.ClosestPoint(obj.Centre) - obj.Centre;
+    }
 
     [Header("References")]
-    [SerializeField] private Rigidbody2D _RB;
-    [SerializeField] private PolygonCollider2D _polygonCollider;
+    [SerializeField] private Rigidbody2D rb;
+    [SerializeField] private PolygonCollider2D polygonCollider;
 
     private void FixedUpdate()
     {
@@ -25,12 +27,12 @@ public class GravityAttractor : MonoBehaviour
         {
             // If within gravity radius
             Vector2 centreDir = Centre - obj.Centre;
-            if (centreDir.magnitude < gravityRadius)
+            if (centreDir.sqrMagnitude < gravityRadius * gravityRadius)
             {
+                Vector2 surfaceDir = GetGravityDir(obj);
+
                 // On the surface for some reason
-                Vector2 surface = ClosestPoint(obj.Centre);
-                Vector2 surfaceDir = surface - obj.Centre;
-                if (surfaceDir.magnitude == 0) continue;
+                if (surfaceDir.sqrMagnitude == 0) continue;
 
                 float cleanMagnitude = Mathf.Max(surfaceDir.magnitude, minimumDistance);
                 float force = gravityForce * (RB.mass * obj.RB.mass) / cleanMagnitude;
@@ -45,16 +47,16 @@ public class GravityAttractor : MonoBehaviour
         foreach (GravityObject obj in GravityObject.gravityObjects)
         {
             if (!obj) continue;
-            if (!obj.IsEnabled) continue;
+            if (!obj.IsKinematic) continue;
             if (!obj.RB.simulated) continue;
 
             // If within gravity radius
             Vector2 centreDir = Centre - obj.Centre;
             if (centreDir.magnitude < gravityRadius)
             {
+                Vector2 surfaceDir = GetGravityDir(obj);
+
                 // On the surface for some reason
-                Vector2 surface = ClosestPoint(obj.Centre);
-                Vector2 surfaceDir = surface - obj.Centre;
                 if (surfaceDir.magnitude == 0) continue;
 
                 Gizmos.color = Color.green;
