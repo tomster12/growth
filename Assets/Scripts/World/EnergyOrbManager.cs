@@ -22,7 +22,7 @@ public class EnergyOrbManager : MonoBehaviour
     private const float MOUSE_DIST = 2f;
     private const float VELOCITY_DIST = 2.5f;
 
-    private const float HOVER_BASE_HEIGHT = 0.3f;
+    private const float HOVER_BASE_HEIGHT = 0.6f;
     private const float HOVER_SIZE_HEIGHT = 4.0f;
     private const float HOVER_GRAVITY_THRESHOLD = 0.15f;
     private const float HOVER_OSC_AMT = 0.3f;
@@ -54,15 +54,16 @@ public class EnergyOrbManager : MonoBehaviour
         outputGO.transform.position = world.GetCentre();
         outputGO.transform.localScale = Vector3.one * world.WorldGenerator.AtmosphereRadius * 2.0f;
         outputSR.material = outputMaterial;
+
+        // Add some initial orbs
+        for (int i = 0; i < 100; i++)
+        {
+            AddRandomOrb();
+        }
     }
 
     private void Update()
     {
-        if (Time.frameCount % 30 == 0)
-        {
-            AddRandomOrb();
-        }
-
         Vector2 mousePos = PlayerController.Instance.MousePosition;
         Vector2 mouseChange = PlayerController.Instance.MouseChange * Time.deltaTime;
 
@@ -166,7 +167,7 @@ public class EnergyOrbManager : MonoBehaviour
     private void AddRandomOrb()
     {
         Vector2 position = new Vector2(15.0f + Random.Range(-5f, 5f), 85.0f + Random.Range(-5f, 5f));
-        float size = Random.Range(0.2f, 0.75f);
+        float size = Random.Range(0.2f, 1.0f);
         AddOrb(position, size);
     }
 

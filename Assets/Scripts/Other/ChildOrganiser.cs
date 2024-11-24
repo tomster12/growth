@@ -11,6 +11,7 @@ public class ChildOrganiser : MonoBehaviour
     {
         children.Add(newChild);
         newChild.Transform.parent = transform;
+        newChild.Transform.localRotation = Quaternion.identity;
     }
 
     public void Clear()

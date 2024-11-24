@@ -5,8 +5,8 @@ public class CompositeObject : MonoBehaviour
 {
     public static List<CompositeObject> objects = new List<CompositeObject>();
     public Collider2D CL => _CL;
-    public Bounds Bounds => CL.bounds;
     public Vector2 Position => Transform.position;
+    public Bounds Bounds => CL.bounds;
     public Transform Transform => transform;
     public GameObject GameObject => gameObject;
     public bool CanTarget { get; private set; } = true;
@@ -29,6 +29,36 @@ public class CompositeObject : MonoBehaviour
             if (obj.HasPart<T>()) parts.Add(obj.GetPart<T>());
         }
         return parts;
+    }
+
+    public Vector2[] GetAlignedBoundCorners(Vector2 up)
+    {
+        Vector2 right = new Vector2(up.y, -up.x);
+
+        // Get the collider points in world space
+        Vector2[] points = Utility.GetWorldSpacePoints(CL);
+
+        // Project points onto the camera's axes
+        float minX = float.MaxValue, maxX = float.MinValue;
+        float minY = float.MaxValue, maxY = float.MinValue;
+
+        foreach (var point in points)
+        {
+            float projX = Vector2.Dot(point, right);
+            float projY = Vector2.Dot(point, up);
+            if (projX < minX) minX = projX;
+            if (projX > maxX) maxX = projX;
+            if (projY < minY) minY = projY;
+            if (projY > maxY) maxY = projY;
+        }
+
+        // Calculate corners of the oriented bounding box
+        Vector2 bottomLeft = (right * minX) + (up * minY);
+        Vector2 bottomRight = (right * maxX) + (up * minY);
+        Vector2 topLeft = (right * minX) + (up * maxY);
+        Vector2 topRight = (right * maxX) + (up * maxY);
+
+        return new Vector2[] { topLeft, topRight, bottomLeft, bottomRight };
     }
 
     public void SetCanTarget(bool value) => CanTarget = value;

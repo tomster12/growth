@@ -180,7 +180,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
         // Follow controlled object in Update()
         if (targetState == TargetState.Controlling)
         {
-            playerCursor.SetTargetBounds(targetObject.Bounds, cursorControlGap * (1.0f - CursorSqueeze), true);
+            playerCursor.SetTargetObject(targetObject, cursorControlGap * (1.0f - CursorSqueeze), true);
             playerCursor.SetIndicator(0, true, inputMousePosition);
             playerCursor.SetIndicator(1, true, targetControlLimitedPos);
             playerCursor.SetCornerColor(cursorColorControl);
@@ -189,7 +189,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
         }
         if (targetState == TargetState.Hovering || targetState == TargetState.Interacting)
         {
-            playerCursor.SetTargetBounds(targetObject.Bounds, cursorHoverGap * (1.0f - CursorSqueeze), false);
+            playerCursor.SetTargetObject(targetObject, cursorHoverGap * (1.0f - CursorSqueeze), false);
             playerCursor.SetIndicator(0, false);
             playerCursor.SetIndicator(1, false);
             if (targetState == TargetState.Interacting) playerCursor.SetCornerColor(cursorColorInteracting);

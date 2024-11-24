@@ -1,4 +1,6 @@
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class PlayerCursor : MonoBehaviour
 {
@@ -32,21 +34,23 @@ public class PlayerCursor : MonoBehaviour
         targetBoundsGap = 0;
         targetPos = pos;
         snapCornerPos = snap;
-        if (snapCornerPos) LerpCornersPosition(0);
+        if (snapCornerPos) LerpPosition(0);
     }
 
-    public void SetTargetBounds(Bounds bounds, float gap, bool snap = false)
+    public void SetTargetObject(CompositeObject obj, float gap, bool snap = false)
     {
-        targetType = TargetType.Bounds;
-        targetBounds = bounds;
+        targetType = TargetType.Object;
+        targetObject = obj;
         targetBoundsGap = gap;
         snapCornerPos = snap;
-        if (snapCornerPos) LerpCornersBounds(0);
+        UpdateTargetBounds();
+        if (snapCornerPos) LerpObject(0);
     }
 
     public void SetUpwards(Vector2 up)
     {
         cursorContainer.up = up;
+        if (targetType == TargetType.Object) UpdateTargetBounds();
     }
 
     public void SetIndicator(int index, bool show, Vector2 pos = default)
@@ -77,13 +81,15 @@ public class PlayerCursor : MonoBehaviour
     private Indicator[] indicators = new Indicator[0];
     private TargetType targetType;
     private Vector2 targetPos;
-    private Bounds targetBounds;
+    private CompositeObject targetObject;
+    private Vector2[] targetAlignedCorners;
+    private Vector2 targetAlignedCentre;
     private float targetBoundsGap;
     private bool snapCornerPos;
     private Color cornerColor;
 
     private enum TargetType
-    { Position, Bounds }
+    { Position, Object }
 
     private void Awake()
     {
@@ -103,13 +109,13 @@ public class PlayerCursor : MonoBehaviour
     private void LateUpdateCursor()
     {
         if (GameManager.IsPaused) return;
-        if (targetType == TargetType.Position) LerpCornersPosition(Time.deltaTime);
-        if (targetType == TargetType.Bounds) LerpCornersBounds(Time.deltaTime);
-        LerpCornersColors(Time.deltaTime);
+        if (targetType == TargetType.Position) LerpPosition(Time.deltaTime);
+        if (targetType == TargetType.Object) LerpObject(Time.deltaTime);
+        LerpColours(Time.deltaTime);
         UpdateIndicators();
     }
 
-    private void LerpCornersPosition(float dt)
+    private void LerpPosition(float dt)
     {
         // Set container to position
         cursorContainer.position = new Vector2(Mathf.Round(targetPos.x * 12) / 12, Mathf.Round(targetPos.y * 12) / 12);
@@ -122,34 +128,34 @@ public class PlayerCursor : MonoBehaviour
         }
     }
 
-    private void LerpCornersBounds(float dt)
+    private void LerpObject(float dt)
     {
+        targetAlignedCentre = (targetAlignedCorners[0] + targetAlignedCorners[1] + targetAlignedCorners[2] + targetAlignedCorners[3]) / 4;
+        float rightExtent = Vector2.Distance(targetAlignedCorners[0], targetAlignedCorners[1]) / 2;
+
+        // Lerp corners to their targets
         for (int i = 0; i < 4; i++)
         {
-            // Target local based on bounds and gap
-            Vector2 target = new Vector2(
-                targetBounds.center.x + (targetBounds.extents.x + targetBoundsGap) * CORNER_OFFSETS[i].x,
-                targetBounds.center.y + (targetBounds.extents.y + targetBoundsGap) * CORNER_OFFSETS[i].y
-            );
-
-            // Lerp corners to their targets
-            if (snapCornerPos) cursorCorners[i].transform.position = target;
-            else cursorCorners[i].transform.position = Vector2.Lerp(cursorCorners[i].transform.position, target, dt * boundsMoveSpeed);
+            if (snapCornerPos) cursorCorners[i].transform.position = targetAlignedCorners[i];
+            else cursorCorners[i].transform.position = Vector2.Lerp(cursorCorners[i].transform.position, targetAlignedCorners[i], dt * boundsMoveSpeed);
         }
 
         // Set prompt organiser position
-        Vector3 targetPromptPosition = targetBounds.center + Vector3.right * (targetBounds.extents.x + targetBoundsGap + promptOrganiserOffset);
-        targetPromptPosition.z = -3.0f;
-        promptOrganiser.position = targetPromptPosition;
+        promptOrganiser.localPosition = targetAlignedCentre + Vector2.right * (rightExtent + targetBoundsGap + promptOrganiserOffset);
     }
 
-    private void LerpCornersColors(float dt)
+    private void LerpColours(float dt)
     {
         // Lerp each corners colour
         for (int i = 0; i < cursorCorners.Length; i++)
         {
             cursorCorners[i].color = Color.Lerp(cursorCorners[i].color, cornerColor, dt * colorLerpSpeed);
         }
+    }
+
+    private void UpdateTargetBounds()
+    {
+        targetAlignedCorners = targetObject.GetAlignedBoundCorners(cursorContainer.up);
     }
 
     private void UpdateIndicators()
@@ -181,10 +187,13 @@ public class PlayerCursor : MonoBehaviour
             Gizmos.color = Color.green;
             Gizmos.DrawWireSphere(targetPos, 0.1f);
         }
-        if (targetType == TargetType.Bounds)
+        if (targetType == TargetType.Object)
         {
-            Gizmos.color = Color.green;
-            Gizmos.DrawWireCube(targetBounds.center, targetBounds.size + Vector3.one * targetBoundsGap * 2);
+            for (int i = 0; i < 4; i++)
+            {
+                Gizmos.color = Color.green;
+                Gizmos.DrawWireSphere(targetAlignedCorners[i], 0.1f);
+            }
         }
     }
 

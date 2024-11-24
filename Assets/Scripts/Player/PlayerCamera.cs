@@ -54,6 +54,7 @@ public class PlayerCamera : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private PixelPerfectCamera pixelPerfectCamera;
+    [SerializeField] private Camera mainCamera;
     [SerializeField] private Camera outsideUICamera;
     [SerializeField] private RenderTexture outsideUITexture;
     [SerializeField] private Transform cameraTfm;
@@ -70,7 +71,6 @@ public class PlayerCamera : MonoBehaviour
 
     private IFollowable follow;
     private Vector2 movementVelocity = Vector2.zero;
-    private Vector2 targetUp = Vector2.zero;
 
     private void Awake()
     {
@@ -110,7 +110,7 @@ public class PlayerCamera : MonoBehaviour
         pixelPerfectCamera.refResolutionY = 2 * Mathf.FloorToInt(0.5f * screenHeight / zoomLevel);
 
         // Update outside UI camera size to match PP cameras
-        outsideUICamera.orthographicSize = Mathf.FloorToInt(0.5f * screenHeight / zoomLevel) / 12;
+        outsideUICamera.orthographicSize = (float)Mathf.FloorToInt(0.5f * screenHeight / zoomLevel) / 12.0f;
     }
 
     private void FixedUpdate()

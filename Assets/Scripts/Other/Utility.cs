@@ -187,6 +187,40 @@ public static class Utility
         return mesh;
     }
 
+    public static Vector2[] GetWorldSpacePoints(Collider2D collider)
+    {
+        if (collider is PolygonCollider2D polyCollider)
+        {
+            Vector2[] localPoints = polyCollider.points;
+            Vector2[] worldPoints = new Vector2[localPoints.Length];
+            for (int i = 0; i < localPoints.Length; i++)
+                worldPoints[i] = polyCollider.transform.TransformPoint(localPoints[i]);
+            return worldPoints;
+        }
+        else if (collider is BoxCollider2D boxCollider)
+        {
+            Vector2 center = boxCollider.transform.TransformPoint(boxCollider.offset);
+            Vector2 size = boxCollider.size * 0.5f;
+            Vector2[] localPoints = new Vector2[]
+            {
+                new Vector2(-size.x, -size.y),
+                new Vector2(size.x, -size.y),
+                new Vector2(size.x, size.y),
+                new Vector2(-size.x, size.y)
+            };
+
+            Vector2[] worldPoints = new Vector2[localPoints.Length];
+            for (int i = 0; i < localPoints.Length; i++)
+                worldPoints[i] = center + (Vector2)(boxCollider.transform.rotation * localPoints[i]);
+            return worldPoints;
+        }
+        else
+        {
+            Debug.LogError("Collider type not supported.");
+            return new Vector2[0];
+        }
+    }
+
     private static int[] cacheRandomInPolygonTris;
     private static Vector3[] cacheRandomInPolygonVerts;
     private static int cacheRandomInPolygonTriCount;
