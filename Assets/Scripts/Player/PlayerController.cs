@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Xml.Linq;
 using UnityEngine;
 
 public partial class PlayerController : MonoBehaviour, IInteractor
@@ -28,7 +27,8 @@ public partial class PlayerController : MonoBehaviour, IInteractor
     [SerializeField] private GameObject craftingTargetPfb;
 
     [Header("Target Config")]
-    [SerializeField] private float controlForce = 25.0f;
+    [SerializeField] private float controlPosForce = 20.0f;
+    [SerializeField] private float controlAngleForce = 8.0f;
     [SerializeField] private float maxHoverDistance = 15.0f;
     [SerializeField] private float maxControlDistance = 9.0f;
     [SerializeField] private float maxControlWarningThreshold = 2.0f;
@@ -208,7 +208,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
             if (inputMouseDistance < maxHoverDistance) playerCursor.SetCornerColor(cursorColorIdle);
             else playerCursor.SetCornerColor(cursorColorFar);
         }
-        playerCursor.SetUpwards(playerCamera.CameraTfm.up);
+        playerCursor.SetUpwards(playerCamera.CamTfm.up);
     }
 
     #region Hovering
@@ -314,7 +314,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
             // Limit control dir and set control position
             targetControlLimitedDir = Vector2.ClampMagnitude(mouseDir, maxControlDistance - 0.1f);
             targetControlLimitedPos = (Vector2)playerMovement.Transform.position + targetControlLimitedDir;
-            targetObject.GetPart<PartControllable>().SetControlPosition(targetControlLimitedPos, controlForce);
+            targetObject.GetPart<PartControllable>().SetControlPosition(targetControlLimitedPos, controlPosForce);
 
             // Mouse outside control length so show circle
             float hoverBoundaryPct = Mathf.Min(1.0f, 1.0f - (maxControlDistance - inputMouseDistance) / maxControlWarningThreshold);
@@ -362,7 +362,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
 
         // Set controlling
         if (!targetObject.GetPart<PartControllable>().StartControlling()) throw new System.Exception("Failed to control target.");
-        targetObject.GetPart<PartControllable>().SetControlPosition(targetObject.Position, controlForce);
+        targetObject.GetPart<PartControllable>().SetControlPosition(targetObject.Position, controlPosForce);
         targetState = TargetState.Controlling;
 
         // Disable indicators if they exist
@@ -570,7 +570,8 @@ public partial class PlayerController : MonoBehaviour, IInteractor
         ingredient.GetPart<PartIndicatable>()?.Hide();
         Vector3 controlPosition = ingredient.Position + ingredient.GetPart<PartPhysical>().GRO.GravityDir.normalized * -craftingResultOffset;
         ingredient.GetPart<PartControllable>().StartControlling();
-        ingredient.GetPart<PartControllable>().SetControlPosition(controlPosition, controlForce);
+        ingredient.GetPart<PartControllable>().SetControlPosition(controlPosition, controlPosForce);
+        ingredient.GetPart<PartControllable>().SetControlAngle(playerCamera.CamTfm.eulerAngles.z, controlAngleForce);
 
         UpdateCraftingRecipe();
     }
@@ -612,6 +613,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
             craftingResult.GetPart<PartHighlightable>().OutlineController.OutlineColor = craftingTargetOutlineColor;
             craftingResult.OnClick += OnCraftingResultClick;
             craftingResult.GetPart<PartControllable>().SetControlPosition(initialPos, craftingResultControlForce);
+            craftingResult.GetPart<PartControllable>().SetControlAngle(playerCamera.CamTfm.eulerAngles.z, controlAngleForce);
         }
         else craftingResult.SetRecipe(null);
 

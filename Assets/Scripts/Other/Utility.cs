@@ -199,19 +199,18 @@ public static class Utility
         }
         else if (collider is BoxCollider2D boxCollider)
         {
-            Vector2 center = boxCollider.transform.TransformPoint(boxCollider.offset);
             Vector2 size = boxCollider.size * 0.5f;
             Vector2[] localPoints = new Vector2[]
             {
-                new Vector2(-size.x, -size.y),
-                new Vector2(size.x, -size.y),
-                new Vector2(size.x, size.y),
-                new Vector2(-size.x, size.y)
+                new Vector2(boxCollider.offset.x - size.x, boxCollider.offset.y - size.y),
+                new Vector2(boxCollider.offset.x + size.x, boxCollider.offset.y - size.y),
+                new Vector2(boxCollider.offset.x + size.x, boxCollider.offset.y + size.y),
+                new Vector2(boxCollider.offset.x - size.x, boxCollider.offset.y + size.y)
             };
 
             Vector2[] worldPoints = new Vector2[localPoints.Length];
             for (int i = 0; i < localPoints.Length; i++)
-                worldPoints[i] = center + (Vector2)(boxCollider.transform.rotation * localPoints[i]);
+                worldPoints[i] = boxCollider.transform.TransformPoint(localPoints[i]);
             return worldPoints;
         }
         else

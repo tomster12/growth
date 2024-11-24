@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: WorldFeatureTypePluckableStone
   m_EditorClassIdentifier: 
   prefab: {fileID: 3338917768004317453, guid: 0bfe27a21aa41e942b02087c7c49f160, type: 3}
-  gameLayer: 4
+  gameLayer: 5

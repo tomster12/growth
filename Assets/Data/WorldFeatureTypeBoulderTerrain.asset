@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: WorldFeatureTypeBoulderTerrain
   m_EditorClassIdentifier: 
   prefab: {fileID: 2022025293066536358, guid: 46b5024162834b34d847fd4dc278df89, type: 3}
-  gameLayer: 2
+  gameLayer: 3

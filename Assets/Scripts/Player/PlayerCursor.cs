@@ -136,12 +136,14 @@ public class PlayerCursor : MonoBehaviour
         // Lerp corners to their targets
         for (int i = 0; i < 4; i++)
         {
-            if (snapCornerPos) cursorCorners[i].transform.position = targetAlignedCorners[i];
-            else cursorCorners[i].transform.position = Vector2.Lerp(cursorCorners[i].transform.position, targetAlignedCorners[i], dt * boundsMoveSpeed);
+            Vector2 target = targetAlignedCorners[i];
+            target += CORNER_OFFSETS[i] * idleCornerGap;
+            if (snapCornerPos) cursorCorners[i].transform.position = target;
+            else cursorCorners[i].transform.position = Vector2.Lerp(cursorCorners[i].transform.position, target, dt * boundsMoveSpeed);
         }
 
         // Set prompt organiser position
-        promptOrganiser.localPosition = targetAlignedCentre + Vector2.right * (rightExtent + targetBoundsGap + promptOrganiserOffset);
+        promptOrganiser.position = targetAlignedCentre + (Vector2)cursorContainer.right * (rightExtent + targetBoundsGap + promptOrganiserOffset);
     }
 
     private void LerpColours(float dt)

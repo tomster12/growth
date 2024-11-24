@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: WorldFeatureTypeBoulderBackDecor
   m_EditorClassIdentifier: 
   prefab: {fileID: 6099407925653884417, guid: f81494f42fc45274f98cc9bd8c13ae95, type: 3}
-  gameLayer: 5
+  gameLayer: 6

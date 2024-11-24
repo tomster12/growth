@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: WorldFeatureTypeTree
   m_EditorClassIdentifier: 
   prefab: {fileID: 1372191144710954479, guid: d742054c59b375b429639d89c5e3fea0, type: 3}
-  gameLayer: 4
+  gameLayer: 5

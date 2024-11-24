@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: WorldFeatureTypeLongGrass
   m_EditorClassIdentifier: 
   prefab: {fileID: 7041187217807487430, guid: 382d0be6598603e479f57a13ace98ed3, type: 3}
-  gameLayer: 4
+  gameLayer: 5

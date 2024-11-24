@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: WorldFeatureTypeFlowerRose
   m_EditorClassIdentifier: 
   prefab: {fileID: 6322695881459281577, guid: eb259c2d1188af449891d29f957249f6, type: 3}
-  gameLayer: 1
+  gameLayer: 2

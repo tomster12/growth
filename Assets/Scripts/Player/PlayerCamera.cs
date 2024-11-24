@@ -25,7 +25,7 @@ public class PlayerCamera : MonoBehaviour
     { Free, Follow }
 
     public CameraMode CameraModeState { get; private set; }
-    public Transform CameraTfm => cameraTfm;
+    public Transform CamTfm => cameraTfm;
 
     public void SetModeFree()
     {
