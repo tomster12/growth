@@ -66,7 +66,7 @@ Material:
     - _AlphaClip: 0
     - _Blend: 0
     - _BlendOp: 0
-    - _BlendThreshold: 15
+    - _BlendThreshold: 16.7
     - _CameraFadingEnabled: 0
     - _CameraFarFadeDistance: 2
     - _CameraNearFadeDistance: 1
@@ -78,14 +78,14 @@ Material:
     - _DistortionStrength: 1
     - _DistortionStrengthScaled: 0.1
     - _DstBlend: 0
-    - _EdgeThreshold: 17.3
+    - _EdgeThreshold: 18.1
     - _FlipbookBlending: 0
     - _FlipbookMode: 0
     - _InsideDistance: 3.23
     - _InsideThreshold: 31.4
     - _Mode: 0
     - _Mult: 0.23
-    - _OrbCount: 263
+    - _OrbCount: 100
     - _OrbSizes: 0
     - _QueueControl: 0
     - _QueueOffset: 0
@@ -103,7 +103,7 @@ Material:
     - _BaseColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
     - _CameraFadeParams: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _EdgeColour: {r: 0.16678846, g: 0.17189424, b: 0.177, a: 0.53333336}
+    - _EdgeColour: {r: 0.36078432, g: 0.49803922, b: 0.8666667, a: 0.53333336}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _InsideColour: {r: 0.26185715, g: 0.47671428, b: 0.752, a: 0.8509804}
     - _InsideColourB: {r: 1, g: 1, b: 1, a: 1}
