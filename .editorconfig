@@ -2,9 +2,6 @@
 [*.{cs,vb}]
 root = true
 
-# Disable shorten new() syntax suggestion
-dotnet_diagnostic.IDE0090.severity = none
-
 # Disable Read-only warning
 dotnet_diagnostic.IDE0044.severity = none
 dotnet_diagnostic.IDE0251.severity = none
