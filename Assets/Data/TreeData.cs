@@ -16,7 +16,7 @@ public class TreeData : ScriptableObject
 
     public SampleRange AngleInitial = new SampleRange(-5, 5, SampleTypes.UNIFORM);
     public SampleRange AngleAdd = new SampleRange(-1, 1, SampleTypes.UNIFORM);
-    public float AngleDecay = 0.99f;
+    public float AngleDecay = 1.02f;
 
     public float BranchChance = 0.1f;
     public SampleRange BranchAngleAdd = new SampleRange(10, 15, SampleTypes.UNIFORM);
