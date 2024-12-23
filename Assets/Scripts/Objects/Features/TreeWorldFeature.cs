@@ -13,25 +13,18 @@ public class TreeWorldFeature : MonoBehaviour, IWorldFeature
         Vector2 worldUp = edge.centre - edge.worldSite.world.GetCentre();
         transform.up = (edgeUp + worldUp) / 2.0f;
         transform.eulerAngles = new Vector3(0.0f, 0.0f, transform.eulerAngles.z - 6.0f + Random.value * 12.0f);
+        transform.position += -transform.up * embedDistance;
 
-        // Scale Randomly
-        float width = Mathf.Lerp(sizeMin.x, sizeMax.x, Random.value);
-        float height = Mathf.Lerp(sizeMin.y, sizeMax.y, Random.value);
-        if (Random.value < tallChance) height = sizeTall;
-        mesh.localScale = new Vector3(width, height, 1.0f);
-        mesh.localPosition = new Vector3(-mesh.localScale.x * 0.5f, mesh.localScale.y * 0.5f - embedDistance, mesh.transform.position.z);
+        // Generate tree
+        treeGenerator.Generate();
     }
 
     public bool Contains(Vector2 point)
     {
-        return Vector2.Distance(transform.position, point) < mesh.localScale.x * 0.5f;
+        return (point - (Vector2)transform.position).sqrMagnitude < (treeGenerator.BaseWidth * treeGenerator.BaseWidth);
     }
 
     [Header("References")]
-    [SerializeField] private Transform mesh;
-    [SerializeField] private Vector2 sizeMin;
-    [SerializeField] private Vector2 sizeMax;
-    [SerializeField] private float sizeTall;
-    [SerializeField] private float tallChance;
+    [SerializeField] private TreeGenerator treeGenerator;
     [SerializeField] private float embedDistance;
 }

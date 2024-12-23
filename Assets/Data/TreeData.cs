@@ -20,4 +20,7 @@ public class TreeData : ScriptableObject
 
     public float BranchChance = 0.1f;
     public SampleRange BranchAngleAdd = new SampleRange(10, 15, SampleTypes.UNIFORM);
+
+    public Color ColorMin = new(0.2f, 0.1f, 0.0f);
+    public Color ColorMax = new(0.4f, 0.2f, 0.1f);
 }

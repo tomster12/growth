@@ -13,38 +13,40 @@ MonoBehaviour:
   m_Name: TreeDataSpruce
   m_EditorClassIdentifier: 
   Count:
-    Min: 18
-    Max: 25
-    SampleType: 0
+    Min: 5
+    Max: 8
+    SampleType: 1
   WidthInitial:
-    Min: 0.8
-    Max: 1.2
-    SampleType: 1
-  WidthAdd:
-    Min: -0.04
-    Max: 0.04
-    SampleType: 1
-  WidthDecay: 0.97
-  LengthInitial:
-    Min: 0.7
-    Max: 0.85
+    Min: 1
+    Max: 1.5
     SampleType: 0
+  WidthAdd:
+    Min: -0.02
+    Max: 0.02
+    SampleType: 1
+  WidthDecay: 0.96
+  LengthInitial:
+    Min: 2.4
+    Max: 2.8
+    SampleType: 1
   LengthAdd:
     Min: -0.1
     Max: 0.1
-    SampleType: 0
+    SampleType: 1
   LengthDecay: 0.99
   AngleInitial:
-    Min: -10
-    Max: 10
-    SampleType: 0
-  AngleAdd:
     Min: -3
     Max: 3
     SampleType: 0
-  AngleDecay: 1.02
+  AngleAdd:
+    Min: -8
+    Max: 8
+    SampleType: 1
+  AngleDecay: 1.4
   BranchChance: 0.1
   BranchAngleAdd:
-    Min: 10
-    Max: 15
+    Min: 20
+    Max: 28
     SampleType: 0
+  ColorMin: {r: 0.74509805, g: 0.6509804, b: 0.60784316, a: 1}
+  ColorMax: {r: 0.695, g: 0.6072105, b: 0.5669737, a: 1}
