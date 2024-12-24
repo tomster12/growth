@@ -43,7 +43,7 @@ MonoBehaviour:
     Max: 8
     SampleType: 1
   AngleDecay: 1.4
-  BranchChance: 0.1
+  BranchChance: 0.4
   BranchAngleAdd:
     Min: 20
     Max: 28
