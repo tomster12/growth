@@ -22,7 +22,7 @@ public partial class PlayerMovement : MonoBehaviour, IFollowable
         Vector2 jumpDir = GroundUpDir;
 
         // Add horizontal component to jump if moving fast enough
-        float rightComponent = Vector2.Dot(characterRB.velocity, GroundRightDir);
+        float rightComponent = Vector2.Dot(characterRB.linearVelocity, GroundRightDir);
         if (Mathf.Abs(rightComponent) > horizontalJumpThreshold) jumpDir += GroundRightDir * Mathf.Sign(rightComponent);
 
         return jumpDir.normalized;
@@ -115,7 +115,7 @@ public partial class PlayerMovement : MonoBehaviour, IFollowable
     private void FixedUpdateMovement()
     {
         //  Rotate upwards
-        Vector2 rotateTo = IsGrounded ? GroundUpDir : RB.velocity.normalized;
+        Vector2 rotateTo = IsGrounded ? GroundUpDir : RB.linearVelocity.normalized;
         float angleDiff = Vector2.SignedAngle(Transform.up, rotateTo) % 360;
         characterRB.AddTorque(angleDiff * rotationSpeed * Mathf.Deg2Rad);
 
@@ -123,8 +123,8 @@ public partial class PlayerMovement : MonoBehaviour, IFollowable
         if (IsGrounded)
         {
             // Set grounded physical properties
-            characterRB.drag = groundDrag;
-            characterRB.angularDrag = groundAngularDrag;
+            characterRB.linearDamping = groundDrag;
+            characterRB.angularDamping = groundAngularDrag;
             characterGravity.IsKinematic = false;
 
             // Apply force for height with legs
@@ -157,8 +157,8 @@ public partial class PlayerMovement : MonoBehaviour, IFollowable
         else
         {
             // Set air physical properties
-            characterRB.drag = airDrag;
-            characterRB.angularDrag = airAngularDrag;
+            characterRB.linearDamping = airDrag;
+            characterRB.angularDamping = airAngularDrag;
             characterGravity.IsKinematic = true;
 
             // Reset jump timer to max

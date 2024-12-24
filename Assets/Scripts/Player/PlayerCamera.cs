@@ -1,7 +1,7 @@
 using System;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Experimental.Rendering.Universal;
+
 using static UnityEngine.GraphicsBuffer;
 
 public interface IFollowable
@@ -53,7 +53,7 @@ public class PlayerCamera : MonoBehaviour
     }
 
     [Header("References")]
-    [SerializeField] private PixelPerfectCamera pixelPerfectCamera;
+    [SerializeField] private UnityEngine.Rendering.Universal.PixelPerfectCamera pixelPerfectCamera;
     [SerializeField] private Camera mainCamera;
     [SerializeField] private Camera outsideUICamera;
     [SerializeField] private RenderTexture outsideUITexture;

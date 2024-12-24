@@ -10,8 +10,8 @@ public class PartControllable : Part
     {
         base.InitPart(composable);
         composable.RequirePart<PartPhysical>();
-        Physical.RB.drag = idleDrag;
-        Physical.RB.angularDrag = idleAngularDrag;
+        Physical.RB.linearDamping = idleDrag;
+        Physical.RB.angularDamping = idleAngularDrag;
     }
 
     public override void DeinitPart()
@@ -42,8 +42,8 @@ public class PartControllable : Part
 
         // Set variables
         IsControlled = true;
-        Physical.RB.drag = controlDrag;
-        Physical.RB.angularDrag = controlAngularDrag;
+        Physical.RB.linearDamping = controlDrag;
+        Physical.RB.angularDamping = controlAngularDrag;
         Physical.GRO.IsKinematic = false;
 
         return true;
@@ -59,8 +59,8 @@ public class PartControllable : Part
 
         // Reset variables
         IsControlled = false;
-        Physical.RB.drag = idleDrag;
-        Physical.RB.angularDrag = idleAngularDrag;
+        Physical.RB.linearDamping = idleDrag;
+        Physical.RB.angularDamping = idleAngularDrag;
         Physical.GRO.IsKinematic = true;
 
         return true;

@@ -36,7 +36,7 @@ public class PartPhysical : Part
     {
         IsEnabled = enabled;
         RB.simulated = enabled;
-        RB.velocity = Vector2.zero;
+        RB.linearVelocity = Vector2.zero;
         RB.angularVelocity = 0;
         GRO.IsKinematic = enabled;
     }

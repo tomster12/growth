@@ -1,7 +1,5 @@
-using Aarthificial.PixelGraphics.Common;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEditor.Rendering.CameraUI;
 
 public class EnergyOrbManager : MonoBehaviour
 {
@@ -44,14 +42,15 @@ public class EnergyOrbManager : MonoBehaviour
 
     private void Start()
     {
-        VelocityEmitter.OnVelocity += OnVelocity;
+        VelocitySource.OnVelocity += OnVelocity;
 
         // Init the orb data buffer
+        orbDatasBuffer?.Release();
         orbDatasBuffer = new ComputeBuffer(MAX_ORB_COUNT, sizeof(float) * 4);
 
         // Update the output GO
         outputMaterial = new Material(outputMaterialPfb);
-        outputGO.transform.position = world.GetCentre();
+        outputGO.transform.position = GameLayers.OnLayer(world.GetCentre(), GameLayer.Terrain);
         outputGO.transform.localScale = Vector3.one * world.WorldGenerator.AtmosphereRadius * 2.0f;
         outputSR.material = outputMaterial;
 
@@ -62,6 +61,14 @@ public class EnergyOrbManager : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        // Clean up
+        VelocitySource.OnVelocity -= OnVelocity;
+        orbDatasBuffer?.Release();
+        orbDatasBuffer = null;
+    }
+
     private void Update()
     {
         Vector2 mousePos = PlayerController.Instance.MousePosition;
@@ -70,7 +77,7 @@ public class EnergyOrbManager : MonoBehaviour
         for (int i = 0; i < orbCount; i++)
         {
             Vector4 orbData = orbDatas[i];
-            Vector2 orbPos = new Vector2(orbData.x, orbData.y);
+            Vector2 orbPos = new(orbData.x, orbData.y);
 
             // Find closest ground edge
             BVHEdge closestGroundEdge = world.TerrainBVH.FindClosestElement(orbPos);
@@ -105,7 +112,7 @@ public class EnergyOrbManager : MonoBehaviour
             {
                 float amount = Mathf.Clamp01((signedDistance - hoverHeight) / HOVER_GRAVITY_THRESHOLD);
                 Vector2 gravityDir = world.GetCentre() - orbPos;
-                orbVels[i] += gravityDir.normalized * GRAVITY_FORCE * amount;
+                orbVels[i] += amount * GRAVITY_FORCE * gravityDir.normalized;
             }
 
             // Mouse interaction force
@@ -114,7 +121,7 @@ public class EnergyOrbManager : MonoBehaviour
             {
                 float magnitude = Mathf.Clamp(mouseChange.magnitude * MOUSE_FORCE, 0, MOUSE_MAX_FORCE);
                 magnitude *= (1 - Mathf.Clamp01(mouseDist / MOUSE_DIST));
-                orbVels[i] += mouseChange.normalized * magnitude;
+                orbVels[i] += magnitude * mouseChange.normalized;
             }
 
             // Wind force
@@ -132,7 +139,6 @@ public class EnergyOrbManager : MonoBehaviour
                 {
                     float pct = Mathf.Clamp01((ORB_PUSH_DIST - dist) / ORB_PUSH_DIST);
                     amount = pct * pct * ORB_PUSH_FORCE;
-                    amount = ORB_PUSH_FORCE;
                 }
                 else if (dist < ORB_PULL_DIST)
                 {

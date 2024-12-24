@@ -31,13 +31,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6099407925653884417}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: -0.6725605, w: 0.7400422}
   m_LocalPosition: {x: -26.2, y: 76.1, z: 4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -84.53}
 --- !u!33 &6099407925653884419
 MeshFilter:
@@ -64,6 +64,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -97,11 +100,32 @@ PolygonCollider2D:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6099407925653884417}
   m_Enabled: 0
+  serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
   m_IsTrigger: 0
   m_UsedByEffector: 0
-  m_UsedByComposite: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
@@ -129,6 +153,7 @@ PolygonCollider2D:
       - {x: 1.1856381, y: -3.6490173}
       - {x: 2.6931608, y: -2.9910572}
       - {x: 3.3533378, y: -1.4930015}
+  m_UseDelaunayMesh: 0
 --- !u!114 &4583753474547885208
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165,12 +190,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   composedGenerators: []
   isGenerated: 0
-  showGizmoSeedCentroids: 0
-  showGizmoDelauneyMain: 0
-  showGizmoDelauneyCentres: 0
-  showGizmoVoronoi: 0
-  showGizmoClipped: 0
+  showGizmoInternalSeedCentroids: 0
+  showGizmoInternalDelauneyMain: 0
+  showGizmoInternalDelauneyCentres: 0
+  showGizmoInternalVoronoi: 0
+  showGizmoInternalClipped: 0
   showGizmoMesh: 0
+  showGizmoMeshVertexLabels: 0
   meshFilter: {fileID: 6099407925653884419}
   outsidePolygon: {fileID: 6099407925653884430}
   seedCount: 7
@@ -198,8 +224,8 @@ MonoBehaviour:
   planetPolygonGenerator: {fileID: 4583753474547885208}
   voronoiMeshGenerator: {fileID: 6099407925653884416}
   colorRange:
-  - {r: 0.3490566, g: 0.3490566, b: 0.3490566, a: 1}
-  - {r: 0.5849056, g: 0.5849056, b: 0.5849056, a: 1}
+  - {r: 0.198, g: 0.198, b: 0.198, a: 1}
+  - {r: 0.262, g: 0.262, b: 0.262, a: 1}
   colorNoise:
     valueRange:
     - 0

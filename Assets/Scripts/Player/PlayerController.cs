@@ -264,6 +264,7 @@ public partial class PlayerController : MonoBehaviour, IInteractor
             {
                 GameObject promptGO = Instantiate(promptPfb);
                 InteractionPrompt prompt = promptGO.GetComponent<InteractionPrompt>();
+                Utility.SetLayer(promptGO.transform, LayerMask.NameToLayer("Outside UI"));
                 prompt.SetInteraction(this, interaction);
                 promptOrganiser.AddChild(prompt);
             }

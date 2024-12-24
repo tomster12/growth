@@ -70,7 +70,7 @@ public class PlayerLegs : MonoBehaviour
         // Update walking direction and time
         if (playerMovement.IsGrounded)
         {
-            float walkAmount = Vector2.Dot(playerMovement.RB.velocity, playerMovement.GroundRightDir.normalized);
+            float walkAmount = Vector2.Dot(playerMovement.RB.linearVelocity, playerMovement.GroundRightDir.normalized);
             int newWalkDirection = (walkAmount < -isWalkingThreshold) ? -1 : (walkAmount > isWalkingThreshold) ? 1 : 0;
             walkingTime = newWalkDirection == 0 ? 0.0f : (walkingTime + Mathf.Abs(walkAmount * walkSpeed * Time.deltaTime)) % 1;
 
