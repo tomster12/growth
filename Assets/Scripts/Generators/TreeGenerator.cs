@@ -1,24 +1,31 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+[Serializable]
 public class TreeNode
 {
     public float width;
-    public float angleOffset;
+    public float angle;
+    public float localAngle;
     public float length;
+    public float area;
     public Color color;
 
     public TreeNode parentNode;
     public TreeNode childNode;
     public TreeNode branchNode;
     public Transform transform;
-    public int countLeft;
+    public int groundDistance;
+    public int endDistance;
 }
 
 public class TreeGenerator : Generator
 {
     public override string Name => "Tree";
-    public float BaseWidth => treeNodes[0].width;
+    public float BaseWidth => TreeNodes[0].width;
+    public TreeData TreeData => treeData;
+    public List<TreeNode> TreeNodes => treeNodes;
 
     public override void Generate()
     {
@@ -44,19 +51,20 @@ public class TreeGenerator : Generator
     [Header("Parameters")]
     [SerializeField] private TreeData treeData;
 
-    private List<TreeNode> treeNodes;
+    [SerializeField] private List<TreeNode> treeNodes;
 
     private void GenerateTreeNodes()
     {
-        int count = Mathf.RoundToInt(treeData.Count.GetSample());
+        int endDistance = Mathf.RoundToInt(treeData.Count.GetSample());
 
         TreeNode baseNode = new TreeNode
         {
             width = treeData.WidthInitial.GetSample(),
-            angleOffset = treeData.AngleInitial.GetSample(),
+            angle = treeData.AngleInitial.GetSample(),
             length = treeData.LengthInitial.GetSample(),
-            color = Color.Lerp(treeData.ColorMin, treeData.ColorMax, Random.value),
-            countLeft = count - 1
+            color = Color.Lerp(treeData.ColorMin, treeData.ColorMax, UnityEngine.Random.value),
+            endDistance = endDistance - 1,
+            groundDistance = 0
         };
 
         treeNodes = new List<TreeNode> { baseNode };
@@ -66,38 +74,43 @@ public class TreeGenerator : Generator
         while (processQueue.Count > 0)
         {
             TreeNode node = processQueue.Dequeue();
-            if (node.countLeft == 0) continue;
+
+            node.localAngle = node.parentNode != null ? node.angle - node.parentNode.angle : node.angle;
+
+            if (node.endDistance == 0) continue;
 
             // Create guaranteed child node
             node.childNode = new TreeNode
             {
                 parentNode = node,
                 width = (node.width + treeData.WidthAdd.GetSample()) * treeData.WidthDecay,
-                angleOffset = (node.angleOffset + treeData.AngleAdd.GetSample()) * treeData.AngleDecay - node.angleOffset,
+                angle = (node.angle + treeData.AngleAdd.GetSample()) * treeData.AngleDecay,
                 length = (node.length + treeData.LengthAdd.GetSample()) * treeData.LengthDecay,
-                color = Color.Lerp(treeData.ColorMin, treeData.ColorMax, Random.value),
-                countLeft = node.countLeft - 1
+                color = Color.Lerp(treeData.ColorMin, treeData.ColorMax, UnityEngine.Random.value),
+                endDistance = node.endDistance - 1,
+                groundDistance = node.groundDistance + 1
             };
 
             treeNodes.Add(node.childNode);
             processQueue.Enqueue(node.childNode);
 
             // Create branch node at an offset
-            if (Random.value < treeData.BranchChance)
+            if (UnityEngine.Random.value < treeData.BranchChance)
             {
                 node.branchNode = new TreeNode
                 {
                     parentNode = node,
                     width = (node.width + treeData.WidthAdd.GetSample()) * treeData.WidthDecay,
-                    angleOffset = Mathf.Sign(node.childNode.angleOffset) * treeData.BranchAngleAdd.GetSample() * Mathf.Sign(Random.value - 0.5f),
+                    angle = node.angle + Mathf.Sign(node.childNode.angle) * treeData.BranchAngleAdd.GetSample() * Mathf.Sign(UnityEngine.Random.value - 0.5f),
                     length = (node.length + treeData.LengthAdd.GetSample()) * treeData.LengthDecay,
-                    color = Color.Lerp(treeData.ColorMin, treeData.ColorMax, Random.value),
-                    countLeft = node.countLeft - 1
+                    color = Color.Lerp(treeData.ColorMin, treeData.ColorMax, UnityEngine.Random.value),
+                    endDistance = node.endDistance - 1,
+                    groundDistance = node.groundDistance + 1
                 };
 
                 node.childNode.width *= 0.9f;
                 node.branchNode.width *= 0.6f;
-                node.branchNode.countLeft = (int)Mathf.Min(node.branchNode.countLeft * 0.4f, 2);
+                node.branchNode.endDistance = (int)Mathf.Min(node.branchNode.endDistance * 0.4f, 2);
 
                 treeNodes.Add(node.branchNode);
                 processQueue.Enqueue(node.branchNode);
@@ -112,6 +125,7 @@ public class TreeGenerator : Generator
         {
             float bottomWidth = node.width;
             float topWidth = node.childNode != null ? node.childNode.width : bottomWidth * 0.65f;
+            node.area = node.length * (bottomWidth + topWidth) / 2.0f;
 
             // Create a new child gameobject with a mesh
             GameObject nodeObject = new GameObject("Segment");
@@ -120,7 +134,7 @@ public class TreeGenerator : Generator
 
             nodeObject.transform.SetParent(node.parentNode != null ? node.parentNode.transform : transform);
             nodeObject.transform.localPosition = node.parentNode != null ? (Vector3.up * node.parentNode.length) : Vector3.zero;
-            nodeObject.transform.localRotation = Quaternion.Euler(0.0f, 0.0f, node.angleOffset);
+            nodeObject.transform.localRotation = Quaternion.Euler(0.0f, 0.0f, node.localAngle);
             node.transform = nodeObject.transform;
 
             // Create the mesh as a quad with a circular bottom

@@ -2,8 +2,12 @@ using UnityEngine;
 
 public class PluckableStoneObject : CompositeObject
 {
-    public Vector2 PluckDir { get; set; }
     public bool IsPlucked { get; private set; }
+
+    public void SetPluckDir(Vector2 pluckDir)
+    {
+        this.pluckDir = pluckDir;
+    }
 
     protected override void Awake()
     {
@@ -22,17 +26,17 @@ public class PluckableStoneObject : CompositeObject
     protected void Start()
     {
         // Set popDir if not already set
-        if (PluckDir.Equals(Vector2.zero))
+        if (pluckDir.Equals(Vector2.zero))
         {
             Debug.LogWarning("PluckableStone does not have a popDir");
             World closestWorld = World.GetClosestWorldByCentre(Position);
             WorldSurfaceEdge closestEdge = closestWorld.GetClosestEdge(Position);
-            PluckDir = (Position - closestEdge.centre).normalized;
+            pluckDir = (Position - closestEdge.centre).normalized;
         }
 
         // Initialize indicator
         partIndicatable.SetIcon(PartIndicatable.IconType.Resource);
-        partIndicatable.SetOffsetDir(PluckDir);
+        partIndicatable.SetOffsetDir(pluckDir);
     }
 
     [Header("Pluck Config")]
@@ -45,6 +49,7 @@ public class PluckableStoneObject : CompositeObject
     private PartIndicatable partIndicatable;
     private PartPhysical partPhysical;
     private InteractionPluck interactionPluck;
+    [SerializeField] private Vector2 pluckDir;
 
     private void OnPluck()
     {
@@ -57,15 +62,15 @@ public class PluckableStoneObject : CompositeObject
         partPhysical.InitMass(density);
 
         // Move out of ground
-        Transform.position += (Vector3)(PluckDir.normalized * CL.bounds.extents * 1.5f);
+        Transform.position += (Vector3)(pluckDir.normalized * CL.bounds.extents * 1.5f);
 
         // Pop in a direction (ignore mass)
-        partPhysical.RB.AddForce(partPhysical.RB.mass * pluckVelocity * PluckDir.normalized, ForceMode2D.Impulse);
+        partPhysical.RB.AddForce(partPhysical.RB.mass * pluckVelocity * pluckDir.normalized, ForceMode2D.Impulse);
 
         // Produce particles
         GameObject particlesGO = Instantiate(pluckPsysPfb);
         particlesGO.transform.position = partPhysical.RB.transform.position;
-        particlesGO.transform.up = PluckDir.normalized;
+        particlesGO.transform.up = pluckDir.normalized;
         GameLayers.SetLayer(particlesGO.transform, GameLayer.Particles);
         IsPlucked = true;
 

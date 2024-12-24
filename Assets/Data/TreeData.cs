@@ -23,4 +23,7 @@ public class TreeData : ScriptableObject
 
     public Color ColorMin = new(0.2f, 0.1f, 0.0f);
     public Color ColorMax = new(0.4f, 0.2f, 0.1f);
+
+    public float WindStrength = 3.0f;
+    public float BranchResistance = 0.5f;
 }

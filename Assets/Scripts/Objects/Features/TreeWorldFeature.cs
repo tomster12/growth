@@ -1,3 +1,4 @@
+using System.Globalization;
 using UnityEngine;
 
 public class TreeWorldFeature : MonoBehaviour, IWorldFeature
@@ -27,4 +28,22 @@ public class TreeWorldFeature : MonoBehaviour, IWorldFeature
     [Header("References")]
     [SerializeField] private TreeGenerator treeGenerator;
     [SerializeField] private float embedDistance;
+
+    private void Update()
+    {
+        // Update each tree node by the wind
+        foreach (TreeNode node in treeGenerator.TreeNodes)
+        {
+            // Calculate wind blowing against the tree
+            Vector2 centre = node.transform.position + node.transform.up * node.length / 2.0f;
+            Vector2 windDir = GlobalWind.GetWind(centre);
+            float dirDot = Vector2.Dot(node.transform.right, windDir);
+            float windAmount = treeGenerator.TreeData.WindStrength * dirDot * ((node.groundDistance + 1) / 6.0f) / node.width;
+
+            // Rotate based on wind, lerp towards base with resistance
+            float newAngle = node.transform.localEulerAngles.z + windAmount * Time.deltaTime;
+            float resistedAngle = Mathf.LerpAngle(newAngle, node.localAngle, treeGenerator.TreeData.BranchResistance);
+            node.transform.localEulerAngles = new Vector3(0.0f, 0.0f, resistedAngle);
+        }
+    }
 }

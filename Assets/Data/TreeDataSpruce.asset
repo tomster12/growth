@@ -50,3 +50,5 @@ MonoBehaviour:
     SampleType: 0
   ColorMin: {r: 0.74509805, g: 0.6509804, b: 0.60784316, a: 1}
   ColorMax: {r: 0.695, g: 0.6072105, b: 0.5669737, a: 1}
+  WindStrength: 100
+  BranchResistance: 0.2
