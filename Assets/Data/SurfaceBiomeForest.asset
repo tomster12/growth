@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   biomeName: Forest
   colorRange:
-  - {r: 0.2264151, g: 0.18808168, b: 0.15485938, a: 1}
-  - {r: 0.49056602, g: 0.39393377, b: 0.28924882, a: 1}
+  - {r: 0.41799998, g: 0.3466517, b: 0.28006, a: 1}
+  - {r: 0.631, g: 0.5248505, b: 0.42459813, a: 1}
   energyMaxNoise:
     valueRange:
     - 40

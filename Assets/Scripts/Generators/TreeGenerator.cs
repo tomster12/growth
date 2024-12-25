@@ -86,7 +86,7 @@ public class TreeGenerator : Generator
                 width = (node.width + treeData.WidthAdd.GetSample()) * treeData.WidthDecay,
                 angle = (node.angle + treeData.AngleAdd.GetSample()) * treeData.AngleDecay,
                 length = (node.length + treeData.LengthAdd.GetSample()) * treeData.LengthDecay,
-                color = Color.Lerp(treeData.ColorMin, treeData.ColorMax, UnityEngine.Random.value),
+                color = node.color,
                 endDistance = node.endDistance - 1,
                 groundDistance = node.groundDistance + 1
             };
@@ -103,7 +103,7 @@ public class TreeGenerator : Generator
                     width = (node.width + treeData.WidthAdd.GetSample()) * treeData.WidthDecay,
                     angle = node.angle + Mathf.Sign(node.childNode.angle) * treeData.BranchAngleAdd.GetSample() * Mathf.Sign(UnityEngine.Random.value - 0.5f),
                     length = (node.length + treeData.LengthAdd.GetSample()) * treeData.LengthDecay,
-                    color = Color.Lerp(treeData.ColorMin, treeData.ColorMax, UnityEngine.Random.value),
+                    color = node.color,
                     endDistance = node.endDistance - 1,
                     groundDistance = node.groundDistance + 1
                 };
@@ -142,6 +142,7 @@ public class TreeGenerator : Generator
             Vector3[] vertices = new Vector3[endCapVertexCount + 4];
             Vector2[] uvs = new Vector2[vertices.Length];
             int[] triangles = new int[endCapVertexCount * 3 + 6];
+            Color[] colors = new Color[vertices.Length];
 
             // Create the quad
             vertices[0] = new Vector3(-bottomWidth / 2.0f, 0.0f, 0.0f);
@@ -158,6 +159,7 @@ public class TreeGenerator : Generator
             triangles[3] = 2;
             triangles[4] = 3;
             triangles[5] = 1;
+            colors[0] = colors[1] = colors[2] = colors[3] = node.color;
 
             // Create the circular bottom
             for (int j = 0; j < endCapVertexCount; j++)
@@ -172,6 +174,7 @@ public class TreeGenerator : Generator
                 triangles[6 + j * 3 + 0] = (j == endCapVertexCount - 1) ? 0 : (4 + j + 1);
                 triangles[6 + j * 3 + 1] = 1;
                 triangles[6 + j * 3 + 2] = 4 + j;
+                colors[4 + j] = node.color;
             }
 
             Mesh mesh = new();
@@ -179,7 +182,7 @@ public class TreeGenerator : Generator
             mesh.vertices = vertices;
             mesh.uv = uvs;
             mesh.triangles = triangles;
-            mesh.triangles = triangles;
+            mesh.colors = colors;
             mesh.RecalculateBounds();
             mesh.RecalculateNormals();
 

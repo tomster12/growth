@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   biomeName: Plains
   colorRange:
-  - {r: 0.2830189, g: 0.24859008, b: 0.21760415, a: 1}
-  - {r: 0.6226415, g: 0.54890764, b: 0.4669811, a: 1}
+  - {r: 0.525, g: 0.45412496, b: 0.38324997, a: 1}
+  - {r: 0.66, g: 0.5713433, b: 0.48268658, a: 1}
   energyMaxNoise:
     valueRange:
     - 40

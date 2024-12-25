@@ -69,13 +69,13 @@ public class OutlineController : MonoBehaviour
 
         if (outlineMode == Mode.Pixel)
         {
-            pixelOutline = Instantiate(AssetManager.GetMaterial("PixelOutline"));
-            pixelOutline.name = "PixelOutline (Instance)";
+            pixelOutline = Instantiate(AssetManager.GetMaterial("Outline Pixel"));
+            pixelOutline.name = "Outline Pixel (Instance)";
         }
         else if (outlineMode == Mode.Scale)
         {
-            scaleOutlineMask = Instantiate(AssetManager.GetMaterial("ScaleOutlineMask"));
-            scaleOutlineFill = Instantiate(AssetManager.GetMaterial("ScaleOutlineFill"));
+            scaleOutlineMask = Instantiate(AssetManager.GetMaterial("Outline Scale Mask"));
+            scaleOutlineFill = Instantiate(AssetManager.GetMaterial("Outline Scale Fill"));
             scaleOutlineMask.name = "ScaleOutlineMask (Instance)";
             scaleOutlineFill.name = "ScaleOutlineFill (Instance)";
         }
