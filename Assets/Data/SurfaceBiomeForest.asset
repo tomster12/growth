@@ -15,7 +15,7 @@ MonoBehaviour:
   biomeName: Forest
   colorRange:
   - {r: 0.41799998, g: 0.3466517, b: 0.28006, a: 1}
-  - {r: 0.631, g: 0.5248505, b: 0.42459813, a: 1}
+  - {r: 0.695, g: 0.5784472, b: 0.46621117, a: 1}
   energyMaxNoise:
     valueRange:
     - 40

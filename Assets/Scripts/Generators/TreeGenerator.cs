@@ -5,19 +5,24 @@ using UnityEngine;
 [Serializable]
 public class TreeNode
 {
+    // Configuration
     public float width;
     public float angle;
     public float localAngle;
     public float length;
     public float area;
     public Color color;
+    public int groundDistance;
+    public int endDistance;
 
+    // References
     public TreeNode parentNode;
     public TreeNode childNode;
     public TreeNode branchNode;
+
+    // Runtime
     public Transform transform;
-    public int groundDistance;
-    public int endDistance;
+    public Matrix4x4[] leafMatrices;
 }
 
 public class TreeGenerator : Generator
@@ -32,6 +37,7 @@ public class TreeGenerator : Generator
         Clear();
         GenerateTreeNodes();
         GenerateMesh();
+        GenerateLeaves();
         IsGenerated = true;
     }
 
@@ -57,7 +63,8 @@ public class TreeGenerator : Generator
     {
         int endDistance = Mathf.RoundToInt(treeData.Count.GetSample());
 
-        TreeNode baseNode = new TreeNode
+        // Start queue initialized with base node
+        TreeNode baseNode = new()
         {
             width = treeData.WidthInitial.GetSample(),
             angle = treeData.AngleInitial.GetSample(),
@@ -71,15 +78,17 @@ public class TreeGenerator : Generator
         Queue<TreeNode> processQueue = new();
         processQueue.Enqueue(baseNode);
 
+        // While there are nodes to process
         while (processQueue.Count > 0)
         {
             TreeNode node = processQueue.Dequeue();
 
+            // Update nodes local angle based on parent
             node.localAngle = node.parentNode != null ? node.angle - node.parentNode.angle : node.angle;
 
             if (node.endDistance == 0) continue;
 
-            // Create guaranteed child node
+            // Create the 1 guaranteed child node
             node.childNode = new TreeNode
             {
                 parentNode = node,
@@ -94,7 +103,7 @@ public class TreeGenerator : Generator
             treeNodes.Add(node.childNode);
             processQueue.Enqueue(node.childNode);
 
-            // Create branch node at an offset
+            // Potentially Create the 1 branch node at an offset
             if (UnityEngine.Random.value < treeData.BranchChance)
             {
                 node.branchNode = new TreeNode
@@ -108,6 +117,7 @@ public class TreeGenerator : Generator
                     groundDistance = node.groundDistance + 1
                 };
 
+                // Branch node explicitly causes tree to grow less
                 node.childNode.width *= 0.9f;
                 node.branchNode.width *= 0.6f;
                 node.branchNode.endDistance = (int)Mathf.Min(node.branchNode.endDistance * 0.4f, 2);
@@ -128,13 +138,15 @@ public class TreeGenerator : Generator
             node.area = node.length * (bottomWidth + topWidth) / 2.0f;
 
             // Create a new child gameobject with a mesh
-            GameObject nodeObject = new GameObject("Segment");
+            GameObject nodeObject = new("Segment");
             MeshFilter meshFilter = nodeObject.AddComponent<MeshFilter>();
             MeshRenderer meshRenderer = nodeObject.AddComponent<MeshRenderer>();
 
             nodeObject.transform.SetParent(node.parentNode != null ? node.parentNode.transform : transform);
-            nodeObject.transform.localPosition = node.parentNode != null ? (Vector3.up * node.parentNode.length) : Vector3.zero;
-            nodeObject.transform.localRotation = Quaternion.Euler(0.0f, 0.0f, node.localAngle);
+            nodeObject.transform.SetLocalPositionAndRotation(
+                node.parentNode != null ? (Vector3.up * node.parentNode.length) : Vector3.zero,
+                Quaternion.Euler(0.0f, 0.0f, node.localAngle));
+
             node.transform = nodeObject.transform;
 
             // Create the mesh as a quad with a circular bottom
@@ -177,17 +189,25 @@ public class TreeGenerator : Generator
                 colors[4 + j] = node.color;
             }
 
-            Mesh mesh = new();
+            Mesh mesh = new()
+            {
+                vertices = vertices,
+                uv = uvs,
+                triangles = triangles,
+                colors = colors
+            };
 
-            mesh.vertices = vertices;
-            mesh.uv = uvs;
-            mesh.triangles = triangles;
-            mesh.colors = colors;
             mesh.RecalculateBounds();
             mesh.RecalculateNormals();
-
             meshFilter.mesh = mesh;
             meshRenderer.material = material;
         }
     }
+
+    private void GenerateLeaves()
+    {
+        // We need to generate the leaf matrices for each node
+    }
 }
+
+[p]

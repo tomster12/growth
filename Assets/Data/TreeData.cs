@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Profiling;
 
 [CreateAssetMenu(fileName = "Tree Data", menuName = "Tree Data", order = 0)]
 public class TreeData : ScriptableObject

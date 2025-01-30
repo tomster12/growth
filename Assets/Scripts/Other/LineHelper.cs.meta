@@ -5,7 +5,7 @@ MonoImporter:
   serializedVersion: 2
   defaultReferences:
   - materialDottedPfb: {fileID: 2100000, guid: 2fb26cf900ea7494f93ad51734a84ccb, type: 2}
-  - materialSolidPfb: {fileID: 2100000, guid: 98b84de2cdbe36549a59363e45fafe97, type: 2}
+  - materialSolidPfb: {fileID: 2100000, guid: d522089b7af6b3645bf49a7ecf070803, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

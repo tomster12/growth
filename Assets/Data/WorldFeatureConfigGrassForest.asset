@@ -12,5 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e27f78ca00b31b44a5936ab29f9e4b3, type: 3}
   m_Name: WorldFeatureConfigGrassForest
   m_EditorClassIdentifier: 
-  feature: {fileID: 11400000, guid: f0ccab68ed51289429b8d67835a052a5, type: 2}
-  color: {r: 0.3254902, g: 0.4509804, b: 0.25882354, a: 1}
+  color: {r: 0.36487752, g: 0.475, b: 0.306375, a: 1}

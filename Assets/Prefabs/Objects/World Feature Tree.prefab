@@ -61,6 +61,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   composedGenerators: []
   isGenerated: 0
-  material: {fileID: 2100000, guid: 98b84de2cdbe36549a59363e45fafe97, type: 2}
+  material: {fileID: 2100000, guid: d522089b7af6b3645bf49a7ecf070803, type: 2}
   treeData: {fileID: 11400000, guid: 23531a9867d917248a971188461c0a2a, type: 2}
   treeNodes: []

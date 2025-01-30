@@ -200,7 +200,7 @@ public partial class VoronoiMeshGenerator : Generator
             uvs.Add(new Vector3(Utility.DistanceToPoints(centroidLocal, polygonPoints), centroidAngle, 0));
 
             // Generate MeshSite
-            MeshSite meshSite = new MeshSite
+            MeshSite meshSite = new()
             {
                 siteIndex = i,
                 vertices = new MeshSiteVertex[clippedSite.clippedVertices.Count],

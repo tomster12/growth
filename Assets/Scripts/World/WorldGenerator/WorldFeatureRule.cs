@@ -154,12 +154,15 @@ public class WorldFeatureRule
                         float closestDist = float.MaxValue;
                         for (int j = 0; j < instances.Count; j++)
                         {
+                            // We are intending this reference comparison as WorldFeatureType's are singletons
+#pragma warning disable CS0253 // Possible unintended reference comparison; right hand side needs cast
                             if (feature == instances[j].Feature)
                             {
                                 float dist = Mathf.Min(Vector3.Distance(instances[j].Feature.Transform.position, edges[i].centre), closestDist);
                                 closestDist = Mathf.Min(dist, closestDist);
                                 break;
                             }
+#pragma warning restore CS0253 // Possible unintended reference comparison; right hand side needs cast
                         }
 
                         float preference = 1.0f - Mathf.Clamp(closestDist / distance, 0.0f, 1.0f);

@@ -4,7 +4,7 @@ using UnityEngine;
 public class EnergyOrbManager : MonoBehaviour
 {
     private const float GRAVITY_FORCE = 0.1f;
-    private const float ORB_PUSH_FORCE = 0.04f;
+    private const float ORB_PUSH_FORCE = 0.1f;
     private const float ORB_PULL_FORCE = 0.00015f;
     private const float HOVER_FORCE = 0.075f;
     private const float UNSTUCK_FORCE = 5f;
@@ -127,19 +127,21 @@ public class EnergyOrbManager : MonoBehaviour
             // Wind force
             orbVels[i] += GlobalWind.GetWind(orbPos) * WIND_FORCE;
 
-            // Move away from other orbs
             for (int j = i + 1; j < orbCount; j++)
             {
-                Vector2 otherOrbPos = new Vector2(orbDatas[j].x, orbDatas[j].y);
+                Vector2 otherOrbPos = new(orbDatas[j].x, orbDatas[j].y);
                 Vector2 dir = otherOrbPos - orbPos;
                 float dist = dir.magnitude;
                 float amount = 0.0f;
 
+                // Move away
                 if (dist < ORB_PUSH_DIST)
                 {
                     float pct = Mathf.Clamp01((ORB_PUSH_DIST - dist) / ORB_PUSH_DIST);
                     amount = pct * pct * ORB_PUSH_FORCE;
                 }
+
+                // Move towards
                 else if (dist < ORB_PULL_DIST)
                 {
                     amount = -ORB_PULL_FORCE;
