@@ -57,7 +57,8 @@ public class TreeGenerator : Generator
     [Header("Parameters")]
     [SerializeField] private TreeData treeData;
 
-    [SerializeField] private List<TreeNode> treeNodes;
+    [SerializeField] private List<TreeNode> treeNodes; // Temporary serialized field for debugging
+    private Mesh leafMesh;
 
     private void GenerateTreeNodes()
     {
@@ -206,8 +207,70 @@ public class TreeGenerator : Generator
 
     private void GenerateLeaves()
     {
-        // We need to generate the leaf matrices for each node
+        // Generate simple leaf mesh
+        leafMesh = new Mesh
+        {
+            vertices = new Vector3[]
+            {
+                new(-0.1f, 0.0f, 0.0f),
+                new(0.1f, 0.0f, 0.0f),
+                new(0.0f, 0.2f, 0.0f)
+            },
+            triangles = new int[] { 0, 2, 1 },
+            uv = new Vector2[]
+            {
+                new(0, 0),
+                new(1, 0),
+                new(0.5f, 1)
+            }
+        };
+        leafMesh.RecalculateBounds();
+        leafMesh.RecalculateNormals();
+
+        // Generate leaf matrices for each leaf
+        foreach (TreeNode node in treeNodes)
+        {
+            if (node.childNode != null) continue;
+
+            List<Matrix4x4> leafMatrices = new();
+
+            Matrix4x4 branchMatrix = node.transform.localToWorldMatrix;
+
+            int leafCount = UnityEngine.Random.Range(80, 100);
+
+            for (int i = 0; i < leafCount; i++)
+            {
+                Vector3 position = new(0.0f, node.length, -0.5f);
+
+                position.x += UnityEngine.Random.Range(-node.width, node.width);
+                position.y += UnityEngine.Random.Range(-node.length * 0.3f, node.length * 0.3f);
+
+                Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, UnityEngine.Random.Range(0.0f, 360.0f));
+
+                Matrix4x4 leafMatrix = branchMatrix * Matrix4x4.TRS(position, rotation, Vector3.one);
+                leafMatrices.Add(leafMatrix);
+            }
+
+            node.leafMatrices = leafMatrices.ToArray();
+        }
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (treeNodes == null) return;
+
+        foreach (TreeNode node in treeNodes)
+        {
+            // Draw leaves
+            if (node.leafMatrices != null)
+            {
+                Gizmos.color = new Color(0.4f, 0.9f, 0.5f);
+                foreach (Matrix4x4 leafMatrix in node.leafMatrices)
+                {
+                    Gizmos.matrix = leafMatrix;
+                    Gizmos.DrawMesh(leafMesh);
+                }
+            }
+        }
     }
 }
-
-[p]
