@@ -259,18 +259,18 @@ public class TreeGenerator : Generator
     {
         if (treeNodes == null) return;
 
-        foreach (TreeNode node in treeNodes)
-        {
-            // Draw leaves
-            if (node.leafMatrices != null)
-            {
-                Gizmos.color = new Color(0.4f, 0.9f, 0.5f);
-                foreach (Matrix4x4 leafMatrix in node.leafMatrices)
-                {
-                    Gizmos.matrix = leafMatrix;
-                    Gizmos.DrawMesh(leafMesh);
-                }
-            }
-        }
+        //foreach (TreeNode node in treeNodes)
+        //{
+        //    // Draw leaves
+        //    if (node.leafMatrices != null)
+        //    {
+        //        Gizmos.color = new Color(0.4f, 0.9f, 0.5f);
+        //        foreach (Matrix4x4 leafMatrix in node.leafMatrices)
+        //        {
+        //            Gizmos.matrix = leafMatrix;
+        //            Gizmos.DrawMesh(leafMesh);
+        //        }
+        //    }
+        //}
     }
 }
